@@ -1,9 +1,11 @@
 package client
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"io/ioutil"
 	"os"
 	"time"
 
@@ -12,9 +14,11 @@ import (
 )
 
 type client struct {
+	key        string
 	config     ClientConfig
 	httpClient *resty.Client
-	key        []byte
+	wgConf     *wg.Conf
+	wgIface    int
 }
 
 type ClientConfig struct {
@@ -31,18 +35,33 @@ type Client interface {
 
 func New(c ClientConfig) (*client, error) {
 
-	httpClient := resty.New()
+	wgIface, isNew, err := wg.New("wg0")
+	if err != nil {
+		fmt.Println("Error initializing Wireguard interface")
+	}
 
-	key, _ := wg.GenKey()
+	if isNew {
+		fmt.Println("New Wireguard interface create")
+	}
 
-	if c.WgKey != "" {
-		key = []byte(c.WgKey)
+	dat, err := ioutil.ReadFile("./wg0.conf")
+	if err != nil {
+		fmt.Println("Error reading Wireguard configuration file")
+	}
+
+	// If a key already exists, use it. Otherwise generate a new one.
+	key := c.WgKey
+	if key == "" {
+		k, _ := wg.GenKey()
+		key = string(k)
 	}
 
 	return &client{
 		config:     c,
 		key:        key,
-		httpClient: httpClient,
+		wgIface:    wgIface,
+		wgConf:     wg.Parse(dat),
+		httpClient: resty.New(),
 	}, nil
 
 }
@@ -51,8 +70,8 @@ func (c *client) PollConfigServer() *Node {
 
 	url := "http://" + c.config.ServerAddr + "/api/v1/node"
 
-	pk, _ := wg.PubKey(c.key)
-
+	// Update the server with our current public key, to allow for key rotation
+	pk, _ := wg.PubKey([]byte(c.key))
 	body := map[string]string{
 		"publicKey": string(pk),
 	}
@@ -74,35 +93,32 @@ func (c *client) PollConfigServer() *Node {
 	return n
 }
 
-func (c *client) Reconcile(n *Node) {
+func (c *client) Reconcile(n *Node) error {
 
-	const tmp = `
-	[Interface]
-	Address = {{ .Interface.Address }}
-	ListenPort = {{ .Interface.ListenPort }}
-	PrivateKey = {{ .Interface.PrivateKey }}
-	
-	{{with .Peers}}
-	{{ range . }}
-	[Peer]
-	{{ if .Endpoint}}
-	Endpoint = {{ .Endpoint }}
-	{{else}}
-	PublicKey = {{ .PublicKey }}
-	AllowedIPs = {{ .AllowedIPs }}
-	{{end}}
-	PersistentKeepalive = {{ .PersistentKeepalive }}
-	{{end}}
-	{{end}}
-	`
+	path := "./wg0.conf"
 
-	t := template.Must(template.New("").Parse(tmp))
-
-	err := t.Execute(os.Stdout, n)
-
-	if err != nil {
-		fmt.Println("Error executing template")
+	if err := templateToFile(tmpl, path, n); err != nil {
+		fmt.Println("Error writing Wireguard config to file")
 	}
+
+	conf, err := templateToString(tmpl, n)
+	if err != nil {
+		fmt.Println("Error converting Wireguard config to string")
+	}
+
+	newConf := wg.Parse([]byte(conf))
+
+	if newConf.Equal(c.wgConf) {
+		fmt.Println("Configuration is still the same. No need for reconciliation.")
+		return nil
+	}
+
+	fmt.Println("Reconciling Wireguard configuration state.")
+	c.wgConf = newConf
+
+	wg.ShowConf("wg0")
+
+	return nil
 
 }
 
@@ -115,4 +131,34 @@ func (c *client) Run() {
 			c.Reconcile(n)
 		}
 	}()
+}
+
+func templateToFile(tmpl string, path string, ctx interface{}) error {
+
+	f, err := os.Create(path)
+	if err != nil {
+		return err
+	}
+
+	defer f.Close()
+	t := template.Must(template.New("").Parse(tmpl))
+
+	err = t.Execute(f, ctx)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func templateToString(tmpl string, ctx interface{}) (string, error) {
+
+	t := template.Must(template.New("").Parse(tmpl))
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, ctx); err != nil {
+		return "", err
+	}
+
+	return tpl.String(), nil
 }

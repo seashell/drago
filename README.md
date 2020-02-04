@@ -1,13 +1,14 @@
 # drago
 
-TODO
+Drago is a cloud-agnostic configuration manager for WireGuard designed to make it simple to configure network overlays spanning cloud VMs and edge devices in a hybrid-cloud fashion.
+
 
 ## Build
 
 System requirements:
 - Golang 1.14+
-- Node v___
--  yarn v___ (for building the Web UI)
+- Node 10.17.0+
+- yarn 1.12.3+
 
 
 ```
@@ -18,7 +19,7 @@ go build
 ## Usage
 
 ```
-drago agent
+drago agent --config=<config_file>
 ```
 
 ## Overview
@@ -29,7 +30,7 @@ Drago's design allows clients to VPN to a cluster in order to securely access se
 
 ## How it works
 
-Drago uses [WireGuard](https://www.wireguard.com/), a performant and secure VPN, to connect the different nodes in the cluster.
+Drago uses [WireGuard](https://www.wireguard.com/), a performant and secure VPN,to connect the different nodes in the cluster.
 
 The Drago agent runs on every node in the cluster, setting up the public and private keys for the VPN as well as the necessary rules to route packets between locations.
 

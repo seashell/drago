@@ -27,3 +27,4 @@
 /ui/build/*
 /ui/node_modules/*
 /vendor/*
+statik/*

@@ -3,7 +3,3 @@
 //go:generate echo "==> Done."
 
 package ui
-
-func init() {
-
-}
