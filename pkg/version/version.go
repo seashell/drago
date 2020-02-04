@@ -66,7 +66,7 @@ func (c *VersionInfo) VersionNumber() string {
 func (c *VersionInfo) FullVersionNumber(rev bool) string {
 	var versionString bytes.Buffer
 
-	fmt.Fprintf(&versionString, "Dragonair v%s", c.Version)
+	fmt.Fprintf(&versionString, "drago v%s", c.Version)
 	if c.VersionPrerelease != "" {
 		fmt.Fprintf(&versionString, "-%s", c.VersionPrerelease)
 	}

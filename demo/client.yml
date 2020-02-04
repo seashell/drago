@@ -1,0 +1,17 @@
+ui: false
+
+iface: "wg0"
+network: "192.168.2.0/24"
+
+client:
+    enabled: true
+    server_addr: "127.0.0.1:8181"
+    sync_interval: 1
+    wg_key: UOqqP7mFGaG6qY77bwFyHiTU5RukzaUvZgXO1RP9hUI=
+    jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwia2luZCI6Im5vZGUiLCJsYWJlbCI6InJhc3BiZXJyeS1waS0xIn0.orYn6ZNRkflE2uNvFFwDU-XuNRKlE6mPos9JrWMuKJM"
+
+server:
+    enabled: false
+
+
+

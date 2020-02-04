@@ -20,13 +20,13 @@ import (
 
 	"github.com/spf13/cobra"
 
-	version "github.com/edufschmidt/dragonair/pkg/version"
+	version "github.com/seashell/drago/pkg/version"
 )
 
 // versionCmd represents the version command
 var versionCmd = &cobra.Command{
 	Use:   "version",
-	Short: "Prints the dragonair version",
+	Short: "Prints the drago version",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Println(version.GetVersion().VersionNumber())

@@ -4,11 +4,9 @@ import { useHotkeys } from 'react-hotkeys-hook'
 import styled from 'styled-components'
 import { grid, space, color, shadow, border } from 'styled-system'
 
-import { useQuery } from 'react-apollo'
-import { GET_CURRENT_USER } from '_graphql/actions'
-
 import Popover from '_components/popover'
 import Button from '_components/button'
+import Brand from '_containers/side-nav/brand'
 
 import { icons } from '_assets/'
 
@@ -18,7 +16,7 @@ export const Container = styled.div`
   display: flex;
 
   align-items: center;
-  justify-content: flex-end;  
+  justify-content: space-between;  
   
   border-bottom: 1px solid ${props => props.theme.colors.neutralLighter};
   position: fixed;
@@ -43,7 +41,7 @@ Container.defaultProps = {
 }
 
 export const StyledButton = styled(Button).attrs({
-  variant: 'secondary',
+  variant: 'primary',
   height: '40px',
   width: '100px',
   borderRadius: 3,
@@ -68,22 +66,17 @@ const handleOnNotificationsIconButtonClick = e => {
   navigate('/notifications')
 }
 
-const Header = props => {
-  const { loading, data } = useQuery(GET_CURRENT_USER)
-
-  if (loading) return <Container />
-
-  return (
-    <Container {...props}>
-      <Popover content={<ActionsMenu />}>
-        <StyledButton>
-          Create
-          <icons.ArrowDown fill="white" width={16} height={16} />
-        </StyledButton>
-      </Popover>
-    </Container>
-  )
-}
+const Header = props => (
+  <Container {...props}>
+    <Brand />
+    <Popover content={<ActionsMenu />}>
+      <StyledButton>
+        Menu
+        <icons.ArrowDown fill="white" width={16} height={16} />
+      </StyledButton>
+    </Popover>
+  </Container>
+)
 
 Header.defaultProps = {
   padding: 3,

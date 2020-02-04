@@ -2,14 +2,15 @@ import React from 'react'
 import styled from 'styled-components'
 
 import NotFound from '_views/not-found'
+import NodesView from '_views/nodes'
+import NodesGraph from '_views/nodes-graph'
+import NewNode from '_views/new-node'
 
 import Header from '_containers/header'
 import Footer from '_containers/footer'
 
 import { Router } from '@reach/router'
-import DevicesView from '_views/devices'
-import NewDevice from '_views/new-device'
-import ConnectDevice from '_views/connect-device'
+import EditNode from '_views/edit-node'
 
 const Dashboard = styled.div`
   position: relative;
@@ -33,9 +34,10 @@ const App = () => (
   <Dashboard>
     <Header />
     <Content>
-      <DevicesView path="/" />
-      <NewDevice path="/devices/new" />
-      <ConnectDevice path="/devices/:deviceId/connect" />
+      <NodesView path="/ui/nodes" />
+      <NewNode path="/ui/nodes/new" />
+      <EditNode path="/ui/nodes/:nodeId" />
+      <NodesGraph path="/ui/nodes/graph" />
       <NotFound default />
     </Content>
     <Footer gridArea="footer" />

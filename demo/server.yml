@@ -1,0 +1,16 @@
+ui: true
+
+iface: "wg0"
+network: "192.168.2.0/24"
+
+client:
+    enabled: false
+
+server:
+    enabled: true
+    bind_addr: "127.0.0.1"
+    secret: "seashell-test-secret-123"
+
+
+
+

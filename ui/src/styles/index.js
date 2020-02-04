@@ -6,7 +6,7 @@ import lightTheme from './themes/light'
 
 const GlobalStyles = createGlobalStyle`
     ${reset}
-
+        
     :root {
         height: 100%;
         font-family: Lato;

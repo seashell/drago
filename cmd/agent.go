@@ -16,74 +16,85 @@ limitations under the License.
 package cmd
 
 import (
+	"context"
 	"fmt"
+	"os"
+	"os/signal"
 
-	log "github.com/sirupsen/logrus"
+	"time"
 
-	consul "github.com/edufschmidt/dragonair/pkg/backends/consul"
+	agent "github.com/seashell/drago/pkg/agent"
+	version "github.com/seashell/drago/pkg/version"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-type AgentConfig struct {
-	consulAddr string
-}
-
-func DefaultAgentConfig() *AgentConfig {
-	return &AgentConfig{}
-}
-
-type Agent struct {
-	config *AgentConfig
-
-	consulClient *consul.ConsulClient
-
-	// 	shutdown     bool
-	// 	shutdownCh   chan struct{}
-	// 	shutdownLock sync.Mutex
-}
-
-func NewAgent(config *AgentConfig) (*Agent, error) {
-	return &Agent{
-		config: config,
-	}, nil
-}
-
-// agentCmd represents the agent command
 var agentCmd = &cobra.Command{
 	Use:   "agent",
-	Short: "Runs a dragonair agent",
+	Short: "Runs a drago agent",
 	Long: `
-	Usage: dragonair agent [options]
+	Usage: drago agent [options]
 	
-	Starts the dragonair agent and runs until an interrupt is received.
+	Starts the drago agent and runs until an interrupt is received.
 	The agent may be a client and/or server.
   
-	The dragonair agent's configuration primarily comes from the config
+	The drago agent's configuration primarily comes from the config
 	files used, but a subset of the options may also be passed directly
 	as CLI arguments.
   `,
 	Run: func(cmd *cobra.Command, args []string) {
 
-		configFile, _ := cmd.Flags().GetString("config")
+		if cfgFile == "" {
+			fmt.Println("==> No config file specified. Using default values.")
+		}
 
-		fmt.Println("==> Loaded configuration from ", configFile)
-
-		fmt.Println("==> Starting dragonair agent...")
-		fmt.Println("==> dragonair agent configuration:")
+		fmt.Println("==> Starting drago agent...")
+		fmt.Println("==> drago agent configuration:")
 
 		fmt.Println("")
-		fmt.Println("       Server ", false)
+		fmt.Println("	Interface: ", viper.GetString("iface"))
+		fmt.Println("	Address: ", viper.GetString("network"))
+		fmt.Println("	Server: ", viper.GetBool("server"))
+		fmt.Println("	Web UI: ", viper.GetBool("ui"))
+		fmt.Println("	Version: ", version.GetVersion().VersionNumber())
 		fmt.Println("")
 
-		fmt.Println("==> dragonair agent started! Log data will stream in below:")
+		if viper.GetBool("ui") {
+			fmt.Println("	UI: http://localhost:8080")
+		}
+
+		fmt.Println("")
+		fmt.Println("==> drago agent started! Log data will stream in below:")
 		fmt.Println("")
 
-		log.Info("Log data")
+		var config agent.AgentConfig
 
-		//node := node.New(nil)
-		//node.Run()
+		viper.Unmarshal(&config)
 
+		a, err := agent.NewAgent(config)
+		if err != nil {
+			panic("Error creating agent")
+		}
+
+		var wait time.Duration
+
+		a.Run()
+
+		c := make(chan os.Signal, 1)
+
+		// We'll accept graceful shutdowns when quit via SIGINT (Ctrl+C)
+		// SIGKILL, SIGQUIT or SIGTERM (Ctrl+/) will not be caught.
+		signal.Notify(c, os.Interrupt)
+
+		// Block until we receive our signal.
+		<-c
+
+		// Create a deadline to wait for.
+		_, cancel := context.WithTimeout(context.Background(), wait)
+		defer cancel()
+
+		os.Exit(0)
 	},
 }
 
@@ -98,7 +109,22 @@ func init() {
 	// is called directly, e.g.:
 	// agentCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 
-	agentCmd.Flags().String("config", "", "Path to custom config file.")
+	// Declare flags
+	agentCmd.Flags().BoolP("server", "s", false, "Start agent in server mode")
+	agentCmd.Flags().BoolP("client", "c", true, "Start agent in client mode")
+	agentCmd.Flags().Bool("ui", true, "Serve web UI for configuration")
+
+	// Set default values for configs not exposed through flags
+	viper.SetDefault("iface", "wg0")
+	viper.SetDefault("network", "192.168.2.0/24")
+
+	viper.SetDefault("bind_addr", "127.0.0.1")
+	viper.SetDefault("server_addr", "192.168.2.1/24")
+
+	// Bind viper configs to cobra flags
+	viper.BindPFlag("server", agentCmd.Flags().Lookup("server"))
+	viper.BindPFlag("client", agentCmd.Flags().Lookup("client"))
+	viper.BindPFlag("ui", agentCmd.Flags().Lookup("ui"))
 
 	rootCmd.AddCommand(agentCmd)
 }

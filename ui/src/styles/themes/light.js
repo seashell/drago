@@ -2,12 +2,15 @@ const colors = {
   white: '#fff',
   black: '#131d2a',
   transparent: 'rgba(0,0,0,0)',
-  primaryDark: '#131d29',
-  primary: '#00a1ff',
-  primaryLight: 'rgba(67, 209, 255, 0.5)',
-  primaryLighter: 'rgba(67, 209, 255, 0.2)',
-  primaryLightest: 'rgba(67, 209, 255, 0.1)',
-  secondary: '#2fe98c',
+
+  primaryDark: '#000000',
+  primary: '#333333',
+  primaryLight: '666666',
+  primaryLighter: '999999',
+  primaryLightest: 'CCCCCC',
+
+  secondary: '#00000',
+
   neutralDarkest: '#555c66',
   neutralDarker: '#666d77',
   neutralDark: '#8d949b',
@@ -15,6 +18,7 @@ const colors = {
   neutralLight: '#c3c9ce',
   neutralLighter: '#ececf0',
   neutralLightest: '#fafbfc',
+
   green: '#00c582',
   yellow: '#ffc85e',
   violet: '#c66ce0',
@@ -81,8 +85,8 @@ export default {
     primary: { background: colors.primary, color: colors.white },
     secondary: { background: colors.secondary, color: colors.white },
     neutral: { background: colors.neutralLighter, color: colors.neutralDarker },
-    warning: { background: colors.warning, color: colors.white },
-    danger: { background: colors.danger, color: colors.white },
+    warning: { background: colors.transparent, color: colors.warning },
+    danger: { background: colors.transparent, color: colors.danger },
     primaryInverted: {
       background: colors.transparent,
       border: borders.thin,
@@ -112,9 +116,9 @@ export default {
   },
   textStyles: {
     title: {
-      fontSize: 36,
+      fontSize: 30,
       fontFamily: 'Raleway',
-      fontWeight: 'normal',
+      fontWeight: 'bold',
       lineHeight: '40px',
       color: colors.neutralDarkest,
     },
@@ -122,14 +126,14 @@ export default {
       fontSize: 24,
       fontFamily: 'Raleway',
       fontWeight: 'bold',
-      lineHeight: '38px',
+      lineHeight: '18px',
       color: colors.neutralDarker,
     },
     description: {
       fontSize: 16,
       fontFamily: 'sans-serif',
       fontWeight: '400',
-      lineHeight: '24px',
+      lineHeight: '16px',
       color: colors.neutralDark,
     },
     bodyText: {
