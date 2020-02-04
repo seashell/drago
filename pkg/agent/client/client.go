@@ -1,12 +1,9 @@
 package client
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"io/ioutil"
-	"os"
 	"time"
 
 	resty "github.com/go-resty/resty/v2"
@@ -37,7 +34,7 @@ func New(c ClientConfig) (*client, error) {
 
 	wgIface, isNew, err := wg.New("wg0")
 	if err != nil {
-		fmt.Println("Error initializing Wireguard interface")
+		fmt.Println(err)
 	}
 
 	if isNew {
@@ -131,34 +128,4 @@ func (c *client) Run() {
 			c.Reconcile(n)
 		}
 	}()
-}
-
-func templateToFile(tmpl string, path string, ctx interface{}) error {
-
-	f, err := os.Create(path)
-	if err != nil {
-		return err
-	}
-
-	defer f.Close()
-	t := template.Must(template.New("").Parse(tmpl))
-
-	err = t.Execute(f, ctx)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func templateToString(tmpl string, ctx interface{}) (string, error) {
-
-	t := template.Must(template.New("").Parse(tmpl))
-
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, ctx); err != nil {
-		return "", err
-	}
-
-	return tpl.String(), nil
 }

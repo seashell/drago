@@ -29,20 +29,27 @@ func init() {
 	AgentVersion = version.GetVersion().VersionNumber()
 }
 
+type DragoClaims struct {
+	jwt.StandardClaims
+	ID    int    `json:"id"`
+	Kind  string `json:"kind"`
+	Label string `json:"label"`
+}
+
 type agent struct {
 	store  storage.Store
 	config AgentConfig
 }
 
 type AgentConfig struct {
-	Ui bool `mapstructure:"ui"`
-
+	Ui     bool   `mapstructure:"ui"`
+	Iface  string `mapstructure:"iface"`
 	Server struct {
 		Enabled  bool   `mapstructure:"enabled"`
 		BindAddr string `mapstructure:"bind_addr"`
 		Secret   string `mapstructure:"secret"`
+		Network  string `mapstructure:"network"`
 	} `mapstructure:"server"`
-
 	Client client.ClientConfig `mapstructure:"client"`
 }
 
@@ -142,13 +149,6 @@ func (a *agent) serveManagementAPI() {
 		ReadTimeout:  2 * time.Minute,
 		WriteTimeout: 2 * time.Minute,
 	}))
-}
-
-type DragoClaims struct {
-	jwt.StandardClaims
-	ID    int    `json:"id"`
-	Kind  string `json:"kind"`
-	Label string `json:"label"`
 }
 
 func (a *agent) serveDeviceAPI() {
