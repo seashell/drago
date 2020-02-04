@@ -1,0 +1,17 @@
+ui: true                               # UI enabled
+
+iface: "wg0"                           # Wireguard interface to use
+
+client:
+    enabled: false                     # Client enabled
+
+server:
+    enabled: true                      # Server enabled
+    bind_addr: "127.0.0.1"             # Server bind address
+    network: "192.168.2.0/24"          # Overlay network address space
+    secret: "seashell-test-secret-123" # Secret used to sign JWT tokens issued to clients
+
+
+
+
+

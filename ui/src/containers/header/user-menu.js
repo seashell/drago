@@ -4,7 +4,6 @@ import { color } from 'styled-system'
 
 import { useQuery } from '@apollo/react-hooks'
 import { GET_CURRENT_USER } from '_graphql/actions'
-import { useKeycloak } from 'react-keycloak'
 
 import Separator from '_components/separator'
 import Avatar from '_components/avatar'
@@ -50,8 +49,6 @@ const MenuItem = styled.li`
 `
 
 const UserMenu = () => {
-  const { keycloak } = useKeycloak()
-
   const { loading, data } = useQuery(GET_CURRENT_USER)
 
   if (loading) return null
@@ -85,7 +82,6 @@ const UserMenu = () => {
       <MenuItem>
         <Link to="/account">Account</Link>
       </MenuItem>
-      <MenuItem onClick={() => keycloak.logout()}>Logout</MenuItem>
     </List>
   )
 }

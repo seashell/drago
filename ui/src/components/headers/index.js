@@ -27,11 +27,11 @@ const ProjectHeader = props => (
   </StyledBox>
 )
 
-const DeviceHeader = props => (
+const NodeHeader = props => (
   <StyledBox {...props}>
     <Text textStyle="title">xyZ761kgVK</Text>
     <Text textStyle="subtitle">This projects does something really well</Text>
   </StyledBox>
 )
 
-export { ProjectHeader, DeviceHeader }
+export { ProjectHeader, NodeHeader }

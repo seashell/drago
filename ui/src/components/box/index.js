@@ -12,7 +12,6 @@ const Box = styled.div`
   ${containers}
   ${borderStyle}
   ${shadow}
-  box-sizing: border-box;
 `
 
 Box.defaultProps = {

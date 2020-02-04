@@ -1,17 +1,20 @@
-module github.com/edufschmidt/dragonair
+module github.com/seashell/drago
 
 go 1.12
 
 require (
-	github.com/hashicorp/consul/api v1.3.0
-	github.com/kr/pretty v0.1.0 // indirect
+	github.com/dafiti/echo-middleware v0.0.0-20180423194757-e57a87d075ea
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/docker/docker v1.13.1
+	github.com/go-resty/resty/v2 v2.1.0
+	github.com/labstack/echo v3.3.10+incompatible // indirect
+	github.com/labstack/echo/v4 v4.1.14
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/newrelic/go-agent v3.2.0+incompatible // indirect
+	github.com/rakyll/statik v0.1.7-0.20191104211043-6b2f3ee522b6
 	github.com/sirupsen/logrus v1.4.2
 	github.com/spf13/cobra v0.0.5
 	github.com/spf13/viper v1.3.2
-	github.com/vishvananda/netlink v1.0.0
-	github.com/vishvananda/netns v0.0.0-20191106174202-0a2b9b5464df // indirect
-	golang.org/x/sys v0.0.0-20191126131656-8a8471f7e56d // indirect
-	golang.org/x/text v0.3.2 // indirect
-	gopkg.in/check.v1 v1.0.0-20180628173108-788fd7840127 // indirect
+	github.com/squat/kilo v0.0.0-20200108231536-63987713dd21
+	github.com/vishvananda/netlink v1.1.0 // indirect
 )

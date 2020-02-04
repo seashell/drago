@@ -22,7 +22,7 @@ export const StyledSelect = styled(Select)`
     --styled-select-clear__font-size: 14px;
 
     --styled-select-control__border-color: ${colors.neutralLighter};
-    --styled-select-control__border-color--focused: #40a3f5;
+    --styled-select-control__border-color--focused: ${colors.neutralLighter};
     --styled-select-control__cursor--disabled: not-allowed;
     --styled-select-control__min-height: 36px;
 
@@ -30,7 +30,7 @@ export const StyledSelect = styled(Select)`
     --styled-select-input__line-height: 23px;
     --styled-select-input__padding: 12px;
 
-    --styled-select-menu-outer__background-color: #fff;
+    --styled-select-menu-outer__background-color: ${colors.white};
     --styled-select-menu-outer__border-color: ${colors.neutralLight};
     --styled-select-menu-outer__border-radius: 4px;
     --styled-select-menu-outer__border-style: solid;
@@ -59,9 +59,9 @@ export const StyledSelect = styled(Select)`
     --styled-select-no-results__font-size: 14px;
     --styled-select-no-results__padding: 8px 10px;
 
-    --styled-select-option__background-color: #fff;
+    --styled-select-option__background-color: ${colors.primaryLightest};
     --styled-select-option__background-color--focused: ${colors.primaryLightest};
-    --styled-select-option__background-color--selected: #fff;
+    --styled-select-option__background-color--selected: ${colors.primaryLighter};
     --styled-select-option__color: ${colors.neutralDarker};
     --styled-select-option__color--focused: ${colors.neutralDarker};
     --styled-select-option__color--selected: ${colors.neutralDarker};

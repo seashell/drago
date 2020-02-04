@@ -13,10 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
+
+//go:generate go generate github.com/seashell/drago/ui
+//go:generate go generate github.com/seashell/drago/pkg/agent
+
 package main
 
 import (
-	"github.com/edufschmidt/dragonair/cmd"
+	"github.com/seashell/drago/cmd"
 	log "github.com/sirupsen/logrus"
 )
 

@@ -1,5 +1,8 @@
 export const GRAPHQL_API_URL = process.env.REACT_APP_GRAPHQL_API_URL || 'localhost:9002/graphql'
 
+export const REST_API_URL =
+  process.env.REACT_APP_GRAPHQL_API_URL || '5e243331c5fc8f001465cef2.mockapi.io/api/v1/'
+
 export const AUTH_PROVIDER_URL =
   process.env.REACT_APP_AUTH_PROVIDER_URL || 'http://localhost:8080/auth'
 

@@ -1,0 +1,16 @@
+ui: false                             # UI enabled (not yet supported on client)
+
+iface: "wg0"                          # Wireguard interface to use
+
+client:
+    enabled: true                     # Client enabled
+    server_addr: "127.0.0.1:8181"     # Server address and port
+    sync_interval: 1                  # Synchronization interval
+    wg_key: UOqqP7mFGaG6qY77bwFyHiTU5RukzaUvZgXO1RP9hUI=  # Wireguard private key (leave empty for auto-generated key)
+    jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwia2luZCI6Im5vZGUiLCJsYWJlbCI6InJhc3BiZXJyeS1waS0xIn0.orYn6ZNRkflE2uNvFFwDU-XuNRKlE6mPos9JrWMuKJM" # JWT issued by the server for this specific client
+
+server:
+    enabled: false  # Server enabled
+
+
+

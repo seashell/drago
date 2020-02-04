@@ -4,13 +4,13 @@ import PropTypes from 'prop-types'
 import { Container, StyledSelect } from './styled'
 
 const SelectInput = props => {
-  const { options, value, title, onChange } = props
+  const { options, value, title, placeholder, onChange } = props
 
   return (
     <Container {...props}>
       <StyledSelect
         value={value}
-        placeholder="Select an option.."
+        placeholder={placeholder}
         onChange={onChange}
         options={options}
         searchable
@@ -28,11 +28,13 @@ SelectInput.propTypes = {
   ).isRequired,
   title: PropTypes.string,
   value: PropTypes.string.isRequired,
+  placeholder: PropTypes.string,
   onChange: PropTypes.func,
 }
 
 SelectInput.defaultProps = {
   title: undefined,
+  placeholder: 'Select an option..',
   onChange: undefined,
 }
 

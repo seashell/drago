@@ -2,13 +2,14 @@ import { ApolloClient } from 'apollo-client'
 import { HttpLink } from 'apollo-link-http'
 import { WebSocketLink } from 'apollo-link-ws'
 import { ApolloLink, split } from 'apollo-link'
+import { RestLink } from 'apollo-link-rest'
 import { InMemoryCache } from 'apollo-cache-inmemory'
 import { getMainDefinition } from 'apollo-utilities'
-import { withClientState } from 'apollo-link-state'
 import { onError } from 'apollo-link-error'
 
-import { defaults, resolvers } from './local-state'
-import { GRAPHQL_API_URL, USE_WS_LINK } from '../environment'
+import { typeDefs, defaults, resolvers } from './local-state'
+
+import { GRAPHQL_API_URL, REST_API_URL, USE_WS_LINK } from '../environment'
 
 const composeUrl = (url, protocol) => `${protocol}://${url}`
 
@@ -23,10 +24,14 @@ const wsLink = new WebSocketLink({
   },
 })
 
+const restLink = new RestLink({
+  uri: composeUrl(REST_API_URL, 'http'),
+})
+
 const authLink = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers }) => ({
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('kc_jwt')}`,
+      // Authorization: `Bearer ${localStorage.getItem('kc_jwt')}`,
       ...headers,
     },
   }))
@@ -51,17 +56,10 @@ const terminatingLink = split(
 )
 
 const cache = new InMemoryCache()
-
-const stateLink = withClientState({
-  cache,
-  resolvers,
-  defaults,
-})
+// cache.writeData(defaults)
 
 const link = ApolloLink.from(
-  USE_WS_LINK
-    ? [authLink, stateLink, errorLink, terminatingLink]
-    : [authLink, stateLink, errorLink, httpLink]
+  USE_WS_LINK ? [authLink, errorLink, terminatingLink] : [authLink, errorLink, restLink, httpLink]
 )
 
 export default new ApolloClient({

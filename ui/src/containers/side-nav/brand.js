@@ -8,18 +8,18 @@ const StyledLink = styled(Link)`
   position: relative;
   padding-left: 14px;
 
-  height: 76px;
+  height: auto;
 
   display: flex;
   align-items: center;
 
   svg {
-    fill: ${props => props.theme.colors.neutralLightest};
+    fill: ${props => props.theme.colors.primary};
     opacity: 0.3;
   }
   &:hover {
     svg {
-      opacity: 0.8;
+      opacity: 1;
       transition: all 0.4s linear;
     }
   }
@@ -27,8 +27,8 @@ const StyledLink = styled(Link)`
 `
 
 const Brand = props => (
-  <StyledLink to="/">
-    <Logo width={48} height={48} {...props} />
+  <StyledLink to="/nodes">
+    <Logo width={56} height={56} {...props} />
   </StyledLink>
 )
 
