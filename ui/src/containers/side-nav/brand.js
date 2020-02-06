@@ -6,7 +6,6 @@ import { ReactComponent as Logo } from '_assets/icons/logo.svg'
 
 const StyledLink = styled(Link)`
   position: relative;
-  padding-left: 14px;
 
   height: auto;
 

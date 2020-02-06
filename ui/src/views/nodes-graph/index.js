@@ -6,6 +6,7 @@ import styled from 'styled-components'
 import { ForceGraph2D } from 'react-force-graph'
 import { GET_NODES } from '_graphql/actions'
 import { useQuery } from 'react-apollo'
+import { Dragon } from '_components/spinner'
 
 const Container = styled.div`
   display: flex;
@@ -15,21 +16,22 @@ const Container = styled.div`
 `
 
 const NodesGraph = () => {
-  const { loading, error, data } = useQuery(GET_NODES)
+  const query = useQuery(GET_NODES)
 
   const ref = useRef(null)
 
-  const nodes = loading
+  const nodes = query.loading
     ? []
-    : data.result.items.map(node => ({ id: parseInt(node.id, 10), label: node.label }))
+    : query.data.result.items.map(node => ({ id: parseInt(node.id, 10), label: node.label }))
 
   const links = []
-  if (!loading) {
+
+  if (!query.loading) {
     nodes.forEach(node => {
       if (node.id !== '1') links.push({ source: 1, target: parseInt(node.id, 10) })
     })
-    console.log(links)
   }
+
   const graphData = {
     nodes,
     links,
@@ -50,6 +52,7 @@ const NodesGraph = () => {
 
   return (
     <Container>
+      {query.loading && <Dragon />}
       <div ref={ref} />
     </Container>
   )

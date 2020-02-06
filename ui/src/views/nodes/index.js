@@ -1,79 +1,83 @@
 import React from 'react'
 import styled from 'styled-components'
+
 import { navigate } from '@reach/router'
 
-import { useQuery } from 'react-apollo'
+import { useQuery, useMutation } from 'react-apollo'
 
-import { GET_NODES } from '_graphql/actions'
-import Box from '_components/box'
+import { GET_NODES, DELETE_NODE } from '_graphql/actions'
+import { Dragon } from '_components/spinner'
 import Text from '_components/text'
+import Flex from '_components/flex'
+import toast from '_components/toast'
+import Button from '_components/button'
+import Box from '_components/box'
 
-const Container = styled(Box).attrs({
-  display: 'flex',
-  border: 'discrete',
-  m: 3,
-  p: 3,
-})`
-  align-items: center;
-  cursor: pointer;
-  :hover {
-    box-shadow: ${props => props.theme.shadows.medium};
-  }
+import NodesList from './nodes-list'
+
+const Container = styled(Flex)`
+  flex-direction: column;
 `
 
-const IconContainer = styled(Box).attrs({
-  display: 'block',
-  height: '48px',
-  width: '48px',
-  bg: 'neutralLighter',
-  borderRadius: '4px',
-})`
-  position: relative;
-`
-
-const StatusBadge = styled.div`
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 4px solid white;
-  position: absolute;
-  right: -2px;
-  bottom: -2px;
-  background: ${props => (props.status === 'online' ? 'green' : 'red')};
-`
-
-// eslint-disable-next-line react/prop-types
-const NodeCard = ({ id, label, onClick, address }) => (
-  <Container onClick={() => onClick(id)}>
-    <IconContainer mr="12px">
-      <StatusBadge status="online" />
-    </IconContainer>
-    <Box flexDirection="column">
-      <Text textStyle="subtitle" fontSize="14px">
-        {label}
-      </Text>
-      <Text textStyle="detail" fontSize="12px">
-        {address}
-      </Text>
-    </Box>
-  </Container>
-)
-
-const onNodeCardClick = id => {
-  navigate(`/nodes/${id}`)
-}
+export const StyledButton = styled(Button)``
 
 const NodesView = () => {
-  const { loading, error, data } = useQuery(GET_NODES)
+  const { loading, data, refetch } = useQuery(GET_NODES)
+
+  const handleNodeDeleted = () => {
+    toast.success('Node deleted')
+    refetch()
+  }
+
+  const handleNodeDeleteError = () => {
+    toast.error('Error deleting node')
+  }
+
+  const [deleteNode, { loading: deleting }] = useMutation(DELETE_NODE, {
+    variables: { id: undefined },
+    onCompleted: handleNodeDeleted,
+    onError: handleNodeDeleteError,
+  })
+
+  const handleNodeSelect = id => {
+    navigate(`/nodes/${id}`)
+  }
+
+  const handleNodeDelete = (e, id) => {
+    e.preventDefault()
+    e.stopPropagation()
+    deleteNode({ variables: { id } })
+  }
+
+  const handleCreateNodeClick = () => {
+    navigate('/nodes/new')
+  }
+
   return (
-    <>
-      <Text textStyle="title">Nodes</Text>
-      {loading
-        ? 'loading'
-        : data.result.items.map(n => (
-            <NodeCard id={n.id} label={n.label} address={n.address} onClick={onNodeCardClick} />
-          ))}
-    </>
+    <Container>
+      <Box mb={3}>
+        <Text textStyle="title">Nodes</Text>
+        <Button
+          onClick={handleCreateNodeClick}
+          variant="primary"
+          borderRadius={3}
+          width="100px"
+          height="40px"
+          ml="auto"
+        >
+          Create
+        </Button>
+      </Box>
+      {loading || deleting ? (
+        <Dragon />
+      ) : (
+        <NodesList
+          nodes={data.result.items}
+          onNodeSelect={handleNodeSelect}
+          onNodeDelete={handleNodeDelete}
+        />
+      )}
+    </Container>
   )
 }
 

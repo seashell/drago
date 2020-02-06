@@ -1,28 +1,15 @@
 import { ApolloClient } from 'apollo-client'
-import { HttpLink } from 'apollo-link-http'
-import { WebSocketLink } from 'apollo-link-ws'
-import { ApolloLink, split } from 'apollo-link'
+import { ApolloLink } from 'apollo-link'
 import { RestLink } from 'apollo-link-rest'
 import { InMemoryCache } from 'apollo-cache-inmemory'
-import { getMainDefinition } from 'apollo-utilities'
 import { onError } from 'apollo-link-error'
 
-import { typeDefs, defaults, resolvers } from './local-state'
+import log from 'loglevel'
 
-import { GRAPHQL_API_URL, REST_API_URL, USE_WS_LINK } from '../environment'
+import { REST_API_URL } from '../environment'
+import { defaults } from './local-state'
 
 const composeUrl = (url, protocol) => `${protocol}://${url}`
-
-const httpLink = new HttpLink({
-  uri: composeUrl(GRAPHQL_API_URL, 'http'),
-})
-
-const wsLink = new WebSocketLink({
-  uri: composeUrl(GRAPHQL_API_URL, 'wss'),
-  options: {
-    reconnect: true,
-  },
-})
 
 const restLink = new RestLink({
   uri: composeUrl(REST_API_URL, 'http'),
@@ -31,7 +18,7 @@ const restLink = new RestLink({
 const authLink = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers }) => ({
     headers: {
-      // Authorization: `Bearer ${localStorage.getItem('kc_jwt')}`,
+      Authorization: `Bearer ${localStorage.getItem('jwt')}`,
       ...headers,
     },
   }))
@@ -41,28 +28,19 @@ const authLink = new ApolloLink((operation, forward) => {
 const errorLink = onError(({ graphQLErrors, networkError }) => {
   if (graphQLErrors)
     graphQLErrors.map(({ message, locations, path }) =>
-      console.log(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
+      log.error(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
     )
-  if (networkError) console.log(`[Network error]: ${networkError}`)
+  if (networkError) log.error(`[Network error]: ${networkError}`)
 })
 
-const terminatingLink = split(
-  ({ query }) => {
-    const { kind, operation } = getMainDefinition(query)
-    return kind === 'OperationDefinition' && operation === 'subscription'
-  },
-  wsLink, // Receives the operation in case the expression above evaluates to true
-  httpLink // Receives the operation otherwise
-)
-
 const cache = new InMemoryCache()
-// cache.writeData(defaults)
+cache.writeData(defaults)
 
-const link = ApolloLink.from(
-  USE_WS_LINK ? [authLink, errorLink, terminatingLink] : [authLink, errorLink, restLink, httpLink]
-)
+const link = ApolloLink.from([authLink, errorLink, restLink])
 
 export default new ApolloClient({
   link,
   cache,
+  typeDefs: {},
+  connectToDevTools: true,
 })

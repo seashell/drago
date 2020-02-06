@@ -25,19 +25,23 @@ const Dashboard = styled.div`
 const Content = styled(Router).attrs({ primary: false })`
   padding-top: 44px;
   padding-bottom: 32px;
-  margin: auto;
+
   min-height: 100vh;
   grid-area: body;
+
+  width: 90%;
+  max-width: 800px;
+  justify-self: center;
 `
 
 const App = () => (
   <Dashboard>
     <Header />
     <Content>
-      <NodesView path="/ui/nodes" />
-      <NewNode path="/ui/nodes/new" />
-      <EditNode path="/ui/nodes/:nodeId" />
-      <NodesGraph path="/ui/nodes/graph" />
+      <NodesView path="/nodes" />
+      <NewNode path="/nodes/new" />
+      <EditNode path="/nodes/:nodeId" />
+      <NodesGraph path="/nodes/graph" />
       <NotFound default />
     </Content>
     <Footer gridArea="footer" />
