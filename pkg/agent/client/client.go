@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"time"
+	"net"
 
 	resty "github.com/go-resty/resty/v2"
 	wg "github.com/squat/kilo/pkg/wireguard"
+	ip "github.com/squat/kilo/pkg/iproute"
 )
 
 type client struct {
@@ -84,7 +86,6 @@ func (c *client) PollConfigServer() *Node {
 
 	n := &Node{}
 	err = json.Unmarshal(resp.Body(), n)
-
 	n.Interface.PrivateKey = c.config.WgKey
 
 	return n
@@ -113,7 +114,23 @@ func (c *client) Reconcile(n *Node) error {
 	fmt.Println("Reconciling Wireguard configuration state.")
 	c.wgConf = newConf
 
-	wg.ShowConf("wg0")
+	iface,_,err := wg.New("wg0")
+	if err != nil {
+		return err
+	}
+
+	_, ifaceAddr, err := net.ParseCIDR(n.Interface.Address)
+	if err != nil {
+		return err
+	}
+
+	if err = ip.SetAddress(iface, ifaceAddr); err != nil{
+		return err 
+	}
+
+	if err = wg.SetConf("wg0", path); err != nil{
+		return err 
+	}
 
 	return nil
 
@@ -125,7 +142,9 @@ func (c *client) Run() {
 		for {
 			time.Sleep(time.Duration(c.config.SyncInterval) * time.Second)
 			n := c.PollConfigServer()
-			c.Reconcile(n)
+			if err := c.Reconcile(n); err != nil{
+				fmt.Println(err.Error())
+			}
 		}
 	}()
 }
