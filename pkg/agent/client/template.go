@@ -7,23 +7,19 @@ import (
 )
 
 const tmpl = `[Interface]
-Address = {{ .Interface.Address }}
+{{ if .Interface.ListenPort -}}
 ListenPort = {{ .Interface.ListenPort }}
+{{end -}}
 PrivateKey = {{ .Interface.PrivateKey }}
 {{with .Peers}}
 {{ range . -}}
+[Peer]
 {{ if .Endpoint -}}
-[Peer]
 Endpoint = {{ .Endpoint }}
+{{end -}}
 PublicKey = {{ .PublicKey }}
 AllowedIPs = {{ .AllowedIPs }}
 PersistentKeepalive = {{ .PersistentKeepalive }}
-{{else -}}
-[Peer]
-PublicKey = {{ .PublicKey }}
-AllowedIPs = {{ .AllowedIPs }}
-PersistentKeepalive = {{ .PersistentKeepalive }}
-{{end}}
 {{end}}
 {{end}}
 `

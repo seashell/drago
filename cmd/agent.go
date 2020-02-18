@@ -120,6 +120,7 @@ func init() {
 
 	viper.SetDefault("bind_addr", "127.0.0.1")
 	viper.SetDefault("server_addr", "192.168.2.1/24")
+	viper.SetDefault("client.data_dir", "/tmp/drago")
 
 	// Bind viper configs to cobra flags
 	viper.BindPFlag("server", agentCmd.Flags().Lookup("server"))
