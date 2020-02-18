@@ -167,10 +167,11 @@ func (c *client) Run() {
 			n, err := c.PollConfigServer()
 			if err != nil {
 				fmt.Println(err.Error())
-			}
-			if err := c.Reconcile(n); err != nil{
-				fmt.Println(err.Error())
-			}
+			} else {
+				if err := c.Reconcile(n); err != nil{
+					fmt.Println(err.Error())
+				}
+			}			
 		}
 	}()
 }

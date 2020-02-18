@@ -23,10 +23,9 @@
 /Godeps/
 
 # End of https://www.gitignore.io/api/go
-/build/*
-/demo/*
+/build/
+/ui/build/
+/ui/node_modules/
+/vendor/
+/pkg/agent/statik/
 /wg0.conf
-/ui/build/*
-/ui/node_modules/*
-/vendor/*
-/pkg/agent/statik/*
