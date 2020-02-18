@@ -12,8 +12,14 @@ System requirements:
 
 
 ```
-go generate
-go build
+make release
+```
+
+For static release builds:
+
+
+```
+make release STATIC=1
 ```
 
 ## Usage
