@@ -20,6 +20,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
+	"sort"
 
 	"time"
 
@@ -46,31 +48,47 @@ var agentCmd = &cobra.Command{
 	Run: func(cmd *cobra.Command, args []string) {
 
 		if cfgFile == "" {
-			fmt.Println("==> No config file specified. Using default values.")
+			fmt.Println("==> No configuration files loaded")
 		}
 
-		fmt.Println("==> Starting drago agent...")
-		fmt.Println("==> drago agent configuration:")
-
-		fmt.Println("")
-		fmt.Println("	Interface: ", viper.GetString("iface"))
-		fmt.Println("	Address: ", viper.GetString("network"))
-		fmt.Println("	Server: ", viper.GetBool("server"))
-		fmt.Println("	Web UI: ", viper.GetBool("ui"))
-		fmt.Println("	Version: ", version.GetVersion().VersionNumber())
-		fmt.Println("")
-
-		if viper.GetBool("ui") {
-			fmt.Println("	UI: http://localhost:8080")
-		}
-
-		fmt.Println("")
-		fmt.Println("==> drago agent started! Log data will stream in below:")
-		fmt.Println("")
-
+		fmt.Println("==> Starting Drago agent...")
+	
 		var config agent.AgentConfig
 
 		viper.Unmarshal(&config)
+
+		// Create configuration info structure
+		info := make(map[string]string)
+		info["interface"] = viper.GetString("iface")
+		info["address"] = viper.GetString("network")
+		info["server"] = viper.GetString("server_addr")
+		if viper.GetBool("ui") {
+			info["web ui"] = "http://localhost:8080"
+		} else {
+			info["web ui"] = "false"
+		}
+		info["version"] =  version.GetVersion().VersionNumber()	
+
+		// Sort the keys for output
+		infoKeys := make([]string, 0, len(info))
+		for key := range info {
+			infoKeys = append(infoKeys, key)
+		}
+		sort.Strings(infoKeys)
+
+		// Agent configuration output
+		padding := 18
+		fmt.Println("==> Drago agent configuration:")
+		fmt.Println("")
+
+		for _, k := range infoKeys {
+			fmt.Println(fmt.Sprintf(
+				"%s%s: %s",
+				strings.Repeat(" ", padding-len(k)),
+				strings.Title(k),
+				info[k]))
+		}
+		fmt.Println("")
 
 		a, err := agent.NewAgent(config)
 		if err != nil {
@@ -79,7 +97,11 @@ var agentCmd = &cobra.Command{
 
 		var wait time.Duration
 
+		fmt.Println("==> Drago agent started! Log data will stream in below:")
+		fmt.Println("")
+		
 		a.Run()
+
 
 		c := make(chan os.Signal, 1)
 
