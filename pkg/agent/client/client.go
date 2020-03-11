@@ -114,7 +114,9 @@ func (c *client) PollConfigServer() (*Host, error) {
 		return nil, fmt.Errorf("Error unmarshalling Host: %v",err)
 	}
 	
-	h.Keys.PrivateKey = c.config.WgKey
+	h.Keys = c.host.Keys
+	h.AdvertiseAddr = c.host.AdvertiseAddr
+	h.Jwt = c.host.Jwt
 
 	return h, nil
 }
