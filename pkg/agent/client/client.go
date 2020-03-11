@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 	"net"
-	"net/http"
 
 	resty "github.com/go-resty/resty/v2"
 	wg "github.com/squat/kilo/pkg/wireguard"
@@ -43,6 +43,11 @@ func New(c ClientConfig) (*client, error) {
 
 	if isNew {
 		fmt.Println("New Wireguard interface created") //???
+	}
+
+	err = os.MkdirAll(c.DataDir, 0755)
+	if err != nil {
+		return nil, fmt.Errorf("%v",err)
 	}
 
 	dat, err := ioutil.ReadFile(c.DataDir + "/wg0.conf")
@@ -102,7 +107,7 @@ func (c *client) PollConfigServer() (*Host, error) {
 		return nil, fmt.Errorf("Error polling server: %v",err)
 	}
 
-	if resp.StatusCode() != http.StatusOK {
+	if resp.StatusCode() > 299 {
 		return nil, fmt.Errorf("Error polling server: %v %v", resp.StatusCode(), resp)
 	}
 

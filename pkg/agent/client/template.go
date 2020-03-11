@@ -2,7 +2,6 @@ package client
 
 import (
 	"bytes"
-	"path/filepath"
 	"html/template"
 	"os"
 )
@@ -11,14 +10,14 @@ const tmpl = `[Interface]
 {{ if .Interface.ListenPort -}}
 ListenPort = {{ .Interface.ListenPort }}
 {{end -}}
-PrivateKey = {{ .Keys.PrivateKey }}
+PrivateKey = {{ .Keys.PrivateKey | html }}
 {{with .Peers}}
 {{ range . -}}
 [Peer]
 {{ if .Endpoint -}}
 Endpoint = {{ .Endpoint }}
 {{end -}}
-PublicKey = {{ .PublicKey }}
+PublicKey = {{ .PublicKey | html }}
 AllowedIPs = {{ .AllowedIPs }}
 PersistentKeepalive = {{ .PersistentKeepalive }}
 {{end}}
@@ -27,13 +26,6 @@ PersistentKeepalive = {{ .PersistentKeepalive }}
 
 func templateToFile(tmpl string, path string, ctx interface{}) error {
 	
-	dir,_ := filepath.Split(path)
-
-	err := os.MkdirAll(dir, 0755)
-	if err != nil {
-		return err
-	}
-
 	f, err := os.Create(path)
 	if err != nil {
 		return err
