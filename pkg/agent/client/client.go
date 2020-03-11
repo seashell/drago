@@ -14,7 +14,6 @@ import (
 )
 
 type client struct {
-	key        string
 	config     ClientConfig
 	httpClient *resty.Client
 	wgConf     *wg.Conf
@@ -62,17 +61,20 @@ func New(c ClientConfig) (*client, error) {
 		}
 	}
 
-
 	// If a key already exists, use it. Otherwise generate a new one.
-	key := c.WgKey
-	if key == "" {
+	privateKey := c.WgKey
+	if privateKey == "" {
 		k, _ := wg.GenKey()
-		key = string(k)
+		privateKey = string(k)
 	}
+
+	h.Keys.PrivateKey = privateKey
+
+	publicKey, _ := wg.PubKey([]byte(privateKey))
+	h.Keys.PublicKey = string(publicKey)
 
 	return &client{
 		config:     c,
-		key:        key,
 		wgIface:    wgIface,
 		wgConf:     wg.Parse(dat),
 		httpClient: resty.New(),
@@ -87,9 +89,8 @@ func (c *client) PollConfigServer() (*Host, error) {
 	url := "http://" + c.config.ServerAddr + "/api/v1/host"
 
 	// Update the server with our current public key, to allow for key rotation
-	pk, _ := wg.PubKey([]byte(c.key))
 	body := map[string]string{
-		"publicKey": string(pk),
+		"publicKey": c.host.Keys.PublicKey,
 	}
 
 	resp, err := c.httpClient.R().
