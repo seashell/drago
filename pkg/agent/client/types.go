@@ -2,7 +2,7 @@ package client
 
 import "time"
 
-type NodeID = int
+type HostID = int
 
 type KeyPair struct {
 	PublicKey string `json:"publicKey,omitempty"`
@@ -28,8 +28,8 @@ type WireguardPeer struct {
 	PersistentKeepalive int    `json:"persistentKeepalive,omitempty"`
 }
 
-type Node struct {
-	ID        NodeID    `json:"id,omitempty"`
+type Host struct {
+	ID        HostID    `json:"id,omitempty"`
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 	UpdatedAt time.Time `json:"updatedAt,omitempty"`
 

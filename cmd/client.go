@@ -30,35 +30,6 @@ var clientCmd = &cobra.Command{
 	},
 }
 
-var listNodesCmd = &cobra.Command{
-	Use:   "list",
-	Short: "List peers",
-	Long:  `Command long description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("-> listing peers ")
-	},
-}
-
-var createNodeCmd = &cobra.Command{
-	Use:   "add",
-	Short: "Add peer",
-	Long:  `Command long description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		publicKey := args[0]
-		fmt.Println("-> adding peer ", publicKey)
-	},
-}
-
-var deleteNodeCmd = &cobra.Command{
-	Use:   "remove",
-	Short: "Remove peer",
-	Long:  `Command long description`,
-	Run: func(cmd *cobra.Command, args []string) {
-		publicKey := args[0]
-		fmt.Println("-> removing peer ", publicKey)
-	},
-}
-
 func init() {
 	// Here you will define your flags and configuration settings.
 
@@ -69,10 +40,6 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	// agentCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
-
-	clientCmd.AddCommand(createNodeCmd)
-	clientCmd.AddCommand(listNodesCmd)
-	clientCmd.AddCommand(deleteNodeCmd)
 
 	rootCmd.AddCommand(clientCmd)
 }
