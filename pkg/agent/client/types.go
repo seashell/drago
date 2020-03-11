@@ -4,16 +4,14 @@ import "time"
 
 type NodeID = int
 
-type Entity struct {
-	ID        NodeID    `json:"id,omitempty"`
-	CreatedAt time.Time `json:"createdAt,omitempty"`
-	UpdatedAt time.Time `json:"updatedAt,omitempty"`
+type KeyPair struct {
+	PublicKey string `json:"publicKey,omitempty"`
+	PrivateKey string  `json:"-"`
 }
 
 type WireguardInterface struct {
 	Address    string `json:"address,omitempty"`
 	ListenPort string `json:"listenPort,omitempty"`
-	PrivateKey string `json:"privateKey,omitempty"`
 	Table      string `json:"table,omitempty"`
 	DNS        string `json:"DNS,omitempty"`
 	MTU        string `json:"MTU,omitempty"`
@@ -31,14 +29,17 @@ type WireguardPeer struct {
 }
 
 type Node struct {
-	Entity
+	ID        NodeID    `json:"id,omitempty"`
+	CreatedAt time.Time `json:"createdAt,omitempty"`
+	UpdatedAt time.Time `json:"updatedAt,omitempty"`
+
 	Name string `json:"name,omitempty"`
 
 	Interface WireguardInterface `json:"interface,omitempty"`
 	Peers     []WireguardPeer    `json:"peers,omitempty"`
 
 	// Control fields
-	PublicKey     string `json:"publicKey,omitempty"`
+	Keys     KeyPair `json:"keys,omitempty"`
 	AdvertiseAddr string `json:"advertiseAddr,omitempty"`
 	Jwt           string `json:"jwt,omitempty"`
 }
