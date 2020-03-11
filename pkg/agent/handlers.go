@@ -23,24 +23,24 @@ func NewHandler(s storage.Store) (*Handler, error) {
 // *********  MGMT API  ***********
 // ********************************
 
-func (h *Handler) GetNode(c echo.Context) error {
+func (h *Handler) GetHost(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	n, err := h.store.SelectNode(id)
+	ht, err := h.store.SelectHost(id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, Error{"Requested resource does not exist"})
 	}
-	return c.JSON(http.StatusOK, n)
+	return c.JSON(http.StatusOK, ht)
 }
 
-func (h *Handler) GetAllNodes(c echo.Context) error {
+func (h *Handler) GetAllHosts(c echo.Context) error {
 
-	n, _ := h.store.SelectAllNodes()
-	ret := make([]*Node, 0)
+	hs, _ := h.store.SelectAllHosts()
+	ret := make([]*Host, 0)
 
 	// Map stored object to JSON
-	for _, v := range n {
+	for _, v := range hs {
 
-		n := &Node{
+		ht := &Host{
 			Entity: Entity{
 				ID:        v.ID,
 				CreatedAt: v.CreatedAt,
@@ -54,40 +54,40 @@ func (h *Handler) GetAllNodes(c echo.Context) error {
 				ListenPort: v.ListenPort,
 			},
 		}
-		ret = append(ret, n)
+		ret = append(ret, ht)
 	}
 
 	return c.JSON(http.StatusOK, ret)
 }
 
-func (h *Handler) CreateNode(c echo.Context) error {
+func (h *Handler) CreateHost(c echo.Context) error {
 
-	n := Node{}
-	if err := c.Bind(&n); err != nil {
+	ht := Host{}
+	if err := c.Bind(&ht); err != nil {
 		return c.JSON(http.StatusBadRequest, Error{"Bad request"})
 	}
 
-	nn, err := h.store.InsertNode(&storage.Node{Name: n.Name})
+	nht, err := h.store.InsertHost(&storage.Host{Name: ht.Name})
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, Error{err.Error()})
 	}
 
-	jwt, err := generatwJwtToken("node", nn.ID, nn.Name)
+	jwt, err := generatwJwtToken("host", nht.ID, nht.Name)
 
-	return c.JSON(http.StatusOK, Node{
+	return c.JSON(http.StatusOK, Host{
 		Entity: Entity{
-			ID:        nn.ID,
-			CreatedAt: nn.CreatedAt,
-			UpdatedAt: nn.UpdatedAt,
+			ID:        nht.ID,
+			CreatedAt: nht.CreatedAt,
+			UpdatedAt: nht.UpdatedAt,
 		},
-		Name: nn.Name,
+		Name: nht.Name,
 		Jwt:  jwt,
 	})
 }
 
-func (h *Handler) DeleteNode(c echo.Context) error {
+func (h *Handler) DeleteHost(c echo.Context) error {
 	id, _ := strconv.Atoi(c.Param("id"))
-	err := h.store.DeleteNode(id)
+	err := h.store.DeleteHost(id)
 	if err != nil {
 		return c.JSON(http.StatusNotFound, Error{"Requested resource does not exist"})
 	}
@@ -118,28 +118,28 @@ func generatwJwtToken(k string, i int, l string) (string, error) {
 }
 
 // ********************************
-// *********  NODE API  ***********
+// *********  HOST API  ***********
 // ********************************
 
-func (h *Handler) SyncNode(c echo.Context) error {
+func (h *Handler) SyncHost(c echo.Context) error {
 
 	cli := c.Get("client").(*jwt.Token)
 
 	claims := cli.Claims.(*DragoClaims)
 
-	if tp := claims.Kind; tp != "node" {
-		return c.JSON(http.StatusBadRequest, Error{"Not a valid node"})
+	if tp := claims.Kind; tp != "host" {
+		return c.JSON(http.StatusBadRequest, Error{"Not a valid host"})
 	}
 
 	id := claims.ID
 
-	n, err := h.store.SelectNode(id)
+	ht, err := h.store.SelectHost(id)
 
 	if err != nil {
 		return c.JSON(http.StatusNotFound, Error{"Could not find object matching the presented claims"})
 	}
 
-	peers, err := h.store.SelectAllPeersForNode(id)
+	peers, err := h.store.SelectAllPeersForHost(id)
 
 	retPeers := make([]WireguardPeer, 0)
 
@@ -152,20 +152,20 @@ func (h *Handler) SyncNode(c echo.Context) error {
 		})
 	}
 
-	ret := &Node{
+	ret := &Host{
 		Entity: Entity{
-			ID:        n.ID,
-			CreatedAt: n.CreatedAt,
-			UpdatedAt: n.UpdatedAt,
+			ID:        ht.ID,
+			CreatedAt: ht.CreatedAt,
+			UpdatedAt: ht.UpdatedAt,
 		},
 
-		Name:          n.Name,
-		PublicKey:     n.PublicKey,
-		AdvertiseAddr: n.AdvertiseAddr,
+		Name:          ht.Name,
+		PublicKey:     ht.PublicKey,
+		AdvertiseAddr: ht.AdvertiseAddr,
 
 		Interface: WireguardInterface{
-			Address:    n.Address,
-			ListenPort: n.ListenPort,
+			Address:    ht.Address,
+			ListenPort: ht.ListenPort,
 		},
 		Peers: retPeers,
 	}

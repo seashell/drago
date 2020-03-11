@@ -9,7 +9,7 @@ type Peer struct {
 	PersistentKeepalive int
 }
 
-type Node struct {
+type Host struct {
 	ID   int
 	Name string
 
@@ -32,7 +32,7 @@ type Node struct {
 	UpdatedAt time.Time
 }
 
-type Edge struct {
+type Link struct {
 	ID int
 
 	Source int
@@ -46,17 +46,17 @@ type Edge struct {
 }
 
 type Store interface {
-	SelectAllNodes() (map[int]*Node, error)
-	SelectNode(int) (*Node, error)
-	DeleteNode(int) error
-	InsertNode(*Node) (*Node, error)
-	UpdateNode(int, *Node) (*Node, error)
+	SelectAllHosts() (map[int]*Host, error)
+	SelectHost(int) (*Host, error)
+	DeleteHost(int) error
+	InsertHost(*Host) (*Host, error)
+	UpdateHost(int, *Host) (*Host, error)
 
-	SelectAllPeersForNode(id int) ([]*Peer, error)
+	SelectAllPeersForHost(id int) ([]*Peer, error)
 
-	SelectAllEdges() (map[int]*Edge, error)
-	SelectEdge(int) (*Edge, error)
-	DeleteEdge(int) error
-	InsertEdge(*Edge) (*Edge, error)
-	UpdateEdge(int, *Edge) (*Edge, error)
+	SelectAllLinks() (map[int]*Link, error)
+	SelectLink(int) (*Link, error)
+	DeleteLink(int) error
+	InsertLink(*Link) (*Link, error)
+	UpdateLink(int, *Link) (*Link, error)
 }

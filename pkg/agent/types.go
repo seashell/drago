@@ -2,10 +2,10 @@ package agent
 
 import "time"
 
-type NodeID = int
+type HostID = int
 
 type Entity struct {
-	ID        NodeID    `json:"id,omitempty"`
+	ID        HostID    `json:"id,omitempty"`
 	CreatedAt time.Time `json:"createdAt,omitempty"`
 	UpdatedAt time.Time `json:"updatedAt,omitempty"`
 }
@@ -30,7 +30,7 @@ type WireguardPeer struct {
 	PersistentKeepalive int    `json:"persistentKeepalive,omitempty"`
 }
 
-type Node struct {
+type Host struct {
 	Entity
 	Name string `json:"name,omitempty"`
 

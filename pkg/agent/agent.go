@@ -138,10 +138,10 @@ func (a *agent) serveManagementAPI() {
 
 	mgmt := e.Group("/api/v1")
 
-	mgmt.GET("/nodes", h.GetAllNodes)
-	mgmt.POST("/nodes", h.CreateNode)
-	mgmt.GET("/nodes/:id", h.GetNode)
-	mgmt.DELETE("/nodes/:id", h.DeleteNode)
+	mgmt.GET("/hosts", h.GetAllHosts)
+	mgmt.POST("/hosts", h.CreateHost)
+	mgmt.GET("/hosts/:id", h.GetHost)
+	mgmt.DELETE("/hosts/:id", h.DeleteHost)
 	mgmt.GET("/version", h.GetVersion)
 
 	e.Logger.Fatal(e.StartServer(&http.Server{
@@ -175,7 +175,7 @@ func (a *agent) serveDeviceAPI() {
 		log.Fatal(err)
 	}
 
-	e.POST("/api/v1/node", h.SyncNode)
+	e.POST("/api/v1/host", h.SyncHost)
 
 	e.Logger.Fatal(e.StartServer(&http.Server{
 		Addr:         ":8181",
@@ -186,7 +186,7 @@ func (a *agent) serveDeviceAPI() {
 }
 
 func populateStore(s storage.Store) {
-	s.InsertNode(&storage.Node{
+	s.InsertHost(&storage.Host{
 		Name:          "raspberry-pi-1",
 		AdvertiseAddr: "127.0.0.1",
 		PublicKey:     "PrlPdb7udp9rliCmQ2z5CerXVLeYWiynLgj32jlhek8=",
@@ -194,31 +194,31 @@ func populateStore(s storage.Store) {
 		ListenPort:    "51820",
 	})
 
-	s.InsertNode(&storage.Node{
+	s.InsertHost(&storage.Host{
 		Name:      "raspberry-pi-2",
 		PublicKey: "nAjpVPq6nS8SpPw7MbajIjIckTun6CwNnSZD30M9njo=",
 		Address:   "192.168.2.2/24",
 	})
 
-	s.InsertNode(&storage.Node{
+	s.InsertHost(&storage.Host{
 		Name:      "raspberry-pi-3",
 		PublicKey: "i2tdRKD7ObUrfLmJ4y6ZuBFvLLSTJe1mQvCZELYaqng=",
 		Address:   "192.168.2.3/24",
 	})
 
-	s.InsertEdge(&storage.Edge{
+	s.InsertLink(&storage.Link{
 		Source:              1,
 		Target:              2,
 		PersistentKeepalive: 20,
 	})
 
-	s.InsertEdge(&storage.Edge{
+	s.InsertLink(&storage.Link{
 		Source:              1,
 		Target:              3,
 		PersistentKeepalive: 20,
 	})
 
-	s.InsertEdge(&storage.Edge{
+	s.InsertLink(&storage.Link{
 		Source:              2,
 		Target:              3,
 		PersistentKeepalive: 20,

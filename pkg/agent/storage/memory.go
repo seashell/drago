@@ -7,75 +7,75 @@ import (
 )
 
 type inMemoryStore struct {
-	nodes map[int]*Node
-	edges map[int]*Edge
+	hosts map[int]*Host
+	links map[int]*Link
 	seq   int
-	seqe  int
+	seql  int
 }
 
 func NewInMemoryStore() (*inMemoryStore, error) {
 	return &inMemoryStore{
-		nodes: make(map[int]*Node, 0),
-		edges: make(map[int]*Edge, 0),
+		hosts: make(map[int]*Host, 0),
+		links: make(map[int]*Link, 0),
 		seq:   1,
-		seqe:  1,
+		seql:  1,
 	}, nil
 }
 
 // ********************************
-// ***********  NODES  ************
+// ***********  HOSTS  ************
 // ********************************
 
-func (s *inMemoryStore) SelectAllNodes() (map[int]*Node, error) {
-	return s.nodes, nil
+func (s *inMemoryStore) SelectAllHosts() (map[int]*Host, error) {
+	return s.hosts, nil
 }
 
-func (s *inMemoryStore) SelectNode(id int) (*Node, error) {
-	if n, ok := s.nodes[id]; ok {
-		return n, nil
+func (s *inMemoryStore) SelectHost(id int) (*Host, error) {
+	if h, ok := s.hosts[id]; ok {
+		return h, nil
 	}
 	return nil, errors.New("Object not found")
 }
 
-func (s *inMemoryStore) DeleteNode(id int) error {
-	if _, found := s.nodes[id]; found {
-		delete(s.nodes, id)
+func (s *inMemoryStore) DeleteHost(id int) error {
+	if _, found := s.hosts[id]; found {
+		delete(s.hosts, id)
 		return nil
 	}
 	return errors.New("Object not found")
 }
 
-func (s *inMemoryStore) UpdateNode(id int, u *Node) (*Node, error) {
+func (s *inMemoryStore) UpdateHost(id int, uh *Host) (*Host, error) {
 
-	n, found := s.nodes[id]
+	h, found := s.hosts[id]
 
 	if !found {
 		return nil, errors.New("Object not found")
 	}
 
-	n.PublicKey = u.PublicKey
-	n.UpdatedAt = time.Now()
+	h.PublicKey = uh.PublicKey
+	h.UpdatedAt = time.Now()
 
-	return n, nil
+	return h, nil
 }
 
-func (s *inMemoryStore) InsertNode(n *Node) (*Node, error) {
+func (s *inMemoryStore) InsertHost(h *Host) (*Host, error) {
 
-	for _, v := range s.nodes {
-		if v.Name == n.Name {
+	for _, v := range s.hosts {
+		if v.Name == h.Name {
 			return nil, errors.New("Attribute 'name' must be unique")
 		}
 	}
 
-	n.ID = s.seq
-	n.CreatedAt = time.Now()
-	n.UpdatedAt = time.Now()
+	h.ID = s.seq
+	h.CreatedAt = time.Now()
+	h.UpdatedAt = time.Now()
 
-	s.nodes[s.seq] = n
+	s.hosts[s.seq] = h
 
 	s.seq += 1
 
-	return n, nil
+	return h, nil
 }
 
 // ********************************
@@ -83,23 +83,23 @@ func (s *inMemoryStore) InsertNode(n *Node) (*Node, error) {
 // ********************************
 
 // TODO: move part of the logic below to the API level
-func (s *inMemoryStore) SelectAllPeersForNode(id int) ([]*Peer, error) {
+func (s *inMemoryStore) SelectAllPeersForHost(id int) ([]*Peer, error) {
 
 	peers := make([]*Peer, 0)
 	fmt.Println("id", id)
-	for _, v := range s.edges {
+	for _, v := range s.links {
 		if v.Source == id {
 			peers = append(peers, &Peer{
-				Endpoint:            s.nodes[v.Target].AdvertiseAddr + s.nodes[v.Target].ListenPort,
-				AllowedIPs:          s.nodes[v.Target].Address,
-				PublicKey:           s.nodes[v.Target].PublicKey,
+				Endpoint:            s.hosts[v.Target].AdvertiseAddr + s.hosts[v.Target].ListenPort,
+				AllowedIPs:          s.hosts[v.Target].Address,
+				PublicKey:           s.hosts[v.Target].PublicKey,
 				PersistentKeepalive: v.PersistentKeepalive,
 			})
 		} else if v.Target == id {
 			peers = append(peers, &Peer{
-				Endpoint:            s.nodes[v.Source].AdvertiseAddr + s.nodes[v.Source].ListenPort,
-				AllowedIPs:          s.nodes[v.Source].Address,
-				PublicKey:           s.nodes[v.Source].PublicKey,
+				Endpoint:            s.hosts[v.Source].AdvertiseAddr + s.hosts[v.Source].ListenPort,
+				AllowedIPs:          s.hosts[v.Source].Address,
+				PublicKey:           s.hosts[v.Source].PublicKey,
 				PersistentKeepalive: v.PersistentKeepalive,
 			})
 		}
@@ -109,56 +109,56 @@ func (s *inMemoryStore) SelectAllPeersForNode(id int) ([]*Peer, error) {
 }
 
 // ********************************
-// ***********  EDGES  ************
+// ***********  LINKS  ************
 // ********************************
 
-func (s *inMemoryStore) SelectAllEdges() (map[int]*Edge, error) {
-	return s.edges, nil
+func (s *inMemoryStore) SelectAllLinks() (map[int]*Link, error) {
+	return s.links, nil
 }
 
-func (s *inMemoryStore) SelectEdge(id int) (*Edge, error) {
-	if e, ok := s.edges[id]; ok {
-		return e, nil
+func (s *inMemoryStore) SelectLink(id int) (*Link, error) {
+	if l, ok := s.links[id]; ok {
+		return l, nil
 	}
 	return nil, errors.New("Object not found")
 }
 
-func (s *inMemoryStore) DeleteEdge(id int) error {
-	if _, found := s.edges[id]; found {
-		delete(s.edges, id)
+func (s *inMemoryStore) DeleteLink(id int) error {
+	if _, found := s.links[id]; found {
+		delete(s.links, id)
 		return nil
 	}
 	return errors.New("Object not found")
 }
 
-func (s *inMemoryStore) UpdateEdge(id int, u *Edge) (*Edge, error) {
+func (s *inMemoryStore) UpdateLink(id int, ul *Link) (*Link, error) {
 
-	e, found := s.edges[id]
+	l, found := s.links[id]
 
 	if !found {
 		return nil, errors.New("Object not found")
 	}
 
-	return e, nil
+	return l, nil
 }
 
-func (s *inMemoryStore) InsertEdge(e *Edge) (*Edge, error) {
+func (s *inMemoryStore) InsertLink(l *Link) (*Link, error) {
 
-	for _, v := range s.edges {
-		if v.Source == e.Source && v.Target == e.Target {
-			return nil, errors.New("Redundant edge")
-		} else if v.Source == e.Target && v.Target == e.Source {
-			return nil, errors.New("Redundant edge")
+	for _, v := range s.links {
+		if v.Source == l.Source && v.Target == l.Target {
+			return nil, errors.New("Redundant link")
+		} else if v.Source == l.Target && v.Target == l.Source {
+			return nil, errors.New("Redundant link")
 		}
 	}
 
-	e.ID = s.seqe
-	e.CreatedAt = time.Now()
-	e.UpdatedAt = time.Now()
+	l.ID = s.seql
+	l.CreatedAt = time.Now()
+	l.UpdatedAt = time.Now()
 
-	s.edges[s.seqe] = e
+	s.links[s.seql] = l
 
-	s.seqe += 1
+	s.seql += 1
 
-	return e, nil
+	return l, nil
 }

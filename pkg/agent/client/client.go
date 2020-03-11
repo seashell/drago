@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"time"
 	"net"
 
@@ -13,12 +14,11 @@ import (
 )
 
 type client struct {
-	key        string
 	config     ClientConfig
 	httpClient *resty.Client
 	wgConf     *wg.Conf
 	wgIface    int
-	node	   *Node
+	host	   *Host
 }
 
 type ClientConfig struct {
@@ -42,7 +42,12 @@ func New(c ClientConfig) (*client, error) {
 	}
 
 	if isNew {
-		fmt.Println("New Wireguard interface create") //???
+		fmt.Println("New Wireguard interface created") //???
+	}
+
+	err = os.MkdirAll(c.DataDir, 0755)
+	if err != nil {
+		return nil, fmt.Errorf("%v",err)
 	}
 
 	dat, err := ioutil.ReadFile(c.DataDir + "/wg0.conf")
@@ -50,45 +55,47 @@ func New(c ClientConfig) (*client, error) {
 		fmt.Println("Error reading Wireguard config file: ",err)
 	}
 
-	n := &Node{}
-	node, err := ioutil.ReadFile(c.DataDir + "/wg0.json")
+	h := &Host{}
+	host, err := ioutil.ReadFile(c.DataDir + "/wg0.json")
 	if err != nil {
-		fmt.Println("Error reading node JSON file: ",err)
+		fmt.Println("Error reading host JSON file: ",err)
 	} else {
-		err = json.Unmarshal(node, n)
+		err = json.Unmarshal(host, h)
 		if err != nil {
-			fmt.Println("Error unmarshalling node JSON: ",err)
+			fmt.Println("Error unmarshalling host JSON: ",err)
 		}
 	}
 
-
 	// If a key already exists, use it. Otherwise generate a new one.
-	key := c.WgKey
-	if key == "" {
+	privateKey := c.WgKey
+	if privateKey == "" {
 		k, _ := wg.GenKey()
-		key = string(k)
+		privateKey = string(k)
 	}
+
+	h.Keys.PrivateKey = privateKey
+
+	publicKey, _ := wg.PubKey([]byte(privateKey))
+	h.Keys.PublicKey = string(publicKey)
 
 	return &client{
 		config:     c,
-		key:        key,
 		wgIface:    wgIface,
 		wgConf:     wg.Parse(dat),
 		httpClient: resty.New(),
-		node:		n,
+		host:		h,
 	}, nil
 
 }
 
 
-func (c *client) PollConfigServer() (*Node, error) {
+func (c *client) PollConfigServer() (*Host, error) {
 
-	url := "http://" + c.config.ServerAddr + "/api/v1/node"
+	url := "http://" + c.config.ServerAddr + "/api/v1/host"
 
 	// Update the server with our current public key, to allow for key rotation
-	pk, _ := wg.PubKey([]byte(c.key))
 	body := map[string]string{
-		"publicKey": string(pk),
+		"publicKey": c.host.Keys.PublicKey,
 	}
 
 	resp, err := c.httpClient.R().
@@ -100,27 +107,39 @@ func (c *client) PollConfigServer() (*Node, error) {
 		return nil, fmt.Errorf("Error polling server: %v",err)
 	}
 
-	n := &Node{}
-	err = json.Unmarshal(resp.Body(), n)
-	n.Interface.PrivateKey = c.config.WgKey
+	if resp.StatusCode() > 299 {
+		return nil, fmt.Errorf("Error polling server: %v %v", resp.StatusCode(), resp)
+	}
 
-	return n, nil
+
+	h := &Host{}
+	err = json.Unmarshal(resp.Body(), h)
+	
+	if err != nil {
+		return nil, fmt.Errorf("Error unmarshalling Host: %v",err)
+	}
+	
+	h.Keys = c.host.Keys
+	h.AdvertiseAddr = c.host.AdvertiseAddr
+	h.Jwt = c.host.Jwt
+
+	return h, nil
 }
 
-func (c *client) Reconcile(n *Node) error {
+func (c *client) Reconcile(h *Host) error {
 
-	if n.Interface.Address != c.node.Interface.Address {
+	if h.Interface.Address != c.host.Interface.Address {
 
 		path := c.config.DataDir+"/wg0.json"
-		buf, err := json.Marshal(n)
+		buf, err := json.Marshal(h)
 		if err != nil {
 			return fmt.Errorf("Error formatting JSON: %v",err)
 		}
 		if err := ioutil.WriteFile(path, buf, 0600); err != nil {
-			return fmt.Errorf("Error writing node JSON to file: %v",err)
+			return fmt.Errorf("Error writing host JSON to file: %v",err)
 		}
 
-		_, ifaceAddr, err := net.ParseCIDR(n.Interface.Address)
+		_, ifaceAddr, err := net.ParseCIDR(h.Interface.Address)
 		if err != nil {
 			return fmt.Errorf("Error parsing interface CIDR: %v",err)
 		}
@@ -129,10 +148,10 @@ func (c *client) Reconcile(n *Node) error {
 			return fmt.Errorf("Error setting interface IP address: %v",err)
 		}	
 
-		c.node = n
+		c.host = h
 	}
 
-	conf, err := templateToString(tmpl, n)
+	conf, err := templateToString(tmpl, h)
 	if err != nil {
 		return fmt.Errorf("Error converting Wireguard config to string: %v",err)
 	}
@@ -141,7 +160,7 @@ func (c *client) Reconcile(n *Node) error {
 	if equal := newConf.Equal(c.wgConf); !equal {
 
 		path := c.config.DataDir+"/wg0.conf"
-		if err := templateToFile(tmpl, path, n); err != nil {
+		if err := templateToFile(tmpl, path, h); err != nil {
 			return fmt.Errorf("Error writing Wireguard config to file: %v",err)
 		}
 		
@@ -164,11 +183,11 @@ func (c *client) Run() {
 	go func() {
 		for {
 			time.Sleep(time.Duration(c.config.SyncInterval) * time.Second)
-			n, err := c.PollConfigServer()
+			h, err := c.PollConfigServer()
 			if err != nil {
 				fmt.Println(err.Error())
 			} else {
-				if err := c.Reconcile(n); err != nil{
+				if err := c.Reconcile(h); err != nil{
 					fmt.Println(err.Error())
 				}
 			}			
