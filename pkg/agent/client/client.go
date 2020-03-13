@@ -27,7 +27,9 @@ type ClientConfig struct {
 	ServerAddr   string `mapstructure:"server_addr"`
 	WgKey        string `mapstructure:"wg_key"`
 	Jwt          string `mapstructure:"jwt"`
+	//top-level fields
 	DataDir		 string `mapstructure:"data_dir"`
+	Iface        string `mapstructure:"iface"`
 }
 
 type Client interface {
@@ -36,13 +38,13 @@ type Client interface {
 
 func New(c ClientConfig) (*client, error) {
 
-	wgIface, isNew, err := wg.New("wg0")
+	wgIface, isNew, err := wg.New(c.Iface)
 	if err != nil {
 		return nil, fmt.Errorf("%v",err)
 	}
 
 	if isNew {
-		fmt.Println("New Wireguard interface created") //???
+		fmt.Println("New Wireguard interface created")
 	}
 
 	err = os.MkdirAll(c.DataDir, 0755)
@@ -50,13 +52,13 @@ func New(c ClientConfig) (*client, error) {
 		return nil, fmt.Errorf("%v",err)
 	}
 
-	dat, err := ioutil.ReadFile(c.DataDir + "/wg0.conf")
+	dat, err := ioutil.ReadFile(c.DataDir + "/"+ c.Iface +".conf")
 	if err != nil {
 		fmt.Println("Error reading Wireguard config file: ",err)
 	}
 
 	h := &Host{}
-	host, err := ioutil.ReadFile(c.DataDir + "/wg0.json")
+	host, err := ioutil.ReadFile(c.DataDir + "/" + c.Iface + ".json")
 	if err != nil {
 		fmt.Println("Error reading host JSON file: ",err)
 	} else {
@@ -130,7 +132,7 @@ func (c *client) Reconcile(h *Host) error {
 
 	if h.Interface.Address != c.host.Interface.Address {
 
-		path := c.config.DataDir+"/wg0.json"
+		path := c.config.DataDir+"/"+c.config.Iface+".json"
 		buf, err := json.Marshal(h)
 		if err != nil {
 			return fmt.Errorf("Error formatting JSON: %v",err)
@@ -159,12 +161,12 @@ func (c *client) Reconcile(h *Host) error {
 	newConf := wg.Parse([]byte(conf))
 	if equal := newConf.Equal(c.wgConf); !equal {
 
-		path := c.config.DataDir+"/wg0.conf"
+		path := c.config.DataDir+"/"+c.config.Iface+".conf"
 		if err := templateToFile(tmpl, path, h); err != nil {
 			return fmt.Errorf("Error writing Wireguard config to file: %v",err)
 		}
 		
-		if err = wg.SetConf("wg0", path); err != nil{
+		if err = wg.SetConf(c.config.Iface, path); err != nil{
 			return fmt.Errorf("Error applying Wiregard conf: %v",err)
 		}
 

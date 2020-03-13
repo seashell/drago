@@ -60,8 +60,7 @@ var agentCmd = &cobra.Command{
 		// Create configuration info structure
 		info := make(map[string]string)
 		info["interface"] = viper.GetString("iface")
-		info["address"] = viper.GetString("network")
-		info["server"] = viper.GetString("server_addr")
+		info["data dir"] = viper.GetString("data_dir")
 		if viper.GetBool("ui") {
 			info["web ui"] = "http://localhost:8080"
 		} else {
@@ -134,15 +133,11 @@ func init() {
 	// Declare flags
 	agentCmd.Flags().BoolP("server", "s", false, "Start agent in server mode")
 	agentCmd.Flags().BoolP("client", "c", true, "Start agent in client mode")
-	agentCmd.Flags().Bool("ui", true, "Serve web UI for configuration")
+	agentCmd.Flags().Bool("ui", false, "Serve web UI for configuration")
 
 	// Set default values for configs not exposed through flags
 	viper.SetDefault("iface", "wg0")
-	viper.SetDefault("network", "192.168.2.0/24")
-
-	viper.SetDefault("bind_addr", "127.0.0.1")
-	viper.SetDefault("server_addr", "192.168.2.1/24")
-	viper.SetDefault("client.data_dir", "/tmp/drago")
+	viper.SetDefault("data_dir", "/var/lib/drago")
 
 	// Bind viper configs to cobra flags
 	viper.BindPFlag("server", agentCmd.Flags().Lookup("server"))

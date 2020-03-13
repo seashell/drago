@@ -44,6 +44,7 @@ type agent struct {
 type AgentConfig struct {
 	Ui     bool   `mapstructure:"ui"`
 	Iface  string `mapstructure:"iface"`
+	DataDir string `mapstructure:"data_dir"`
 	Server struct {
 		Enabled  bool   `mapstructure:"enabled"`
 		BindAddr string `mapstructure:"bind_addr"`
@@ -73,6 +74,10 @@ func (a *agent) Run() {
 
 	// Run drago client
 	if a.config.Client.Enabled {
+
+		a.config.Client.DataDir = a.config.DataDir
+		a.config.Client.Iface = a.config.Iface
+
 		c, err := client.New(a.config.Client)
 		if err != nil {
 			log.Error(err)
