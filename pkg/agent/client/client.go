@@ -47,7 +47,7 @@ func New(c ClientConfig) (*client, error) {
 		fmt.Println("New Wireguard interface created")
 	}
 
-	err = os.MkdirAll(c.DataDir, 0755)
+	err = os.MkdirAll(c.DataDir, 0600)
 	if err != nil {
 		return nil, fmt.Errorf("%v",err)
 	}

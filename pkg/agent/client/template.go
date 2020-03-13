@@ -31,6 +31,11 @@ func templateToFile(tmpl string, path string, ctx interface{}) error {
 		return err
 	}
 
+	err = f.Chmod(0600)
+	if err != nil {
+		return err
+	}
+
 	defer f.Close()
 	t := template.Must(template.New("").Parse(tmpl))
 
