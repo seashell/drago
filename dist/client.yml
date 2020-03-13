@@ -1,0 +1,14 @@
+ui: false                             # UI disabled (not yet supported on client)
+
+client:
+    enabled: true                     # Client enabled
+    server_addr: "5e3c7fe7a49e540014dc03ef.mockapi.io"     # Server address and port
+    sync_interval: 1                  # Synchronization interval
+    wg_key: "" # Wireguard private key (leave empty for auto-generated key)
+    jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwia2luZCI6Im5vZGUiLCJsYWJlbCI6InJhc3BiZXJyeS1waS0xIn0.orYn6ZNRkflE2uNvFFwDU-XuNRKlE6mPos9JrWMuKJM" # JWT issued by the server for this specific client
+
+server:
+    enabled: false  # Server disabled
+
+
+
