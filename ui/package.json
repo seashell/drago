@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "start": "react-app-rewired start",
-    "clean": "rm -rf build",
+    "github.com/seashell/drago": "rm -rf build",
     "build": "react-app-rewired build",
     "eject": "react-scripts eject",
     "now-build": "yarn build",

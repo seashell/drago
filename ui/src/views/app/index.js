@@ -2,15 +2,15 @@ import React from 'react'
 import styled from 'styled-components'
 
 import NotFound from '_views/not-found'
-import NodesView from '_views/nodes'
-import NodesGraph from '_views/nodes-graph'
-import NewNode from '_views/new-node'
+import HostsView from '_views/hosts'
+import Topology from '_views/topology'
+import NewHost from '_views/new-host'
 
 import Header from '_containers/header'
 import Footer from '_containers/footer'
 
 import { Router } from '@reach/router'
-import EditNode from '_views/edit-node'
+import EditHost from '_views/edit-host'
 
 const Dashboard = styled.div`
   position: relative;
@@ -38,10 +38,10 @@ const App = () => (
   <Dashboard>
     <Header />
     <Content>
-      <NodesView path="/nodes" />
-      <NewNode path="/nodes/new" />
-      <EditNode path="/nodes/:nodeId" />
-      <NodesGraph path="/nodes/graph" />
+      <HostsView path="/hosts" />
+      <NewHost path="/hosts/new" />
+      <EditHost path="/hosts/:hostId" />
+      <Topology path="/topology" />
       <NotFound default />
     </Content>
     <Footer gridArea="footer" />
