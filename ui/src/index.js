@@ -3,6 +3,7 @@ import ReactDOM from 'react-dom'
 
 import { ApolloProvider } from 'react-apollo'
 import { ThemeProvider } from 'styled-components'
+import { ModalProvider } from 'styled-react-modal'
 import { ToastContainer } from '_components/toast'
 
 import Router from './router'
@@ -15,9 +16,11 @@ const theme = 'light'
 ReactDOM.render(
   <ApolloProvider client={client}>
     <ThemeProvider theme={themes[theme]}>
-      <GlobalStyles />
-      <Router />
-      <ToastContainer />
+      <ModalProvider>
+        <GlobalStyles />
+        <Router />
+        <ToastContainer />
+      </ModalProvider>
     </ThemeProvider>
   </ApolloProvider>,
   document.getElementById('root')

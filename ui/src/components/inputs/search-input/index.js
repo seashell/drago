@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 import styled from 'styled-components'
-import { layout, space, border } from 'styled-system'
+import { layout, space, border, color } from 'styled-system'
 
 import { icons } from '_assets/'
 
@@ -41,15 +41,16 @@ const Container = styled.div`
   ${layout}
   ${space}
   ${border}
+  ${color}
 
   ${StyledInput}:focus + ${StyledIcon}{
     fill: ${({ theme: { colors } }) => colors.primary};
   }
 `
 
-const SearchInput = ({ placeholder, value, ...props }) => (
+const SearchInput = ({ ...props }) => (
   <Container {...props}>
-    <StyledInput ref={props.innerRef} placeholder={placeholder} value={value} />
+    <StyledInput ref={props.innerRef} {...props} />
     <StyledIcon />
   </Container>
 )

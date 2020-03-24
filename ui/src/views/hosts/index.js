@@ -1,11 +1,11 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import styled from 'styled-components'
 
 import { navigate } from '@reach/router'
 
 import { useQuery, useMutation } from 'react-apollo'
 
-import { GET_NODES, DELETE_NODE } from '_graphql/actions'
+import { GET_HOSTS, DELETE_HOST } from '_graphql/actions'
 import { Dragon } from '_components/spinner'
 import Text from '_components/text'
 import Flex from '_components/flex'
@@ -13,7 +13,7 @@ import toast from '_components/toast'
 import Button from '_components/button'
 import Box from '_components/box'
 
-import NodesList from './nodes-list'
+import HostsList from './hosts-list'
 
 const Container = styled(Flex)`
   flex-direction: column;
@@ -21,44 +21,48 @@ const Container = styled(Flex)`
 
 export const StyledButton = styled(Button)``
 
-const NodesView = () => {
-  const { loading, data, refetch } = useQuery(GET_NODES)
+const HostsView = () => {
+  const { loading, data, refetch } = useQuery(GET_HOSTS)
 
-  const handleNodeDeleted = () => {
-    toast.success('Node deleted')
+  useEffect(() => {
+    refetch()
+  })
+
+  const handleHostDeleted = () => {
+    toast.success('Host deleted')
     refetch()
   }
 
-  const handleNodeDeleteError = () => {
-    toast.error('Error deleting node')
+  const handleHostDeleteError = () => {
+    toast.error('Error deleting host')
   }
 
-  const [deleteNode, { loading: deleting }] = useMutation(DELETE_NODE, {
+  const [deleteHost, { loading: deleting }] = useMutation(DELETE_HOST, {
     variables: { id: undefined },
-    onCompleted: handleNodeDeleted,
-    onError: handleNodeDeleteError,
+    onCompleted: handleHostDeleted,
+    onError: handleHostDeleteError,
   })
 
-  const handleNodeSelect = id => {
-    navigate(`/nodes/${id}`)
+  const handleHostSelect = id => {
+    navigate(`/hosts/${id}`)
   }
 
-  const handleNodeDelete = (e, id) => {
+  const handleHostDelete = (e, id) => {
     e.preventDefault()
     e.stopPropagation()
-    deleteNode({ variables: { id } })
+    deleteHost({ variables: { id } })
   }
 
-  const handleCreateNodeClick = () => {
-    navigate('/nodes/new')
+  const handleCreateHostClick = () => {
+    navigate('/hosts/new')
   }
 
   return (
     <Container>
       <Box mb={3}>
-        <Text textStyle="title">Nodes</Text>
+        <Text textStyle="title">Hosts</Text>
         <Button
-          onClick={handleCreateNodeClick}
+          onClick={handleCreateHostClick}
           variant="primary"
           borderRadius={3}
           width="100px"
@@ -71,14 +75,14 @@ const NodesView = () => {
       {loading || deleting ? (
         <Dragon />
       ) : (
-        <NodesList
-          nodes={data.result.items}
-          onNodeSelect={handleNodeSelect}
-          onNodeDelete={handleNodeDelete}
+        <HostsList
+          hosts={data.result.items}
+          onHostSelect={handleHostSelect}
+          onHostDelete={handleHostDelete}
         />
       )}
     </Container>
   )
 }
 
-export default NodesView
+export default HostsView

@@ -46,11 +46,11 @@ const StyledSeparator = styled(Separator).attrs({
 const ActionsMenu = () => (
   <List width="max-contents" padding="8px 0">
     <MenuItem>
-      <Link to="/nodes/new">Add node</Link>
+      <Link to="/hosts/new">Add node</Link>
     </MenuItem>
     <StyledSeparator />
     <MenuItem>
-      <Link to="/nodes/graph">Graph</Link>
+      <Link to="/topology">Graph</Link>
     </MenuItem>
   </List>
 )

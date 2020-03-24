@@ -26,7 +26,7 @@ const StyledLink = styled(Link)`
 `
 
 const Brand = props => (
-  <StyledLink to="/nodes">
+  <StyledLink to="/hosts">
     <Logo width={56} height={56} {...props} />
   </StyledLink>
 )

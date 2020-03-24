@@ -4,6 +4,7 @@ import { grid, space, color, shadow, border } from 'styled-system'
 
 import Button from '_components/button'
 import Brand from '_containers/side-nav/brand'
+import { navigate } from '@reach/router'
 
 export const Container = styled.div`
   display: flex;
@@ -47,9 +48,14 @@ export const StyledButton = styled(Button).attrs({
   line-height: 8px;
 `
 
+const handleTopologyButtonClick = () => {
+  navigate('/topology')
+}
+
 const Header = props => (
   <Container {...props}>
     <Brand />
+    <StyledButton onClick={handleTopologyButtonClick}>Topology</StyledButton>
   </Container>
 )
 

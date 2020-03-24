@@ -12,7 +12,7 @@ import TextInput from '_components/inputs/text-input'
 import { Dragon } from '_components/spinner'
 
 import { useMutation } from 'react-apollo'
-import { CREATE_NODE } from '_graphql/actions'
+import { CREATE_HOST } from '_graphql/actions'
 import { navigate } from '@reach/router'
 import toast from '_components/toast'
 
@@ -20,42 +20,46 @@ const Container = styled(Flex)`
   flex-direction: column;
 `
 
-const NewNode = () => {
+const NewHost = () => {
   const [formState, { text }] = useFormState()
 
-  const onNodeCreated = () => {
-    toast.success('Node created')
-    navigate('/nodes')
+  const onHostCreated = () => {
+    toast.success('Host created')
+    navigate('/hosts')
   }
 
-  const onNodeCreationError = () => {
-    toast.error('Error creating node')
-    navigate('/nodes')
+  const onHostCreationError = () => {
+    toast.error('Error creating host')
+    navigate('/hosts')
   }
 
-  const [createNode, { loading }] = useMutation(CREATE_NODE, {
+  const [createHost, { loading }] = useMutation(CREATE_HOST, {
     variables: formState.values,
-    onCompleted: onNodeCreated,
-    onError: onNodeCreationError,
+    onCompleted: onHostCreated,
+    onError: onHostCreationError,
   })
 
   const onSave = () => {
-    createNode()
+    createHost()
   }
 
   return (
     <Container>
       <Text textStyle="title" mb={4}>
-        New node
+        New host
       </Text>
       {loading ? (
         <Dragon />
       ) : (
         <Box flexDirection="column">
           <Text my={3}>Name</Text>
-          <TextInput required {...text('name')} placeholder="new-node-1" mb={2} />
+          <TextInput required {...text('name')} placeholder="new-host-1" mb={2} />
           <Text my={3}>Address</Text>
           <TextInput required {...text('address')} placeholder="10.0.8.0/24" mb={2} />
+          <Text my={3}>Advertise address</Text>
+          <TextInput required {...text('advertiseAddress')} placeholder="wg.domain.com" mb={2} />
+          <Text my={3}>Listen port</Text>
+          <TextInput required {...text('listenPort')} placeholder="51820" mb={2} />
           <Button width="100%" borderRadius={3} mt={3} mb={4} onClick={onSave}>
             Save
           </Button>
@@ -63,7 +67,7 @@ const NewNode = () => {
       )}
 
       <Box justifyContent="center" gridColumn="4 / span 6">
-        <Link color="primary" to="/nodes">
+        <Link color="primary" to="/hosts">
           Cancel
         </Link>
       </Box>
@@ -71,4 +75,4 @@ const NewNode = () => {
   )
 }
 
-export default NewNode
+export default NewHost

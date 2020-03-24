@@ -144,7 +144,7 @@ export default {
       color: colors.neutralDarker,
     },
     detail: {
-      fontSize: 14,
+      fontSize: 11,
       fontFamily: 'sans-serif',
       fontWeight: '400',
       lineHeight: '14px',
