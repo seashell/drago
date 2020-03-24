@@ -1,6 +1,6 @@
 const defaults = {
   data: {
-    nodes: {},
+    toggleState: true,
   },
 }
 

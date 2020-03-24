@@ -9,6 +9,11 @@ import { ReactComponent as Times } from './icons/times.svg'
 import { ReactComponent as Search } from './icons/search.svg'
 import { ReactComponent as Buoy } from './icons/buoy.svg'
 import { ReactComponent as Bell } from './icons/bell.svg'
+import { ReactComponent as Cube } from './icons/cube.svg'
+
+import { ReactComponent as Success } from './icons/success.svg'
+import { ReactComponent as Error } from './icons/error.svg'
+import { ReactComponent as Warning } from './icons/warning.svg'
 
 import { ReactComponent as Conch } from './illustrations/conch.svg'
 import { ReactComponent as Ship } from './illustrations/ship.svg'
@@ -25,6 +30,10 @@ const icons = {
   Search,
   Buoy,
   Bell,
+  Success,
+  Error,
+  Warning,
+  Cube,
 }
 
 const illustrations = {

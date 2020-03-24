@@ -2,6 +2,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import { layout, space } from 'styled-system'
 
 export const StyledButton = styled.button`
   display: flex;
@@ -30,6 +31,8 @@ export const StyledButton = styled.button`
     background: ${props => props.theme.colors.neutralLighter};
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   }
+  ${layout}
+  ${space}
 `
 
 const IconButton = ({ icon, ...props }) => <StyledButton {...props}>{icon}</StyledButton>
