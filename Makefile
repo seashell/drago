@@ -74,8 +74,6 @@ build/linux_arm64/drago: $(SOURCE_FILES) ## Build Drago for linux/arm64
 .PHONY: clean
 clean:
 	rm -rf build
-	rm -rf ui/build
-	rm -rf ui/node_modules
 
 .PHONY: _release
 _release: clean ui $(foreach t,$(ALL_TARGETS),build/$(t)/drago) ## Build all release packages which can be built on this platform.
