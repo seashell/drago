@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-
+	"strings"
+	"sort"
 	"time"
 
 	"github.com/seashell/drago/agent"
@@ -35,33 +36,55 @@ var agentCmd = &cobra.Command{
 		}
 
 		fmt.Println("==> Starting drago agent...")
-		fmt.Println("==> drago agent configuration:")
-
-		fmt.Println("")
-		fmt.Println("	Server: ", viper.GetBool("server.enabled"))
-		fmt.Println("	Client: ", viper.GetBool("client.enabled"))
-		fmt.Println("	Web UI: ", viper.GetBool("ui"))
-		fmt.Println("	Version: ", version.GetVersion().VersionNumber())
-		fmt.Println("")
-
-		if viper.GetBool("ui") {
-			fmt.Println("	UI: http://localhost:8080")
-		}
-
-		fmt.Println("")
-		fmt.Println("==> drago agent started! Log data will stream in below:")
-		fmt.Println("")
 
 		var config agent.AgentConfig
 		viper.Unmarshal(&config)
+
+
+		// Create configuration info structure
+		info := make(map[string]string)
+		info["client"] = viper.GetString("client.enabled")
+		info["server"] = viper.GetString("server.enabled")
+		info["interface"] = viper.GetString("client.iface")
+		info["data dir"] = viper.GetString("client.data_dir")
+		if viper.GetBool("ui") {
+			info["web ui"] = "http://localhost:8080"
+		} else {
+			info["web ui"] = "false"
+		}
+		info["version"] =  version.GetVersion().VersionNumber()	
+
+		// Sort the keys for output
+		infoKeys := make([]string, 0, len(info))
+		for key := range info {
+			infoKeys = append(infoKeys, key)
+		}
+		sort.Strings(infoKeys)
+
+		// Agent configuration output
+		padding := 18
+		fmt.Println("==> Drago agent configuration:")
+		fmt.Println("")
+
+		for _, k := range infoKeys {
+			fmt.Println(fmt.Sprintf(
+				"%s%s: %s",
+				strings.Repeat(" ", padding-len(k)),
+				strings.Title(k),
+				info[k]))
+		}
+		fmt.Println("")
 
 		a, err := agent.NewAgent(config)
 		if err != nil {
 			panic("Error initializing agent")
 		}
 
-		var wait time.Duration
+		fmt.Println("")
+		fmt.Println("==> drago agent started! Log data will stream in below:")
+		fmt.Println("")
 
+		var wait time.Duration
 		a.Run()
 
 		c := make(chan os.Signal, 1)
@@ -98,7 +121,7 @@ func init() {
 	agentCmd.Flags().Bool("ui", true, "Serve web UI for configuration")
 
 	// Set default values for configs not exposed through flags
-	viper.SetDefault("iface", "wg0")
+	//viper.SetDefault("iface", "wg0")
 	viper.SetDefault("network", "192.168.2.0/24")
 
 	viper.SetDefault("bind_addr", "127.0.0.1")
