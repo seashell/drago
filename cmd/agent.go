@@ -48,7 +48,7 @@ var agentCmd = &cobra.Command{
 		info["interface"] = viper.GetString("client.iface")
 		info["data dir"] = viper.GetString("client.data_dir")
 		if viper.GetBool("ui") {
-			info["web ui"] = "http://localhost:8080"
+			info["web ui"] = "http://localhost:3000"
 		} else {
 			info["web ui"] = "false"
 		}
