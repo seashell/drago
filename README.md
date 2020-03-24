@@ -58,11 +58,15 @@ Drago can operate both as a complete, independent networking provider as well as
 ## TODO
 - Simple auth for the management API
 - Certificate-based client authentication
-- Integration with a production-grade DB (Postgres)
-- Collect metrics from links
-- Keep track of host metric
-- Input validation
-- Allow for the management of multiple overlays
-- Query optimization
-- Improvements in the architecture
-- Refactoring
+- Automatic generation of client tokens (in addition to CLI command)
+- Integration with a production-grade DB such as Postgres
+- Collect metrics from links (e.g., upstream/downstream traffic, last handshake, etc)
+- Collection of host metrics (e.g., last seen)
+- Input validation (backend + frontend)
+- Allow for the management of multiple overlay networks
+- Improvements in the overall architecture
+- Refactoring (project layout, variables name)
+- Persistent connections (e.g., using Websockets) for enchanced responsiveness
+- Filtering + Pagination
+- Topology graph improvements
+- DB query optimization
