@@ -48,7 +48,7 @@ dev:
 
 .PHONY: ui
 ui:
-	go generate
+	cd ./ui && yarn
 
 build/linux_amd64/drago: $(SOURCE_FILES) ## Build Drago for linux/amd64
 	@echo "==> Building $@ ..."
