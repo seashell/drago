@@ -7,9 +7,6 @@ import (
 )
 
 const tmpl = `[Interface]
-{{ if .Interface.Address -}}
-Address = {{ .Interface.Address }}
-{{end -}}
 {{ if .Interface.ListenPort -}}
 ListenPort = {{ .Interface.ListenPort }}
 {{end -}}
