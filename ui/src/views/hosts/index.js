@@ -22,7 +22,7 @@ const Container = styled(Flex)`
 export const StyledButton = styled(Button)``
 
 const HostsView = () => {
-  const { loading, data, refetch } = useQuery(GET_HOSTS)
+  const { loading, data, error, refetch } = useQuery(GET_HOSTS)
 
   useEffect(() => {
     refetch()
@@ -72,7 +72,9 @@ const HostsView = () => {
           Create
         </Button>
       </Box>
-      {loading || deleting ? (
+      {error ? (
+        <div>Error retrieving hosts</div>
+      ) : loading || deleting ? (
         <Dragon />
       ) : (
         <HostsList

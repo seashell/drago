@@ -3,6 +3,9 @@
 Drago is a cloud-agnostic configuration manager for WireGuard designed to make it simple to configure network overlays spanning cloud VMs and edge devices in a hybrid-cloud fashion.
 
 
+![Alt Text](misc/drago-demo.gif)
+
+
 ## Build
 
 System requirements:
@@ -68,5 +71,7 @@ Drago can operate both as a complete, independent networking provider as well as
 - Refactoring (project layout, variables name)
 - Persistent connections (e.g., using Websockets) for enchanced responsiveness
 - Filtering + Pagination
-- Topology graph improvements
+- Topology graph improvements (labels)
+- Implement other storage backends (BoltDB, file, etc)
+- Import / Export network topology from e.g., JSON file
 - DB query optimization

@@ -6,6 +6,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
+	"github.com/seashell/drago/ui"
 )
 
 type HttpServer interface {
@@ -13,8 +14,9 @@ type HttpServer interface {
 }
 
 type HttpServerConfig struct {
-	BindAddr string
-	Secret   []byte
+	BindAddrAPI string
+	BindAddrUI  string
+	Secret      []byte
 }
 
 type httpServer struct {
@@ -59,6 +61,10 @@ func NewHttpServer(gw *Gateway, c HttpServerConfig) (*httpServer, error) {
 	v1.Add("PUT", "/links/:id", EchoHandlerFunc(s.gateway.HandleUpdateLink))
 	v1.Add("DELETE", "/links/:id", EchoHandlerFunc(s.gateway.HandleDeleteLink))
 
+	// UI
+	assetHandler := http.FileServer(ui.Bundle)
+	s.e.GET("/*", echo.WrapHandler(http.StripPrefix("/", assetHandler)))
+
 	return s, nil
 }
 
@@ -69,8 +75,16 @@ func EchoHandlerFunc(f func(Context) error) echo.HandlerFunc {
 }
 
 func (s *httpServer) Serve() {
+	go func() {
+		s.e.Logger.Fatal(s.e.StartServer(&http.Server{
+			Addr:         s.config.BindAddrAPI,
+			ReadTimeout:  2 * time.Minute,
+			WriteTimeout: 2 * time.Minute,
+		}))
+	}()
+
 	s.e.Logger.Fatal(s.e.StartServer(&http.Server{
-		Addr:         s.config.BindAddr,
+		Addr:         s.config.BindAddrUI,
 		ReadTimeout:  2 * time.Minute,
 		WriteTimeout: 2 * time.Minute,
 	}))
