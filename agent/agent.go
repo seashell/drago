@@ -1,7 +1,3 @@
-//go:generate echo "==> Bundling web UI"
-//go:generate go run github.com/rakyll/statik -f -src=../../ui/build
-//go:generate echo "==> Done"
-
 package agent
 
 import (
