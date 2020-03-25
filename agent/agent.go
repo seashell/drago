@@ -1,7 +1,3 @@
-//go:generate echo "==> Bundling web UI"
-//go:generate go run github.com/rakyll/statik -f -src=../../ui/build
-//go:generate echo "==> Done"
-
 package agent
 
 import (
@@ -27,7 +23,6 @@ type agent struct {
 }
 
 type AgentConfig struct {
-	Ui      bool                `mapstructure:"ui"`
 	DataDir string              `mapstructure:"data_dir"`
 	Server  server.ServerConfig `mapstructure:"server"`
 	Client  client.ClientConfig `mapstructure:"client"`

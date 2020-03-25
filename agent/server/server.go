@@ -1,10 +1,12 @@
 package server
 
 type ServerConfig struct {
-	Enabled  bool   `mapstructure:"enabled"`
-	BindAddr string `mapstructure:"bind_addr"`
-	Secret   string `mapstructure:"secret"`
-	Network  string `mapstructure:"network"`
+	Enabled     bool   `mapstructure:"enabled"`
+	BindAddrAPI string `mapstructure:"bind_addr_api"`
+	BindAddrUI  string `mapstructure:"bind_addr_ui"`
+	Secret      string `mapstructure:"secret"`
+	Network     string `mapstructure:"network"`
+	UI          bool   `mapstructure:"ui"`
 }
 
 type server struct {
@@ -32,8 +34,9 @@ func (srv *server) Run() {
 	gw, err := NewGateway(controller, serializer)
 
 	sc := HttpServerConfig{
-		BindAddr: srv.config.BindAddr,
-		Secret:   []byte(srv.config.Secret),
+		BindAddrAPI: srv.config.BindAddrAPI,
+		BindAddrUI:  srv.config.BindAddrUI,
+		Secret:      []byte(srv.config.Secret),
 	}
 
 	s, err := NewHttpServer(gw, sc)
