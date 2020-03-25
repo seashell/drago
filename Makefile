@@ -11,7 +11,8 @@ GIT_DIRTY := $(if $(shell git status --porcelain),+CHANGES)
 
 GO_TEST_CMD = $(if $(shell which gotestsum),gotestsum --,go test)
 
-GO_LDFLAGS ?= "-X github.com/seashell/drago/version.GitCommit=$(GIT_COMMIT)$(GIT_DIRTY)"
+#GO_LDFLAGS ?= "-X github.com/seashell/drago/version.GitCommit=$(GIT_COMMIT)$(GIT_DIRTY)"
+GO_LDFLAGS ?= ""
 CGO_ENABLED ?= 1
 
 ALL_TARGETS = linux_amd64 \
