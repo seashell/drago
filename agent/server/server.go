@@ -1,12 +1,13 @@
 package server
 
 type ServerConfig struct {
-	Enabled     bool   `mapstructure:"enabled"`
-	BindAddrAPI string `mapstructure:"bind_addr_api"`
-	BindAddrUI  string `mapstructure:"bind_addr_ui"`
-	Secret      string `mapstructure:"secret"`
-	Network     string `mapstructure:"network"`
-	UI          bool   `mapstructure:"ui"`
+	Enabled      bool   `mapstructure:"enabled"`
+	BindAddrAPI  string `mapstructure:"bind_addr_api"`
+	BindAddrUI   string `mapstructure:"bind_addr_ui"`
+	Secret       string `mapstructure:"secret"`
+	Network      string `mapstructure:"network"`
+	MockDataPath string `mapstructure:"mock_data"`
+	UI           bool   `mapstructure:"ui"`
 }
 
 type server struct {
@@ -27,7 +28,7 @@ func (srv *server) Run() {
 		panic(err)
 	}
 
-	PopulateRepository(repo)
+	PopulateRepositoryWithMockData(repo, srv.config.MockDataPath)
 
 	controller, err := NewController(repo)
 	serializer := NewJsonSerializer()

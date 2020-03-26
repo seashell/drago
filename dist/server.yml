@@ -8,3 +8,4 @@ server:
     network: "192.168.2.0/24"          # Overlay network address space
     secret: "seashell-test-secret-123" # Secret used to sign JWT tokens issued to clients
     ui: true                           # UI enabled
+    mock_data: "./dist/mock.json"      # Path to JSON containing mock data

@@ -1,70 +1,39 @@
 package server
 
-func PopulateRepository(repo Repository) error {
+import (
+	"encoding/json"
+	"io/ioutil"
 
-	repo.CreateHost(&Host{
-		Name:             "bounce-server",
-		AdvertiseAddress: "152.74.12.1",
-		ListenPort:       "51820",
-		Address:          "192.168.2.1/24",
-	})
+	gomodel "gopkg.in/jeevatkm/go-model.v1"
+)
 
-	repo.CreateHost(&Host{
-		Name:    "raspberry-pi-2",
-		Address: "192.168.2.2/24",
-	})
+type MockData struct {
+	Hosts []HostSummary `json:"hosts"`
+	Links []LinkSummary `json:"links"`
+}
 
-	repo.CreateHost(&Host{
-		Name:    "raspberry-pi-3",
-		Address: "192.168.2.3/24",
-	})
+func PopulateRepositoryWithMockData(repo Repository, path string) error {
 
-	repo.CreateHost(&Host{
-		Name:    "raspberry-pi-4",
-		Address: "192.168.2.4/24",
-	})
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
 
-	repo.CreateLink(&Link{
-		FromID:              1,
-		ToID:                2,
-		AllowedIPs:          "192.168.2.2/32",
-		PersistentKeepalive: 20,
-	})
+	data := MockData{}
 
-	repo.CreateLink(&Link{
-		FromID:              2,
-		ToID:                1,
-		AllowedIPs:          "192.168.2.1/24",
-		PersistentKeepalive: 20,
-	})
+	_ = json.Unmarshal([]byte(file), &data)
 
-	repo.CreateLink(&Link{
-		FromID:              1,
-		ToID:                3,
-		AllowedIPs:          "192.168.2.3/32",
-		PersistentKeepalive: 20,
-	})
+	for i := 0; i < len(data.Hosts); i++ {
+		h := &Host{}
+		gomodel.Copy(h, data.Hosts[i])
+		repo.CreateHost(h)
+	}
 
-	repo.CreateLink(&Link{
-		FromID:              3,
-		ToID:                1,
-		AllowedIPs:          "192.168.2.1/24",
-		PersistentKeepalive: 20,
-	})
-
-	repo.CreateLink(&Link{
-		FromID:              4,
-		ToID:                1,
-		AllowedIPs:          "192.168.2.1/24",
-		PersistentKeepalive: 20,
-	})
-
-	repo.CreateLink(&Link{
-		FromID:              1,
-		ToID:                4,
-		AllowedIPs:          "192.168.2.4/32",
-		PersistentKeepalive: 20,
-	})
+	for i := 0; i < len(data.Links); i++ {
+		l := &Link{}
+		gomodel.Copy(l, data.Links[i])
+		repo.CreateLink(l)
+	}
 
 	return nil
 }
