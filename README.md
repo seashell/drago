@@ -1,6 +1,6 @@
 
 <h1 align="center"><br>
-    <a href="https://perun.network/"><img src="./misc/logo.png" alt="Drago" width="96"></a>
+    <a"><img src="./misc/logo.png" alt="Drago" width="96"></a>
     <br>
     Drago
 <br></h1>
