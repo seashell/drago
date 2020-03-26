@@ -1,52 +1,39 @@
 package server
 
-func PopulateRepository(repo Repository) error {
+import (
+	"encoding/json"
+	"io/ioutil"
 
-	repo.CreateHost(&Host{
-		Name:             "HOST_1",
-		AdvertiseAddress: "192.168.128.2:51820",
-		ListenPort:       "51820",
-		Address:          "192.168.2.1/24",
-	})
+	gomodel "gopkg.in/jeevatkm/go-model.v1"
+)
 
-	repo.CreateHost(&Host{
-		Name:    "HOST_2",
-		Address: "192.168.2.2/24",
-	})
+type MockData struct {
+	Hosts []HostSummary `json:"hosts"`
+	Links []LinkSummary `json:"links"`
+}
 
-	repo.CreateHost(&Host{
-		Name:    "HOST_3",
-		Address: "192.168.2.3/24",
-	})
+func PopulateRepositoryWithMockData(repo Repository, path string) error {
 
-	repo.CreateLink(&Link{
-		FromID:              1,
-		ToID:                2,
-		AllowedIPs:          "192.168.2.2/32",
-		PersistentKeepalive: 20,
-	})
+	file, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
+	}
 
-	repo.CreateLink(&Link{
-		FromID:              1,
-		ToID:                3,
-		AllowedIPs:          "192.168.2.3/32",
-		PersistentKeepalive: 20,
-	})
+	data := MockData{}
 
-	repo.CreateLink(&Link{
-		FromID:              2,
-		ToID:                1,
-		AllowedIPs:          "192.168.2.0/24",
-		PersistentKeepalive: 20,
-	})
+	_ = json.Unmarshal([]byte(file), &data)
 
-	repo.CreateLink(&Link{
-		FromID:              3,
-		ToID:                1,
-		AllowedIPs:          "192.168.2.0/24",
-		PersistentKeepalive: 20,
-	})
+	for i := 0; i < len(data.Hosts); i++ {
+		h := &Host{}
+		gomodel.Copy(h, data.Hosts[i])
+		repo.CreateHost(h)
+	}
 
+	for i := 0; i < len(data.Links); i++ {
+		l := &Link{}
+		gomodel.Copy(l, data.Links[i])
+		repo.CreateLink(l)
+	}
 
 	return nil
 }

@@ -1,5 +1,3 @@
-ui: false                             # UI enabled (not yet supported on client)
-
 client:
     enabled: true                     # Client enabled
     serverAddr: "127.0.0.1:8080"     # Server address and port
