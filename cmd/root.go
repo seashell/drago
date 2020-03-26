@@ -68,7 +68,6 @@ func initConfig() {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	viper.SetDefault("ui", false)
 	viper.SetDefault("datadir", "/tmp/drago")
     viper.SetDefault("client.enabled", true)
 	viper.SetDefault("client.datadir", "/tmp/drago")
@@ -78,15 +77,18 @@ func initConfig() {
 	viper.SetDefault("client.wgkey", "")
 	viper.SetDefault("client.jwt", "")
 	viper.SetDefault("server.enabled", true)
-	viper.SetDefault("server.bindaddr", ":8080")
+	viper.SetDefault("server.ui", true)
+	viper.SetDefault("server.bindaddrui", ":8081")
+	viper.SetDefault("server.bindaddrapi", ":8080")
 	viper.SetDefault("server.secret", "drago")
 	viper.SetDefault("server.network", "10.0.0.0/24")
+	viper.SetDefault("server.mockdata", ".")
+
 
 
 	LoadConfig(cfgFile)
 
 
-	viper.Set("ui",viper.Get("ui"))
 	viper.Set("datadir",viper.Get("datadir"))
 	viper.Set("client.enabled",viper.Get("client.enabled"))
 	viper.Set("client.datadir",viper.Get("client.datadir"))
@@ -96,10 +98,12 @@ func initConfig() {
 	viper.Set("client.wgkey",viper.Get("client.wgkey"))
 	viper.Set("client.jwt",viper.Get("client.jwt"))
 	viper.Set("server.enabled",viper.Get("server.enabled"))
-	viper.Set("server.bindaddr",viper.Get("server.bindaddr"))
+	viper.Set("server.ui",viper.Get("server.ui"))	
+	viper.Set("server.bindaddrui",viper.Get("server.bindaddrui"))
+	viper.Set("server.bindaddrapi",viper.Get("server.bindaddrapi"))
 	viper.Set("server.secret",viper.Get("server.secret"))
 	viper.Set("server.network",viper.Get("server.network"))
-
+	viper.Set("server.mockdata",viper.Get("server.mockdata"))
 }
 
 

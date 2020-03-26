@@ -2,11 +2,11 @@ package server
 
 type ServerConfig struct {
 	Enabled      bool   `mapstructure:"enabled"`
-	BindAddrAPI  string `mapstructure:"bind_addr_api"`
-	BindAddrUI   string `mapstructure:"bind_addr_ui"`
+	BindAddrAPI  string `mapstructure:"bindAddrApi"`
+	BindAddrUI   string `mapstructure:"bindAddrUi"`
 	Secret       string `mapstructure:"secret"`
 	Network      string `mapstructure:"network"`
-	MockDataPath string `mapstructure:"mock_data"`
+	MockDataPath string `mapstructure:"mockData"`
 	UI           bool   `mapstructure:"ui"`
 }
 

@@ -56,8 +56,9 @@ var agentCmd = &cobra.Command{
 		}
 		info["interface"] = config.Client.Iface
 		info["data dir"] = config.Client.DataDir
-		if config.Ui {
-			info["web ui"] = "http://localhost:3000"
+		
+		if config.Server.Enabled && config.Server.UI {
+			info["web ui"] = config.Server.BindAddrUI
 		} else {
 			info["web ui"] = "false"
 		}

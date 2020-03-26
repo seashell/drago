@@ -45,11 +45,11 @@ endif
 
 .PHONY: dev
 dev:
-	GOOS=${THIS_OS} GOARCH=${ARCH} go build -o build/${OS}-${ARCH}/drago main.go
+	GOOS=${THIS_OS} GOARCH=${ARCH} go build -o build/${OS}_${ARCH}/drago main.go
 
 .PHONY: ui
 ui:
-	cd ./ui && yarn
+	go generate
 
 build/linux_amd64/drago: $(SOURCE_FILES) ## Build Drago for linux/amd64
 	@echo "==> Building $@ ..."
@@ -74,7 +74,10 @@ build/linux_arm64/drago: $(SOURCE_FILES) ## Build Drago for linux/arm64
 
 .PHONY: clean
 clean:
+	go mod tidy
 	rm -rf build
+	rm -rf ui/build
+	rm -rf ui/node_modules
 
 .PHONY: _release
 _release: clean ui $(foreach t,$(ALL_TARGETS),build/$(t)/drago) ## Build all release packages which can be built on this platform.
@@ -89,4 +92,22 @@ else
 	@echo "==> Regular build..."
 	make _release
 endif
-	
+
+
+.PHONY: _all
+_all:
+	make ui
+	make dev
+
+
+.PHONY: all
+all:
+ifeq ($(STATIC), 1)
+	@echo "==> Static build..."
+	@docker build --build-arg HOST_UID=${HOST_UID} --build-arg HOST_USER=${HOST_USER} -t static .
+	docker run --rm -v ${PROJECT_ROOT}:${PROJECT_ROOT} --workdir=${PROJECT_ROOT} static /bin/sh -c "CGO_ENABLED=0 make _all"
+else
+	@echo "==> Regular build..."
+	make _all
+endif
+
