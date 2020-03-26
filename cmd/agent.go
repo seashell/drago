@@ -43,11 +43,20 @@ var agentCmd = &cobra.Command{
 
 		// Create configuration info structure
 		info := make(map[string]string)
-		info["client"] = viper.GetString("client.enabled")
-		info["server"] = viper.GetString("server.enabled")
-		info["interface"] = viper.GetString("client.iface")
-		info["data dir"] = viper.GetString("client.data_dir")
-		if viper.GetBool("ui") {
+		if config.Client.Enabled {
+			info["client"] = "true"
+		} else {
+			info["client"] = "false"
+		}
+
+		if config.Server.Enabled {
+			info["server"] = "true"
+		} else {
+			info["server"] = "false"
+		}
+		info["interface"] = config.Client.Iface
+		info["data dir"] = config.Client.DataDir
+		if config.Ui {
 			info["web ui"] = "http://localhost:3000"
 		} else {
 			info["web ui"] = "false"
@@ -119,13 +128,6 @@ func init() {
 	agentCmd.Flags().BoolP("server", "s", false, "Start agent in server mode")
 	agentCmd.Flags().BoolP("client", "c", true, "Start agent in client mode")
 	agentCmd.Flags().Bool("ui", true, "Serve web UI for configuration")
-
-	// Set default values for configs not exposed through flags
-	//viper.SetDefault("iface", "wg0")
-	viper.SetDefault("network", "192.168.2.0/24")
-
-	viper.SetDefault("bind_addr", "127.0.0.1")
-	viper.SetDefault("server_addr", "192.168.2.1/24")
 
 	// Bind viper configs to cobra flags
 	viper.BindPFlag("server", agentCmd.Flags().Lookup("server"))

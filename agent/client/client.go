@@ -23,12 +23,12 @@ type client struct {
 
 type ClientConfig struct {
 	Enabled      bool   `mapstructure:"enabled"`
-	DataDir      string `mapstructure:"data_dir"`
+	DataDir      string `mapstructure:"dataDir"`
 	Iface        string `mapstructure:"iface"`
-	ServerAddr   string `mapstructure:"server_addr"`
-	WgKey        string `mapstructure:"wg_key"`
+	ServerAddr   string `mapstructure:"serverAddr"`
+	WgKey        string `mapstructure:"wgKey"`
 	Jwt          string `mapstructure:"jwt"`
-	SyncInterval int    `mapstructure:"sync_interval"`
+	SyncInterval int    `mapstructure:"syncInterval"`
 }
 
 func New(c ClientConfig) (*client, error) {

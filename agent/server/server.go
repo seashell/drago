@@ -2,7 +2,7 @@ package server
 
 type ServerConfig struct {
 	Enabled  bool   `mapstructure:"enabled"`
-	BindAddr string `mapstructure:"bind_addr"`
+	BindAddr string `mapstructure:"bindAddr"`
 	Secret   string `mapstructure:"secret"`
 	Network  string `mapstructure:"network"`
 }
