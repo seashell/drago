@@ -21,7 +21,7 @@ import (
 	"io"
 	"strings"
 	"path/filepath"
-
+	
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -68,42 +68,32 @@ func initConfig() {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-	viper.SetDefault("datadir", "/tmp/drago")
-    viper.SetDefault("client.enabled", true)
-	viper.SetDefault("client.datadir", "/tmp/drago")
-	viper.SetDefault("client.serveraddr", "localhost:8080")
-	viper.SetDefault("client.iface", "wg0")
-	viper.SetDefault("client.syncinterval", 60)
-	viper.SetDefault("client.wgkey", "")
-	viper.SetDefault("client.jwt", "")
-	viper.SetDefault("server.enabled", true)
-	viper.SetDefault("server.ui", true)
-	viper.SetDefault("server.bindaddrui", ":8081")
-	viper.SetDefault("server.bindaddrapi", ":8080")
-	viper.SetDefault("server.secret", "drago")
-	viper.SetDefault("server.network", "10.0.0.0/24")
-	viper.SetDefault("server.mockdata", ".")
-
-
 
 	LoadConfig(cfgFile)
 
+	// sorry, but this is a dirty fix to Set defaults and read from ENV vars
+	setDefaultAndEnv("client.enabled", true)
+	setDefaultAndEnv("client.datadir", "/tmp/dragoin")
+	setDefaultAndEnv("client.serveraddr", "localhost:8080")
+	setDefaultAndEnv("client.iface", "wg0")
+	setDefaultAndEnv("client.syncinterval", 60)
+	setDefaultAndEnv("client.wgkey", "")
+	setDefaultAndEnv("client.jwt", "")
+	setDefaultAndEnv("server.enabled", true)
+	setDefaultAndEnv("server.ui", true)
+	setDefaultAndEnv("server.bindaddrui", ":8081")
+	setDefaultAndEnv("server.bindaddrapi", ":8080")
+	setDefaultAndEnv("server.secret", "")
+	setDefaultAndEnv("server.network", "10.0.0.0/24")
+	setDefaultAndEnv("server.mockdata", "")
+}
 
-	viper.Set("datadir",viper.Get("datadir"))
-	viper.Set("client.enabled",viper.Get("client.enabled"))
-	viper.Set("client.datadir",viper.Get("client.datadir"))
-	viper.Set("client.iface",viper.Get("client.iface"))
-	viper.Set("client.serveraddr",viper.Get("client.serveraddr"))
-	viper.Set("client.syncinterval",viper.Get("client.syncinterval"))
-	viper.Set("client.wgkey",viper.Get("client.wgkey"))
-	viper.Set("client.jwt",viper.Get("client.jwt"))
-	viper.Set("server.enabled",viper.Get("server.enabled"))
-	viper.Set("server.ui",viper.Get("server.ui"))	
-	viper.Set("server.bindaddrui",viper.Get("server.bindaddrui"))
-	viper.Set("server.bindaddrapi",viper.Get("server.bindaddrapi"))
-	viper.Set("server.secret",viper.Get("server.secret"))
-	viper.Set("server.network",viper.Get("server.network"))
-	viper.Set("server.mockdata",viper.Get("server.mockdata"))
+func setDefaultAndEnv(key string, defaultConfig interface{}) {
+	
+	viper.SetDefault(key, defaultConfig)
+	viper.Set(key,viper.Get(key))
+
+	return 
 }
 
 
