@@ -53,9 +53,22 @@ System requirements:
 - yarn 1.12.3+
 
 ```
-go generate
-go build
+$ go generate
+$ go build
 ```
+
+Alternatively, you can build with `make`, for example:
+```
+$ make dev
+...
+```
+
+To see help on building with make, run:
+ ```
+ $ make help
+ ...
+ ```
+ 
 
 ## Usage
 
