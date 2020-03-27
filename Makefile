@@ -20,7 +20,6 @@ CGO_ENABLED ?= 1
 STATIC := $(or $(STATIC),$(S))
 ifeq ($(STATIC),1)
 	GO_LDFLAGS := "-linkmode external -extldflags -static"
-	CGO_ENABLED := 0
 endif
 
 
