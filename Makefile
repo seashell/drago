@@ -1,26 +1,77 @@
-# to enable arm builds: apt-get install -y gcc-arm-linux-gnueabihf libc6-dev-armhf-cross
-# to enable arm64 builds: apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross
-
-
 SHELL = bash
 PROJECT_ROOT := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
-THIS_OS := $(shell uname | tr '[:upper:]' '[:lower:]')
+
 
 GIT_COMMIT := $(shell git rev-parse HEAD)
 GIT_DIRTY := $(if $(shell git status --porcelain),+CHANGES)
 
 GO_TEST_CMD = $(if $(shell which gotestsum),gotestsum --,go test)
 
-#GO_LDFLAGS ?= "-X github.com/seashell/drago/version.GitCommit=$(GIT_COMMIT)$(GIT_DIRTY)"
-GO_LDFLAGS ?= ""
+OS ?= $(shell uname | tr '[:upper:]' '[:lower:]')
+ARCH ?= amd64
+CC ?= ""
+
+
+GO_LDFLAGS ?= "-X github.com/seashell/drago/version.GitCommit=$(GIT_COMMIT)$(GIT_DIRTY)"
 CGO_ENABLED ?= 1
 
-ALL_TARGETS = linux_amd64 \
-	linux_arm \
-	linux_arm64
+# Handle static builds
+STATIC := $(or $(STATIC),$(S))
+ifeq ($(STATIC),1)
+	GO_LDFLAGS := "-linkmode external -extldflags -static"
+	CGO_ENABLED := 0
+endif
 
-OS ?= linux
-ARCH ?= amd64
+
+.PHONY: default
+default: amd64
+
+.PHONY: amd64
+amd64:
+	@echo "==> Building binary \"build/${OS}_${ARCH}/drago\" ..."
+	@CGO_ENABLED=$(CGO_ENABLED) GOOS=${OS} GOARCH=$@ \
+		go build \
+		-ldflags $(GO_LDFLAGS) \
+		-o "build/${OS}_${ARCH}/drago" \
+		main.go
+
+.PHONY: arm64
+arm64:
+	@echo "==> Building binary \"build/${OS}_$@/drago\" ..."
+	@CGO_ENABLED=$(CGO_ENABLED) GOOS=${OS} GOARCH=$@ CC=aarch64-linux-gnu-gcc \
+		go build \
+		-ldflags $(GO_LDFLAGS) \
+		-o "build/${OS}_$@/drago"	
+
+.PHONY: arm
+arm:
+	@echo "==> Building binary \"build/${OS}_$@/drago\" ..."
+	@CGO_ENABLED=$(CGO_ENABLED) GOOS=${OS} GOARCH=$@ CC=arm-linux-gnueabihf-gcc \
+		go build \
+		-ldflags $(GO_LDFLAGS) \
+		-o "build/${OS}_$@/drago"	
+
+.PHONY: custom
+custom:
+	@echo "==> Building binary \"build/custom/${OS}_${ARCH}/drago\" ..."
+	@CGO_ENABLED=$(CGO_ENABLED) GOOS=${OS} GOARCH=${ARCH} CC=${CC} \
+		go build \
+		-ldflags $(GO_LDFLAGS) \
+		-o "build/${OS}_${ARCH}/drago"	
+
+.PHONY: ui
+ui:
+	go generate
+
+.PHONY: clean
+clean:
+	go mod tidy
+	rm -rf build
+	rm -rf ui/build
+	rm -rf ui/node_modules	
+
+.PHONY: all
+all: clean ui amd64 arm64 arm
 
 # if vars not set specifially: try default to environment, else fixed value.
 # strip to ensure spaces are removed in future editorial mistakes.
@@ -36,78 +87,7 @@ HOST_USER = $(user)
 HOST_UID = $(strip $(if $(uid),$(uid),0))
 endif
 
-# Handle static builds
-STATIC := $(or $(STATIC),$(S))
-ifeq ($(STATIC),1)
-	GO_LDFLAGS := "-linkmode external -extldflags -static ${GO_LDFLAGS}"
-endif
-
-
-.PHONY: dev
-dev:
-	GOOS=${THIS_OS} GOARCH=${ARCH} go build -o build/${OS}_${ARCH}/drago main.go
-
-.PHONY: ui
-ui:
-	go generate
-
-build/linux_amd64/drago: $(SOURCE_FILES) ## Build Drago for linux/amd64
-	@echo "==> Building $@ ..."
-	@CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=amd64\
-		go build \
-		-ldflags $(GO_LDFLAGS) \
-		-o "$@"
-
-build/linux_arm/drago: $(SOURCE_FILES) ## Build Drago for linux/arm
-	@echo "==> Building $@ ..."
-	@CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm CC=arm-linux-gnueabihf-gcc \
-		go build \
-		-ldflags $(GO_LDFLAGS) \
-		-o "$@"
-
-build/linux_arm64/drago: $(SOURCE_FILES) ## Build Drago for linux/arm64
-	@echo "==> Building $@ ..."
-	@CGO_ENABLED=$(CGO_ENABLED) GOOS=linux GOARCH=arm64 CC=aarch64-linux-gnu-gcc \
-		go build \
-		-ldflags $(GO_LDFLAGS) \
-		-o "$@"	
-
-.PHONY: clean
-clean:
-	go mod tidy
-	rm -rf build
-	rm -rf ui/build
-	rm -rf ui/node_modules
-
-.PHONY: _release
-_release: clean ui $(foreach t,$(ALL_TARGETS),build/$(t)/drago) ## Build all release packages which can be built on this platform.
-
-.PHONY: release
-release:
-ifeq ($(STATIC), 1)
-	@echo "==> Static build..."
-	@docker build --build-arg HOST_UID=${HOST_UID} --build-arg HOST_USER=${HOST_USER} -t static .
-	docker run --rm -v ${PROJECT_ROOT}:${PROJECT_ROOT} --workdir=${PROJECT_ROOT} static /bin/sh -c "CGO_ENABLED=0 make _release"
-else
-	@echo "==> Regular build..."
-	make _release
-endif
-
-
-.PHONY: _all
-_all:
-	make ui
-	make dev
-
-
-.PHONY: all
-all:
-ifeq ($(STATIC), 1)
-	@echo "==> Static build..."
-	@docker build --build-arg HOST_UID=${HOST_UID} --build-arg HOST_USER=${HOST_USER} -t static .
-	docker run --rm -v ${PROJECT_ROOT}:${PROJECT_ROOT} --workdir=${PROJECT_ROOT} static /bin/sh -c "CGO_ENABLED=0 make _all"
-else
-	@echo "==> Regular build..."
-	make _all
-endif
-
+.PHONY: docker
+docker:
+	@docker build --build-arg HOST_UID=${HOST_UID} --build-arg HOST_USER=${HOST_USER} -t drago_builder .
+	docker run --rm -v ${PROJECT_ROOT}:${PROJECT_ROOT} --workdir=${PROJECT_ROOT} drago_builder /bin/sh -c ""${f}" make "${c}""

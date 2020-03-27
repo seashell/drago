@@ -12,8 +12,8 @@ RUN apt-get install -y gcc-arm-linux-gnueabihf libc6-dev-armhf-cross \
                        gcc-aarch64-linux-gnu libc6-dev-arm64-cross
 
 FROM debian
-ARG HOST_UID=${HOST_UID:-4000}
-ARG HOST_USER=${HOST_USER:-nodummy}
+ARG HOST_UID=${HOST_UID}
+ARG HOST_USER=${HOST_USER}
 
 RUN if [ "${HOST_USER}" != "root" ]; then \
     (adduser -q --gecos "" --home /home/${HOST_USER} --disabled-password -u ${HOST_UID} ${HOST_USER} \
