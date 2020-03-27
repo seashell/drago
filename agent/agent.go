@@ -23,7 +23,7 @@ type agent struct {
 }
 
 type AgentConfig struct {
-	DataDir string              `mapstructure:"data_dir"`
+	DataDir string              `mapstructure:"dataDir"`
 	Server  server.ServerConfig `mapstructure:"server"`
 	Client  client.ClientConfig `mapstructure:"client"`
 }

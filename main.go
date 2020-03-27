@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 //go:generate go generate github.com/seashell/drago/ui
-//go:generate go generate github.com/seashell/drago/pkg/agent
+//go:generate go generate github.com/seashell/drago/agent
 
 package main
 

@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net"
 	"os"
 	"time"
 
+
+	"github.com/vishvananda/netlink"
 	resty "github.com/go-resty/resty/v2"
-	ip "github.com/squat/kilo/pkg/iproute"
 	wg "github.com/squat/kilo/pkg/wireguard"
 )
 
@@ -23,12 +23,12 @@ type client struct {
 
 type ClientConfig struct {
 	Enabled      bool   `mapstructure:"enabled"`
-	DataDir      string `mapstructure:"data_dir"`
+	DataDir      string `mapstructure:"dataDir"`
 	Iface        string `mapstructure:"iface"`
-	ServerAddr   string `mapstructure:"server_addr"`
-	WgKey        string `mapstructure:"wg_key"`
+	ServerAddr   string `mapstructure:"serverAddr"`
+	WgKey        string `mapstructure:"wgKey"`
 	Jwt          string `mapstructure:"jwt"`
-	SyncInterval int    `mapstructure:"sync_interval"`
+	SyncInterval int    `mapstructure:"syncInterval"`
 }
 
 func New(c ClientConfig) (*client, error) {
@@ -123,6 +123,11 @@ func (c *client) PollConfigServer() (*Host, error) {
 
 func (c *client) Reconcile(h *Host) error {
 
+	lo, err := netlink.LinkByIndex(c.wgIface)
+	if err != nil {
+		return fmt.Errorf("Error getting link to interface: %v", err)
+	}
+
 	if h.Interface.Address != c.host.Interface.Address {
 
 		path := c.config.DataDir + "/" + c.config.Iface + ".json"
@@ -130,16 +135,17 @@ func (c *client) Reconcile(h *Host) error {
 		if err != nil {
 			return fmt.Errorf("Error formatting JSON: %v", err)
 		}
+
 		if err := ioutil.WriteFile(path, buf, 0600); err != nil {
 			return fmt.Errorf("Error writing host JSON to file: %v", err)
 		}
 
-		_, ifaceAddr, err := net.ParseCIDR(h.Interface.Address)
+		addr, err := netlink.ParseAddr(h.Interface.Address)
 		if err != nil {
-			return fmt.Errorf("Error parsing interface CIDR: %v", err)
+			return fmt.Errorf("Error parsing IP address: %v", err)
 		}
 
-		if err = ip.SetAddress(c.wgIface, ifaceAddr); err != nil {
+		if err = netlink.AddrAdd(lo, addr); err != nil {
 			return fmt.Errorf("Error setting interface IP address: %v", err)
 		}
 
@@ -166,7 +172,7 @@ func (c *client) Reconcile(h *Host) error {
 		c.wgConf = newConf
 	}
 
-	if err = ip.Set(c.wgIface, true); err != nil {
+	if err = netlink.LinkSetUp(lo); err != nil {
 		return fmt.Errorf("Error bringing interface up: %v", err)
 	}
 

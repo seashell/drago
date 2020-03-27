@@ -21,7 +21,7 @@ import (
 	"io"
 	"strings"
 	"path/filepath"
-
+	
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -64,9 +64,36 @@ func init() {
 func initConfig() {
 
 	viper.SetConfigType("yaml")
-	viper.AutomaticEnv() // read in environment variables that match
+
+	viper.AutomaticEnv()
+	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+
 
 	LoadConfig(cfgFile)
+
+	// sorry, but this is a dirty fix to Set defaults and read from ENV vars
+	setDefaultAndEnv("client.enabled", true)
+	setDefaultAndEnv("client.datadir", "/tmp/dragoin")
+	setDefaultAndEnv("client.serveraddr", "localhost:8080")
+	setDefaultAndEnv("client.iface", "wg0")
+	setDefaultAndEnv("client.syncinterval", 60)
+	setDefaultAndEnv("client.wgkey", "")
+	setDefaultAndEnv("client.jwt", "")
+	setDefaultAndEnv("server.enabled", true)
+	setDefaultAndEnv("server.ui", true)
+	setDefaultAndEnv("server.bindaddrui", ":8081")
+	setDefaultAndEnv("server.bindaddrapi", ":8080")
+	setDefaultAndEnv("server.secret", "")
+	setDefaultAndEnv("server.network", "10.0.0.0/24")
+	setDefaultAndEnv("server.mockdata", "")
+}
+
+func setDefaultAndEnv(key string, defaultConfig interface{}) {
+	
+	viper.SetDefault(key, defaultConfig)
+	viper.Set(key,viper.Get(key))
+
+	return 
 }
 
 
@@ -149,7 +176,7 @@ func LoadConfigDir(dir string) (error) {
 func LoadConfigFile(path string) (error) {
 
 	viper.SetConfigFile(path)
-	err := viper.ReadInConfig()
+	err := viper.MergeInConfig()
 
 	// If a config file is found, read it in.
 	if err == nil {
