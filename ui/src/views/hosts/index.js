@@ -12,12 +12,35 @@ import Flex from '_components/flex'
 import toast from '_components/toast'
 import Button from '_components/button'
 import Box from '_components/box'
+import { icons } from '_assets/'
 
 import HostsList from './hosts-list'
 
 const Container = styled(Flex)`
   flex-direction: column;
 `
+
+const ErrorStateContainer = styled(Box).attrs({
+  border: 'discrete',
+  height: '300px',
+})`
+  svg {
+    height: 120px;
+  }
+  padding: 20px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`
+
+const ErrorState = () => (
+  <ErrorStateContainer>
+    <icons.ErrorStateCube />
+    <Text textStyle="description" mt={4}>
+      Oops! It seems that an error has occurred.
+    </Text>
+  </ErrorStateContainer>
+)
 
 export const StyledButton = styled(Button)``
 
@@ -73,7 +96,7 @@ const HostsView = () => {
         </Button>
       </Box>
       {error ? (
-        <div>Error retrieving hosts</div>
+        <ErrorState />
       ) : loading || deleting ? (
         <Dragon />
       ) : (

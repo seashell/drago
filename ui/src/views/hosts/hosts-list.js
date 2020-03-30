@@ -24,7 +24,7 @@ const EmptyStateContainer = styled(Box).attrs({
 
 const EmptyState = () => (
   <EmptyStateContainer>
-    <icons.GhostCube />
+    <icons.EmptyStateCube />
     <Text textStyle="description" mt={4}>
       Oops! It seems that there are no hosts registered.
     </Text>
