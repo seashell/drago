@@ -1,6 +1,6 @@
 
 <h1 align="center"><br>
-    <a"><img src="./misc/logo.png" alt="Drago" width="96"></a>
+    <a"><img src="./logo.png" alt="Drago" width="96"></a>
     <br>
     Drago
 <br></h1>
@@ -19,7 +19,7 @@ A flexible configuration manager for Wireguard networks
 Drago is a flexible configuration manager for WireGuard networks which is designed to make it simple to configure network overlays spanning heterogeneous hosts distributed across different clouds and physical locations.
 
 <p align="center"> 
-<img src="misc/drago-demo.gif"/>
+<img src="demo.gif"/>
 </p>
 
 ## Overview
