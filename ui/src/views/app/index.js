@@ -1,6 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 
+import HomeView from '_views/home'
 import NotFound from '_views/not-found'
 import HostsView from '_views/hosts'
 import Topology from '_views/topology'
@@ -38,6 +39,7 @@ const App = () => (
   <Dashboard>
     <Header />
     <Content>
+      <HomeView path="/" />
       <HostsView path="/hosts" />
       <NewHost path="/hosts/new" />
       <EditHost path="/hosts/:hostId" />
