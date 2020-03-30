@@ -44,7 +44,6 @@ export const StyledButton = styled(Button).attrs({
   display: flex;
   align-items: center;
   justify-content: center;
-  padding-left: 12px;
   line-height: 8px;
 `
 
