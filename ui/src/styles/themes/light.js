@@ -133,7 +133,7 @@ export default {
       fontSize: 16,
       fontFamily: 'sans-serif',
       fontWeight: '400',
-      lineHeight: '16px',
+      lineHeight: '22px',
       color: colors.neutralDark,
     },
     bodyText: {
