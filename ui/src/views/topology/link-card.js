@@ -1,0 +1,90 @@
+import React from 'react'
+import PropTypes from 'prop-types'
+import styled from 'styled-components'
+
+import Box from '_components/box'
+import Text from '_components/text'
+import IconButton from '_components/icon-button'
+import { icons } from '_assets/'
+import TextInput from '_components/inputs/text-input'
+
+const Container = styled(Box).attrs({
+  display: 'flex',
+  border: 'discrete',
+  m: 2,
+  p: 3,
+})`
+  flex-direction: column;
+  width: 300px;
+  height: 400px;
+  box-shadow: ${props => props.theme.shadows.medium};
+`
+
+const IconContainer = styled(Box).attrs({
+  display: 'flex',
+  height: '72px',
+  width: '72px',
+  bg: 'neutralLighter',
+  borderRadius: '4px',
+})`
+  position: relative;
+  button {
+    margin-right: auto;
+  }
+  align-items: center;
+  justify-content: center;
+  svg {
+    transform: scale(1.6);
+  }
+`
+
+const HostCard = ({
+  id,
+  sourceName,
+  targetName,
+  sourceAddress,
+  targetAddress,
+  allowedIPs,
+  persistentKeepalive,
+  ...props
+}) => (
+  <Container {...props}>
+    <IconContainer mx="auto" mt={2} mb={3}>
+      <IconButton ml="auto" icon={<icons.Link />} />
+    </IconContainer>
+
+    <Text textStyle="detail" my={1}>
+      FROM
+    </Text>
+    <TextInput height={1} value={`${sourceName} (${sourceAddress})`} mb={1} />
+
+    <Text textStyle="detail" my={1}>
+      TO
+    </Text>
+    <TextInput height={1} value={`${targetName} (${targetAddress})`} mb={1} />
+
+    <Text textStyle="detail" my={1}>
+      ALLOWED IPS
+    </Text>
+    <TextInput height={1} value={allowedIPs} mb={1} />
+
+    <Text textStyle="detail" my={1}>
+      PERSISTENT KEEPALIVE
+    </Text>
+    <TextInput height={1} value={persistentKeepalive} mb={1} />
+  </Container>
+)
+
+HostCard.propTypes = {
+  id: PropTypes.number.isRequired,
+  sourceName: PropTypes.string.isRequired,
+  targetName: PropTypes.string.isRequired,
+  sourceAddress: PropTypes.string.isRequired,
+  targetAddress: PropTypes.string.isRequired,
+  allowedIPs: PropTypes.string.isRequired,
+  persistentKeepalive: PropTypes.string.isRequired,
+}
+
+HostCard.defaultProps = {}
+
+export default HostCard

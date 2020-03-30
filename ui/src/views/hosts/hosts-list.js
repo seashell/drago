@@ -5,17 +5,29 @@ import styled from 'styled-components'
 
 import Box from '_components/box'
 import Text from '_components/text'
+import { icons } from '_assets/'
 
 import HostCard from './host-card'
 
 const EmptyStateContainer = styled(Box).attrs({
   border: 'discrete',
-  height: '100px',
-})``
+  height: '300px',
+})`
+  svg {
+    height: 120px;
+  }
+  padding: 20px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`
 
 const EmptyState = () => (
   <EmptyStateContainer>
-    <Text>[TODO: Empty state] - No hosts found</Text>
+    <icons.EmptyStateCube />
+    <Text textStyle="description" mt={4}>
+      Oops! It seems that there are no hosts registered.
+    </Text>
   </EmptyStateContainer>
 )
 

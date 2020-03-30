@@ -13,8 +13,8 @@ export const ToastContainer = styled(BaseToastContainer).attrs({
   .toast {
     background: white;
     border-radius: 4px;
-    margin-top: 100px;
   }
+  margin-top: 100px;
 `
 
 export const ToastBody = styled.div`
