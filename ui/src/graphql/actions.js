@@ -11,6 +11,7 @@ const GET_HOSTS = gql`
         advertiseAddress
         address
         listenPort
+        lastSeen
       }
     }
   }
@@ -25,6 +26,7 @@ const GET_HOST = gql`
       advertiseAddress
       address
       listenPort
+      lastSeen
       table
       dns
       preUp

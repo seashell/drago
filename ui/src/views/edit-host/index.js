@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
-
 import styled from 'styled-components'
+import moment from 'moment'
 
 import { useFormState } from 'react-use-form-state'
 
@@ -50,7 +50,7 @@ const StatusBadge = styled.div`
   position: absolute;
   right: -2px;
   bottom: -2px;
-  background: ${props => (props.status === 'online' ? 'green' : 'red')};
+  background: ${props => (props.status === 'online' ? 'green' : props.theme.colors.neutralLight)};
 `
 
 const EditHost = ({ hostId }) => {
@@ -130,7 +130,13 @@ const EditHost = ({ hostId }) => {
           <Text display="flex" textStyle="title" mb={4}>
             <IconContainer mr="12px">
               <IconButton ml="auto" icon={<icons.Cube />} />
-              {/* <StatusBadge status="online" /> */}
+              <StatusBadge
+                status={
+                  Math.abs(moment(query.data.result.lastSeen).diff(moment.now(), 'minutes')) < 5
+                    ? 'online'
+                    : 'offline'
+                }
+              />
             </IconContainer>
             {query.data.result.name}
           </Text>

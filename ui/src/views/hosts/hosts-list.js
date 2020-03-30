@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-
 import styled from 'styled-components'
+import moment from 'moment'
 
 import Box from '_components/box'
 import Text from '_components/text'
@@ -35,14 +35,15 @@ const HostsList = ({ hosts, onHostSelect, onHostDelete }) =>
   hosts.length === 0 ? (
     <EmptyState />
   ) : (
-    hosts.map(n => (
+    hosts.map(h => (
       <HostCard
-        key={n.id}
-        id={n.id}
-        label={n.name}
-        address={n.address}
+        key={h.id}
+        id={h.id}
+        label={h.name}
+        address={h.address}
+        lastSeen={h.lastSeen}
         onClick={onHostSelect}
-        onDelete={e => onHostDelete(e, n.id)}
+        onDelete={e => onHostDelete(e, h.id)}
       />
     ))
   )
