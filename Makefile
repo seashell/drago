@@ -58,6 +58,11 @@ custom: ## Build custom binary with the specified CC toolchain
 		-ldflags $(GO_LDFLAGS) \
 		-o "build/custom/${OS}_${ARCH}/drago"	
 
+.PHONY: container
+container: ## Build container with a built drago binary inside
+	@echo "==> Building container "drago:latest" ..."
+	docker build -t drago:latest . -f ./container/Dockerfile
+
 .PHONY: ui
 ui: ## Generate UI .go files
 	go generate
