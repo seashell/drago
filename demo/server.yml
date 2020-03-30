@@ -3,9 +3,9 @@ client:
 
 server:
     enabled: true                      # Server enabled
-    bindAddrUi: ":8181"              # Bind address for the web UI
-    bindAddrApi: ":8080"             # Server bind address
+    bindAddrUi: ":8181"                # Bind address for the web UI
+    bindAddrApi: ":8080"               # Server bind address
     network: "192.168.2.0/24"          # Overlay network address space
     secret: "seashell-test-secret-123" # Secret used to sign JWT tokens issued to clients
+    mockData: "./demo/mock.json"       # Path to JSON containing mock data
     ui: true                           # UI enabled
-    mockData: "./dist/mock.json"      # Path to JSON containing mock data
