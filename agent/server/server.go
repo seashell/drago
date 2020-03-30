@@ -30,7 +30,7 @@ func (srv *server) Run() {
 
 	PopulateRepositoryWithMockData(repo, srv.config.MockDataPath)
 
-	controller, err := NewController(repo)
+	controller, err := NewController(repo, srv.config.Secret)
 	serializer := NewJsonSerializer()
 	gw, err := NewGateway(controller, serializer)
 

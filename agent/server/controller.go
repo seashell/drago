@@ -3,6 +3,7 @@ package server
 import (
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	gomodel "gopkg.in/jeevatkm/go-model.v1"
 )
 
@@ -20,12 +21,14 @@ type Controller interface {
 }
 
 type controller struct {
-	repo Repository
+	repo   Repository
+	secret string
 }
 
-func NewController(r Repository) (Controller, error) {
+func NewController(r Repository, secret string) (Controller, error) {
 	return &controller{
-		repo: r,
+		repo:   r,
+		secret: secret,
 	}, nil
 }
 
@@ -49,7 +52,17 @@ func (c *controller) DeleteHost(i *DeleteHostInput) error {
 }
 
 func (c *controller) GetHost(i *GetHostInput) (*Host, error) {
-	return c.repo.GetHost(i.ID)
+	h, err := c.repo.GetHost(i.ID)
+
+	claims := DragoClaims{}
+	claims.ID = h.ID
+
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+	tokenString, err := token.SignedString([]byte(c.secret))
+
+	h.Jwt = tokenString
+
+	return h, err
 }
 
 func (c *controller) SyncHost(i *SyncHostInput) (*Host, error) {

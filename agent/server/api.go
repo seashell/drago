@@ -31,6 +31,7 @@ type HostDetails struct {
 	PreDown          string    `json:"preDown,omitempty"`
 	PostDown         string    `json:"postDown,omitempty"`
 	PublicKey        string    `json:"publicKey,omitempty"`
+	Jwt              string    `json:"jwt,omitempty"`
 	Links            LinkList  `json:"links,omitempty"`
 	LastSeen         time.Time `json:"lastSeen,omitempty"`
 	CreatedAt        time.Time `json:"createdAt"`

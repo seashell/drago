@@ -9,6 +9,7 @@ type Host struct {
 	AdvertiseAddress string
 	ListenPort       string
 	PublicKey        string
+	Jwt              string
 	Table            string
 	DNS              string
 	Mtu              string
