@@ -2,7 +2,7 @@
 Simple demo network with 4 hosts:
 
 - host_0 (container name server) is a bounce-server
-- host_1 (container name `client_1`) and (container name `client_2`) are linked to the bounce-server
+- host_1 (container name `client_1`) and host _2 (container name `client_2`) are linked to the bounce-server
 - host_3 (container name `client_3`) has no links
 
 Instructions:
