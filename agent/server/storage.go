@@ -23,6 +23,7 @@ type host struct {
 	PreDown          string
 	PostDown         string
 	Links            []*link `gorm:"foreignkey:FromID"`
+	LastSeen         time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	DeletedAt        *time.Time

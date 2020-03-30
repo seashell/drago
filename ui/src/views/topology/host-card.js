@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import moment from 'moment'
 
 import Box from '_components/box'
 import Text from '_components/text'
@@ -46,35 +47,39 @@ const StatusBadge = styled.div`
   position: absolute;
   right: -2px;
   bottom: -2px;
-  background: ${props => (props.status === 'online' ? 'green' : 'red')};
+  background: ${props => (props.status === 'online' ? 'green' : props.theme.colors.neutralLight)};
 `
 
-const HostCard = ({ id, name, address, advertiseAddress, listenPort, ...props }) => (
-  <Container {...props}>
-    <IconContainer mx="auto" mt={2} mb={3}>
-      <IconButton ml="auto" icon={<icons.Cube />} />
-      <StatusBadge status="online" />
-    </IconContainer>
-    <Box flexDirection="column">
-      <Text textStyle="detail" my={1}>
-        NAME
-      </Text>
-      <TextInput height={1} value={name} mb={1} />
-      <Text textStyle="detail" my={1}>
-        ADDRESS
-      </Text>
-      <TextInput height={1} value={address} mb={1} />
-      <Text textStyle="detail" my={1}>
-        ADVERTISE ADDRESS
-      </Text>
-      <TextInput height={1} value={advertiseAddress} placeholder="N/A" mb={1} />
-      <Text textStyle="detail" my={1}>
-        LISTEN PORT
-      </Text>
-      <TextInput height={1} value={listenPort} placeholder="N/A" mb={1} />
-    </Box>
-  </Container>
-)
+const HostCard = ({ id, name, address, advertiseAddress, listenPort, lastSeen, ...props }) => {
+  const isOnline = Math.abs(moment(lastSeen).diff(moment.now(), 'minutes')) < 5
+
+  return (
+    <Container {...props}>
+      <IconContainer mx="auto" mt={2} mb={3}>
+        <IconButton ml="auto" icon={<icons.Cube />} />
+        <StatusBadge status={isOnline ? 'online' : 'offline'} />
+      </IconContainer>
+      <Box flexDirection="column">
+        <Text textStyle="detail" my={1}>
+          NAME
+        </Text>
+        <TextInput height={1} value={name} mb={1} />
+        <Text textStyle="detail" my={1}>
+          ADDRESS
+        </Text>
+        <TextInput height={1} value={address} mb={1} />
+        <Text textStyle="detail" my={1}>
+          ADVERTISE ADDRESS
+        </Text>
+        <TextInput height={1} value={advertiseAddress} placeholder="N/A" mb={1} />
+        <Text textStyle="detail" my={1}>
+          LISTEN PORT
+        </Text>
+        <TextInput height={1} value={listenPort} placeholder="N/A" mb={1} />
+      </Box>
+    </Container>
+  )
+}
 
 HostCard.propTypes = {
   id: PropTypes.number.isRequired,
@@ -82,6 +87,7 @@ HostCard.propTypes = {
   address: PropTypes.string.isRequired,
   advertiseAddress: PropTypes.string.isRequired,
   listenPort: PropTypes.string.isRequired,
+  lastSeen: PropTypes.string.isRequired,
 }
 
 HostCard.defaultProps = {}

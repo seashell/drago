@@ -1,6 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
+import moment from 'moment'
 
 import Box from '_components/box'
 import Text from '_components/text'
@@ -43,31 +44,36 @@ const StatusBadge = styled.div`
   position: absolute;
   right: -2px;
   bottom: -2px;
-  background: ${props => (props.status === 'online' ? 'green' : 'red')};
+  background: ${props => (props.status === 'online' ? 'green' : props.theme.colors.neutralLight)};
 `
 
-const HostCard = ({ id, label, address, onClick, onDelete }) => (
-  <Container onClick={() => onClick(id)}>
-    <IconContainer mr="12px">
-      <IconButton ml="auto" icon={<icons.Cube />} />
-      {/* <StatusBadge status="online" /> */}
-    </IconContainer>
-    <Box flexDirection="column">
-      <Text textStyle="subtitle" fontSize="14px">
-        {label}
-      </Text>
-      <Text textStyle="detail" fontSize="12px">
-        {address}
-      </Text>
-    </Box>
-    <IconButton ml="auto" icon={<icons.Times />} onClick={onDelete} />
-  </Container>
-)
+const HostCard = ({ id, label, address, lastSeen, onClick, onDelete }) => {
+  const isOnline = Math.abs(moment(lastSeen).diff(moment.now(), 'minutes')) < 5
+
+  return (
+    <Container onClick={() => onClick(id)}>
+      <IconContainer mr="12px">
+        <IconButton ml="auto" icon={<icons.Cube />} />
+        <StatusBadge status={isOnline ? 'online' : 'offline'} />
+      </IconContainer>
+      <Box flexDirection="column">
+        <Text textStyle="subtitle" fontSize="14px">
+          {label}
+        </Text>
+        <Text textStyle="detail" fontSize="12px">
+          {address}
+        </Text>
+      </Box>
+      <IconButton ml="auto" icon={<icons.Times />} onClick={onDelete} />
+    </Container>
+  )
+}
 
 HostCard.propTypes = {
   id: PropTypes.number.isRequired,
   label: PropTypes.string.isRequired,
   address: PropTypes.string.isRequired,
+  lastSeen: PropTypes.string.isRequired,
   onClick: PropTypes.func,
   onDelete: PropTypes.func,
 }

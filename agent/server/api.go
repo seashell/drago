@@ -8,12 +8,13 @@ type HostList struct {
 }
 
 type HostSummary struct {
-	ID               int    `json:"id"`
-	Name             string `json:"name"`
-	Address          string `json:"address"`
-	PublicKey        string `json:"publicKey,omitempty"`
-	AdvertiseAddress string `json:"advertiseAddress,omitempty"`
-	ListenPort       string `json:"listenPort,omitempty"`
+	ID               int       `json:"id"`
+	Name             string    `json:"name"`
+	Address          string    `json:"address"`
+	PublicKey        string    `json:"publicKey,omitempty"`
+	AdvertiseAddress string    `json:"advertiseAddress,omitempty"`
+	ListenPort       string    `json:"listenPort,omitempty"`
+	LastSeen         time.Time `json:"lastSeen,omitempty"`
 }
 
 type HostDetails struct {
@@ -31,6 +32,7 @@ type HostDetails struct {
 	PostDown         string    `json:"postDown,omitempty"`
 	PublicKey        string    `json:"publicKey,omitempty"`
 	Links            LinkList  `json:"links,omitempty"`
+	LastSeen         time.Time `json:"lastSeen,omitempty"`
 	CreatedAt        time.Time `json:"createdAt"`
 	UpdatedAt        time.Time `json:"updatedAt"`
 }
@@ -46,6 +48,7 @@ type LinkDetails struct {
 	To                  *HostSummary `json:"to,omitempty"`
 	AllowedIPs          string       `json:"allowedIPs,omitempty"`
 	PersistentKeepalive int          `json:"persistentKeepalive,omitempty"`
+	// TODO: add metrics collected by wireguard here
 }
 
 type LinkSummary struct {

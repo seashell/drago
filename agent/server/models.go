@@ -17,6 +17,7 @@ type Host struct {
 	PreDown          string
 	PostDown         string
 	Links            []*Link
+	LastSeen         time.Time
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 	DeletedAt        *time.Time

@@ -5,6 +5,8 @@ import styled from 'styled-components'
 import { ForceGraph2D } from 'react-force-graph'
 import { GET_HOSTS, GET_LINKS } from '_graphql/actions'
 import { useQuery } from 'react-apollo'
+import moment from 'moment'
+
 import { Dragon } from '_components/spinner'
 import HostCard from './host-card'
 import LinkCard from './link-card'
@@ -155,6 +157,7 @@ const Topology = () => {
             address={hoveredNode.hostObj.address}
             advertiseAddress={hoveredNode.hostObj.advertiseAddress}
             listenPort={hoveredNode.hostObj.listenPort}
+            lastSeen={hoveredNode.hostObj.lastSeen}
           />
         )}
         {hoveredLinkID !== undefined && (

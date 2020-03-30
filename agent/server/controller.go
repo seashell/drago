@@ -1,6 +1,8 @@
 package server
 
 import (
+	"time"
+
 	gomodel "gopkg.in/jeevatkm/go-model.v1"
 )
 
@@ -54,6 +56,7 @@ func (c *controller) SyncHost(i *SyncHostInput) (*Host, error) {
 	c.repo.UpdateHost(i.ID, &Host{
 		ID:        i.ID,
 		PublicKey: i.PublicKey,
+		LastSeen:  time.Now(),
 	})
 	return c.repo.GetHost(i.ID)
 }
