@@ -68,12 +68,11 @@ func initConfig() {
 	viper.AutomaticEnv()
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
-
 	LoadConfig(cfgFile)
 
 	// sorry, but this is a dirty fix to Set defaults and read from ENV vars
 	setDefaultAndEnv("client.enabled", true)
-	setDefaultAndEnv("client.datadir", "/tmp/dragoin")
+	setDefaultAndEnv("client.datadir", "/tmp/drago")
 	setDefaultAndEnv("client.serveraddr", "localhost:8080")
 	setDefaultAndEnv("client.iface", "wg0")
 	setDefaultAndEnv("client.syncinterval", 60)
