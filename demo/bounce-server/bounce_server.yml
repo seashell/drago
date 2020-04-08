@@ -4,7 +4,7 @@ client:
     dataDir: "/tmp/drago"
     iface: "wg0"  
     syncInterval: 10  
-    jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwia2luZCI6Imhvc3QiLCJsYWJlbCI6Imhvc3RfMCJ9.7UJPXGlnEMlBOdj-aUbRnH8fZAUA1QP_MvZ4Y2XkVUI"
+    jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwia2luZCI6Imhvc3QiLCJsYWJlbCI6ImJvdW5jZV9zZXJ2ZXIifQ.DcxsrxgCRkdyY6ShjiAWt9N__h8kpFCZtxAGMD9c9FU"
 
 server:
     enabled: true
