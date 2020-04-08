@@ -1,23 +1,23 @@
 {
 	"hosts": [
 		{
-			"name": "host_0",
-			"advertiseAddress": "server:51820",
+			"name": "bounce_server",
+			"advertiseAddress": "bounce_server:51820",
 			"listenPort": "51820",
 			"address": "192.168.2.1/24"
 		},
 		{
-			"name": "host_1",
+			"name": "client_1",
 			"listenPort": "51820",
 			"address": "192.168.2.2/24"
 		},
 		{
-			"name": "host_2",
+			"name": "client_2",
 			"listenPort": "51820",
 			"address": "192.168.2.3/24"
 		},
 		{
-			"name": "host_3",
+			"name": "client_3",
 			"listenPort": "51820",
 			"address": "192.168.2.4/24"
 		}
@@ -36,6 +36,12 @@
 			"persistentKeepalive": 20
 		},
 		{
+			"fromID": 1,
+			"toID": 4,
+			"allowedIPs": "192.168.2.4/32",
+			"persistentKeepalive": 20
+		},
+		{
 			"fromID": 2,
 			"toID": 1,
 			"allowedIPs": "192.168.2.0/24",
@@ -43,6 +49,12 @@
 		},
 		{
 			"fromID": 3,
+			"toID": 1,
+			"allowedIPs": "192.168.2.0/24",
+			"persistentKeepalive": 20
+		},
+		{
+			"fromID": 4,
 			"toID": 1,
 			"allowedIPs": "192.168.2.0/24",
 			"persistentKeepalive": 20

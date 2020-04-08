@@ -1,0 +1,39 @@
+version: '3'
+
+services:
+
+  bounce_server: &bounce_server
+    image: drago:latest
+    cap_add:
+      - NET_ADMIN
+    networks:
+    - bounce_server
+    ports:
+      - 8181:8181
+      - 8080:8080
+    volumes:
+    - ./mock.json:/mock.json
+    - ./bounce_server.yml:/bounce_server.yml
+    container_name: bounce_server
+
+  client_1: &client
+    <<: *bounce_server
+    ports: []
+    volumes:
+      - ./client_1.yml:/client_1.yml
+    container_name: client_1
+
+  client_2:
+    <<: *client
+    volumes:
+      - ./client_2.yml:/client_2.yml
+    container_name: client_2
+
+  client_3:
+    <<: *client
+    volumes:
+      - ./client_3.yml:/client_3.yml
+    container_name: client_3
+
+networks:
+  bounce_server:

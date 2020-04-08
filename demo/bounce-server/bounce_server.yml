@@ -1,0 +1,16 @@
+client:
+    enabled: true  
+    serverAddr: "bounce_server:8080" 
+    dataDir: "/tmp/drago"
+    iface: "wg0"  
+    syncInterval: 10  
+    jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6MSwia2luZCI6Imhvc3QiLCJsYWJlbCI6ImJvdW5jZV9zZXJ2ZXIifQ.DcxsrxgCRkdyY6ShjiAWt9N__h8kpFCZtxAGMD9c9FU"
+
+server:
+    enabled: true
+    bindAddrUi: ":8181"
+    bindAddrApi: ":8080" 
+    network: "192.168.2.0/24"
+    secret: "seashell-secret-test-123"
+    mockData: "/mock.json" 
+    ui: true

@@ -1,0 +1,9 @@
+client:
+    enabled: true  
+    serverAddr: "bounce_server:8080" 
+    dataDir: "/tmp/drago"
+    iface: "wg0"  
+    syncInterval: 10  
+    jwt: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6Miwia2luZCI6Imhvc3QiLCJsYWJlbCI6ImNsaWVudF8xIn0.38jbaWaTniKzE5uZfaAFhpDfcNg646J_OuBdw5LKDLM"
+server:
+    enabled: false 
