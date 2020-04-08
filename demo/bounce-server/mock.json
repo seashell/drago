@@ -7,17 +7,17 @@
 			"address": "192.168.2.1/24"
 		},
 		{
-			"name": "client_1",
+			"name": "device_1",
 			"listenPort": "51820",
 			"address": "192.168.2.2/24"
 		},
 		{
-			"name": "client_2",
+			"name": "device_2",
 			"listenPort": "51820",
 			"address": "192.168.2.3/24"
 		},
 		{
-			"name": "client_3",
+			"name": "device_3",
 			"listenPort": "51820",
 			"address": "192.168.2.4/24"
 		}
