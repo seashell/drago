@@ -1,24 +1,23 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useState } from 'react'
 import { navigate } from '@reach/router'
 
 import styled from 'styled-components'
-import { ForceGraph2D } from 'react-force-graph'
 import { GET_HOSTS, GET_LINKS } from '_graphql/actions'
 import { useQuery } from 'react-apollo'
-import moment from 'moment'
 
+import { icons } from '_assets/'
+import Box from '_components/box'
+import Text from '_components/text'
 import { Dragon } from '_components/spinner'
+
 import HostCard from './host-card'
 import LinkCard from './link-card'
 
+import Graph from './graph'
+
 const Container = styled.div`
   display: flex;
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  max-height: 100vh;
+  flex-direction: column;
 `
 
 const StyledHostCard = styled(HostCard)`
@@ -33,17 +32,38 @@ const StyledLinkCard = styled(LinkCard)`
   left: 20px;
 `
 
+const ErrorStateContainer = styled(Box).attrs({
+  border: 'discrete',
+  height: '300px',
+})`
+  svg {
+    height: 120px;
+  }
+  padding: 20px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`
+
+const ErrorState = () => (
+  <ErrorStateContainer>
+    <icons.ErrorStateCube />
+    <Text textStyle="description" mt={4}>
+      Oops! It seems that an error has occurred.
+    </Text>
+  </ErrorStateContainer>
+)
+
 const Topology = () => {
-  const ref = useRef(null)
+  const [hoveredNodeID, setHoveredNodeID] = useState(undefined)
+  const [hoveredLinkID, setHoveredLinkID] = useState(undefined)
 
   const [hosts, setHosts] = useState([])
   const [links, setLinks] = useState([])
 
-  const [hoveredNodeID, setHoveredNodeID] = useState(undefined)
-  const [hoveredLinkID, setHoveredLinkID] = useState(undefined)
-
   const getHostsQuery = useQuery(GET_HOSTS, {
     onCompleted: data => {
+      if (data === undefined) return
       setHosts(
         data.result.items.map(host => ({
           id: parseInt(host.id, 10),
@@ -53,10 +73,12 @@ const Topology = () => {
         }))
       )
     },
+    onError: () => {},
   })
 
   const getLinksQuery = useQuery(GET_LINKS, {
     onCompleted: data => {
+      if (data === undefined) return
       setLinks(
         data.result.items.map(link => ({
           id: parseInt(link.id, 10),
@@ -70,128 +92,60 @@ const Topology = () => {
         }))
       )
     },
+    onError: () => {},
   })
 
-  const graphData = {
-    nodes: hosts,
-    links,
-  }
-
-  useEffect(() => {
-    const fg = ref.current
-    fg.d3Force('link').distance(60)
-    // fg.d3Force('charge').strength(-800)
-  })
-
-  const nodeCanvasObject = (node, ctx, globalScale) => {
-    const fontSize = 1 + 1.4 * globalScale
-
-    ctx.fillStyle = '#cccccc'
-    ctx.font = `${fontSize}px Roboto`
-
-    if (node.hostObj.advertiseAddress !== null) {
-      ctx.fillText(`${node.hostObj.advertiseAddress}`, node.x + 2, node.y - 1.7 * globalScale)
-    }
-
-    if (node.isHover) {
-      ctx.beginPath()
-      ctx.arc(node.x, node.y, 6 * 1.4, 0, 2 * Math.PI, false)
-      ctx.fillStyle = '#cccccc'
-      ctx.fill()
-    }
-  }
-
-  const linkCanvasObject = (link, ctx, globalScale) => {}
-
-  const handleNodeHover = (node, prevNode) => {
-    const elem = document.getElementById('wrapper')
-    elem.style.cursor = null
-
-    setHoveredNodeID(undefined)
-
-    if (node) {
-      node.isHover = true
-      setHoveredNodeID(node.id)
-      elem.style.cursor = 'pointer'
-    } else {
-      prevNode.isHover = false
-    }
-
-    if (prevNode) {
-      prevNode.isHover = false
-    }
-  }
-
-  const handleLinkHover = (link, prevLink) => {
-    const elem = document.getElementById('wrapper')
-    elem.style.cursor = null
-
-    setHoveredLinkID(undefined)
-
-    if (link) {
-      link.isHover = true
-      setHoveredLinkID(link.id)
-      elem.style.cursor = 'pointer'
-    } else {
-      prevLink.isHover = false
-    }
-    if (prevLink) {
-      prevLink.isHover = false
-    }
-  }
+  const hoveredNode = hosts.find(h => h.id === hoveredNodeID)
+  const hoveredLink = links.find(l => l.id === hoveredLinkID)
 
   const handleNodeClick = n => {
     navigate(`/hosts/${n.id}`)
   }
 
-  const hoveredNode = hosts.find(h => h.id === hoveredNodeID)
-  const hoveredLink = links.find(l => l.id === hoveredLinkID)
+  const handleNodeHover = n => {
+    setHoveredNodeID(n.id)
+  }
+
+  const handleLinkHover = l => {
+    setHoveredLinkID(l.id)
+  }
 
   return (
     <Container>
+      <Box mb={3}>
+        <Text textStyle="title">Overlay topology</Text>
+      </Box>
       {(getHostsQuery.loading || getLinksQuery.loading) && <Dragon />}
-      <div id="wrapper">
-        {hoveredNodeID !== undefined && (
-          <StyledHostCard
-            name={hoveredNode.hostObj.name}
-            address={hoveredNode.hostObj.address}
-            advertiseAddress={hoveredNode.hostObj.advertiseAddress}
-            listenPort={hoveredNode.hostObj.listenPort}
-            lastSeen={hoveredNode.hostObj.lastSeen}
-          />
-        )}
-        {hoveredLinkID !== undefined && (
-          <StyledLinkCard
-            sourceName={hoveredLink.sourceObj.name}
-            sourceAddress={hoveredLink.sourceObj.address}
-            targetName={hoveredLink.targetObj.name}
-            targetAddress={hoveredLink.targetObj.address}
-            allowedIPs={hoveredLink.allowedIPs}
-            persistentKeepalive={hoveredLink.persistentKeepalive}
-          />
-        )}
-        <ForceGraph2D
-          ref={ref}
-          graphData={graphData}
-          nodeRelSize={5}
-          nodeLabel={null}
-          nodeColor={n => n.color || '#333333'}
-          nodeCanvasObjectMode={() => 'before'}
-          nodeCanvasObject={nodeCanvasObject}
-          onNodeHover={handleNodeHover}
-          onNodeClick={handleNodeClick}
-          linkCanvasObjectMode={() => 'after'}
-          linkCanvasObject={linkCanvasObject}
-          linkWidth={l => (l.isHover ? 5 : 1)}
-          onLinkHover={handleLinkHover}
-          linkDirectionalArrowLength={3.5}
-          linkDirectionalArrowRelPos={1}
-          linkCurvature={0.1}
-          linkDirectionalParticles={1}
-          // linkDirectionalParticleSpeed={0.05}
-          linkDirectionalParticleColor={() => '#dddddd'}
+      {hoveredNodeID !== undefined && (
+        <StyledHostCard
+          name={hoveredNode.hostObj.name}
+          address={hoveredNode.hostObj.address}
+          advertiseAddress={hoveredNode.hostObj.advertiseAddress}
+          listenPort={hoveredNode.hostObj.listenPort}
+          lastSeen={hoveredNode.hostObj.lastSeen}
         />
-      </div>
+      )}
+      {hoveredLinkID !== undefined && (
+        <StyledLinkCard
+          sourceName={hoveredLink.sourceObj.name}
+          sourceAddress={hoveredLink.sourceObj.address}
+          targetName={hoveredLink.targetObj.name}
+          targetAddress={hoveredLink.targetObj.address}
+          allowedIPs={hoveredLink.allowedIPs}
+          persistentKeepalive={hoveredLink.persistentKeepalive}
+        />
+      )}
+      {getHostsQuery.error || getLinksQuery.error ? (
+        <ErrorState />
+      ) : (
+        <Graph
+          nodes={hosts}
+          links={links}
+          onNodeHovered={handleNodeHover}
+          onLinkHovered={handleLinkHover}
+          onNodeClicked={handleNodeClick}
+        />
+      )}
     </Container>
   )
 }
