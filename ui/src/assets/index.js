@@ -18,9 +18,6 @@ import { ReactComponent as Success } from './icons/success.svg'
 import { ReactComponent as Error } from './icons/error.svg'
 import { ReactComponent as Warning } from './icons/warning.svg'
 
-import { ReactComponent as Conch } from './illustrations/conch.svg'
-import { ReactComponent as Ship } from './illustrations/ship.svg'
-
 const icons = {
   Logo,
   ArrowUp,
@@ -42,9 +39,6 @@ const icons = {
   Link,
 }
 
-const illustrations = {
-  Conch,
-  Ship,
-}
+const illustrations = {}
 
 export { icons, illustrations }
