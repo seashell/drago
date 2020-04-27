@@ -2,13 +2,13 @@ import React, { useState } from 'react'
 import { navigate } from '@reach/router'
 
 import styled from 'styled-components'
-import { GET_HOSTS, GET_LINKS } from '_graphql/actions'
 import { useQuery } from 'react-apollo'
+import { GET_HOSTS, GET_LINKS } from '_graphql/actions'
 
 import { icons } from '_assets/'
 import Box from '_components/box'
 import Text from '_components/text'
-import { Dragon } from '_components/spinner'
+import { Dragon as Spinner } from '_components/spinner'
 
 import HostCard from './host-card'
 import LinkCard from './link-card'
@@ -115,7 +115,7 @@ const Topology = () => {
       <Box mb={3}>
         <Text textStyle="title">Overlay topology</Text>
       </Box>
-      {(getHostsQuery.loading || getLinksQuery.loading) && <Dragon />}
+      {(getHostsQuery.loading || getLinksQuery.loading) && <Spinner />}
       {hoveredNodeID !== undefined && (
         <StyledHostCard
           name={hoveredNode.hostObj.name}

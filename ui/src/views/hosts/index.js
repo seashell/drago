@@ -6,7 +6,7 @@ import { navigate } from '@reach/router'
 import { useQuery, useMutation } from 'react-apollo'
 
 import { GET_HOSTS, DELETE_HOST } from '_graphql/actions'
-import { Dragon } from '_components/spinner'
+import { Dragon as a Spinner } from '_components/spinner'
 import Text from '_components/text'
 import Flex from '_components/flex'
 import toast from '_components/toast'
@@ -98,7 +98,7 @@ const HostsView = () => {
       {error ? (
         <ErrorState />
       ) : loading || deleting ? (
-        <Dragon />
+        <Spinner />
       ) : (
         <HostsList
           hosts={data.result.items}

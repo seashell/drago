@@ -10,7 +10,7 @@ import Flex from '_components/flex'
 import Link from '_components/link'
 import Text from '_components/text'
 import Button from '_components/button'
-import { Dragon } from '_components/spinner'
+import { Dragon as Spinner } from '_components/spinner'
 import IconButton from '_components/icon-button'
 import TextInput from '_components/inputs/text-input'
 import { icons } from '_assets/'
@@ -124,7 +124,7 @@ const EditHost = ({ hostId }) => {
   return (
     <Container>
       {query.loading || mutation.loading ? (
-        <Dragon />
+        <Spinner />
       ) : (
         <Box flexDirection="column">
           <Text display="flex" textStyle="title" mb={4}>
