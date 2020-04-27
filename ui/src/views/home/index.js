@@ -47,23 +47,13 @@ const HomeView = () => {
     navigate(`/hosts`)
   })
 
-  const handleHostsButtonClicked = () => {
-    navigate(`/hosts`)
-  }
-
   return (
     <Container>
       <Box mb={3}>
         <Text textStyle="title" />
       </Box>
-
       <Text textStyle="bodyText" />
-
       <Text my={3} textStyle="bodyText" />
-
-      <StyledButton mt={3} onClick={handleHostsButtonClicked}>
-        Get started
-      </StyledButton>
     </Container>
   )
 }
