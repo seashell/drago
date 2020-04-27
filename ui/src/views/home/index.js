@@ -43,7 +43,9 @@ const IconContainer = styled(Box).attrs({
 `
 
 const HomeView = () => {
-  useEffect(() => {})
+  useEffect(() => {
+    navigate(`/hosts`)
+  })
 
   const handleHostsButtonClicked = () => {
     navigate(`/hosts`)
@@ -52,19 +54,12 @@ const HomeView = () => {
   return (
     <Container>
       <Box mb={3}>
-        <Text textStyle="title">Welcome to Drago!</Text>
+        <Text textStyle="title" />
       </Box>
 
-      <Text textStyle="bodyText">
-        Drago is a flexible configuration manager for WireGuard networks. It is designed to make it
-        simple to define and manage secure network overlays spanning heterogeneous hosts distributed
-        across different clouds and edge locations.
-      </Text>
+      <Text textStyle="bodyText" />
 
-      <Text my={3} textStyle="bodyText">
-        If you have questions, feature requests, or issues to report, please reach out through{' '}
-        <a href="https://github.com/seashell/drago/issues">our Github repository</a>.
-      </Text>
+      <Text my={3} textStyle="bodyText" />
 
       <StyledButton mt={3} onClick={handleHostsButtonClicked}>
         Get started
