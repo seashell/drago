@@ -1,17 +1,16 @@
 import React, { useEffect } from 'react'
 import styled from 'styled-components'
-
 import { navigate } from '@reach/router'
-
 import { useQuery, useMutation } from 'react-apollo'
-
 import { GET_HOSTS, DELETE_HOST } from '_graphql/actions'
+
 import { Dragon as Spinner } from '_components/spinner'
 import Text from '_components/text'
 import Flex from '_components/flex'
 import toast from '_components/toast'
 import Button from '_components/button'
 import Box from '_components/box'
+
 import { icons } from '_assets/'
 
 import HostsList from './hosts-list'
@@ -42,25 +41,47 @@ const ErrorState = () => (
   </ErrorStateContainer>
 )
 
+const EmptyStateContainer = styled(Box).attrs({
+  border: 'discrete',
+  height: '300px',
+})`
+  svg {
+    height: 120px;
+  }
+  padding: 20px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`
+
+const EmptyState = () => (
+  <EmptyStateContainer>
+    <icons.EmptyStateCube />
+    <Text textStyle="description" mt={4}>
+      Oops! It seems that there are no hosts registered.
+    </Text>
+  </EmptyStateContainer>
+)
+
 export const StyledButton = styled(Button)``
 
 const HostsView = () => {
-  const { loading, data, error, refetch } = useQuery(GET_HOSTS)
+  const getHostsQuery = useQuery(GET_HOSTS)
 
   useEffect(() => {
-    refetch()
+    getHostsQuery.refetch()
   })
 
   const handleHostDeleted = () => {
     toast.success('Host deleted')
-    refetch()
+    getHostsQuery.refetch()
   }
 
   const handleHostDeleteError = () => {
     toast.error('Error deleting host')
   }
 
-  const [deleteHost, { loading: deleting }] = useMutation(DELETE_HOST, {
+  const [deleteHost, deleteHostMutation] = useMutation(DELETE_HOST, {
     variables: { id: undefined },
     onCompleted: handleHostDeleted,
     onError: handleHostDeleteError,
@@ -80,6 +101,10 @@ const HostsView = () => {
     navigate('/hosts/new')
   }
 
+  const isError = getHostsQuery.error
+  const isLoading = getHostsQuery.loading || deleteHostMutation.loading
+  const isEmpty = !isLoading && getHostsQuery.data.result.items.length === 0
+
   return (
     <Container>
       <Box mb={3}>
@@ -95,13 +120,15 @@ const HostsView = () => {
           Create
         </Button>
       </Box>
-      {error ? (
+      {isError ? (
         <ErrorState />
-      ) : loading || deleting ? (
+      ) : isLoading ? (
         <Spinner />
+      ) : isEmpty ? (
+        <EmptyState />
       ) : (
         <HostsList
-          hosts={data.result.items}
+          hosts={getHostsQuery.data.result.items}
           onHostSelect={handleHostSelect}
           onHostDelete={handleHostDelete}
         />

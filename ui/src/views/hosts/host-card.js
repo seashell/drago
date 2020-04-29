@@ -11,7 +11,7 @@ import { icons } from '_assets/'
 const Container = styled(Box).attrs({
   display: 'flex',
   border: 'discrete',
-  m: 2,
+  m: 1,
   p: 3,
 })`
   align-items: center;
@@ -23,8 +23,8 @@ const Container = styled(Box).attrs({
 
 const IconContainer = styled(Box).attrs({
   display: 'flex',
-  height: '48px',
-  width: '48px',
+  height: '36px',
+  width: '36px',
   bg: 'neutralLighter',
   borderRadius: '4px',
 })`
@@ -37,8 +37,8 @@ const IconContainer = styled(Box).attrs({
 `
 
 const StatusBadge = styled.div`
-  width: 12px;
-  height: 12px;
+  width: 8px;
+  height: 8px;
   border-radius: 50%;
   border: 4px solid white;
   position: absolute;
@@ -47,9 +47,9 @@ const StatusBadge = styled.div`
   background: ${props => (props.status === 'online' ? 'green' : props.theme.colors.neutralLight)};
 `
 
-const HostCard = ({ id, label, address, lastSeen, onClick, onDelete }) => {
-  const isOnline = Math.abs(moment(lastSeen).diff(moment.now(), 'minutes')) < 5
-
+const HostCard = ({ id, label, address, onClick, onDelete }) => {
+  // const isOnline = Math.abs(moment(lastSeen).diff(moment.now(), 'minutes')) < 5
+  const isOnline = false
   return (
     <Container onClick={() => onClick(id)}>
       <IconContainer mr="12px">
@@ -70,10 +70,9 @@ const HostCard = ({ id, label, address, lastSeen, onClick, onDelete }) => {
 }
 
 HostCard.propTypes = {
-  id: PropTypes.number.isRequired,
+  id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   address: PropTypes.string.isRequired,
-  lastSeen: PropTypes.string.isRequired,
   onClick: PropTypes.func,
   onDelete: PropTypes.func,
 }
