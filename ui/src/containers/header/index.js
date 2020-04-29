@@ -38,6 +38,10 @@ Container.defaultProps = {
 
 const StyledLink = styled(Link)`
   margin: auto;
+  padding-right: 18px;
+  :hover {
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `
 
 const Header = props => (
