@@ -12,13 +12,13 @@ import { defaults } from './local-state'
 const composeUrl = (url, protocol) => `${protocol}://${url}`
 
 const restLink = new RestLink({
-  uri: composeUrl(REST_API_URL, 'http'),
+  uri: composeUrl(REST_API_URL, 'https'),
 })
 
 const authLink = new ApolloLink((operation, forward) => {
   operation.setContext(({ headers }) => ({
     headers: {
-      Authorization: `Bearer ${localStorage.getItem('jwt')}`,
+      'X-Drago-Token': `${localStorage.getItem('drago.settings.acl.token')}`,
       ...headers,
     },
   }))
