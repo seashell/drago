@@ -1,51 +1,22 @@
-import React, { useEffect, useRef } from 'react'
+import React from 'react'
 import styled from 'styled-components'
 import PropTypes from 'prop-types'
 
 import { ForceGraph2D } from 'react-force-graph'
-import Box from '_components/box'
-import Text from '_components/text'
-
-import { icons } from '_assets/'
 
 const Container = styled.div.attrs({
   id: 'wrapper',
 })`
-  width: 100%;
+  position: absolute;
+  background: transparent;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 0;
 `
-
-const EmptyStateContainer = styled(Box).attrs({
-  border: 'discrete',
-  height: '300px',
-})`
-  svg {
-    height: 120px;
-  }
-  padding: 20px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`
-
-const EmptyState = () => (
-  <EmptyStateContainer>
-    <icons.EmptyStateCube />
-    <Text textStyle="description" mt={4}>
-      Oops! It seems that there are no registered hosts.
-    </Text>
-  </EmptyStateContainer>
-)
 
 const Graph = ({ nodes, links, onNodeClicked, onNodeHovered, onLinkHovered }) => {
-  const ref = useRef(null)
-
-  useEffect(() => {
-    const fg = ref.current
-    if (fg !== null) {
-      fg.d3Force('link').distance(60)
-    }
-  })
-
   const nodeCanvasObject = (node, ctx, globalScale) => {
     const fontSize = 1 + 1.4 * globalScale
     ctx.fillStyle = '#cccccc'
@@ -99,31 +70,25 @@ const Graph = ({ nodes, links, onNodeClicked, onNodeHovered, onLinkHovered }) =>
 
   return (
     <Container>
-      {nodes.length === 0 ? (
-        <EmptyState />
-      ) : (
-        <ForceGraph2D
-          ref={ref}
-          graphData={{ nodes, links }}
-          nodeRelSize={5}
-          nodeLabel={null}
-          nodeColor={n => n.color || '#333333'}
-          nodeCanvasObjectMode={() => 'before'}
-          nodeCanvasObject={nodeCanvasObject}
-          onNodeHover={handleNodeHover}
-          onNodeClick={handleNodeClick}
-          linkCanvasObjectMode={() => 'after'}
-          linkCanvasObject={linkCanvasObject}
-          linkWidth={l => (l.isHover ? 5 : 1)}
-          onLinkHover={handleLinkHover}
-          linkDirectionalArrowLength={3.5}
-          linkDirectionalArrowRelPos={1}
-          linkCurvature={0.1}
-          linkDirectionalParticles={1}
-          // linkDirectionalParticleSpeed={0.05}
-          linkDirectionalParticleColor={() => '#dddddd'}
-        />
-      )}
+      <ForceGraph2D
+        graphData={{ nodes, links }}
+        nodeRelSize={5}
+        nodeLabel={null}
+        nodeColor={n => n.color || '#333333'}
+        nodeCanvasObjectMode={() => 'before'}
+        nodeCanvasObject={nodeCanvasObject}
+        onNodeHover={handleNodeHover}
+        onNodeClick={handleNodeClick}
+        linkCanvasObjectMode={() => 'after'}
+        linkCanvasObject={linkCanvasObject}
+        linkWidth={l => (l.isHover ? 5 : 1)}
+        onLinkHover={handleLinkHover}
+        linkDirectionalArrowLength={3.5}
+        linkDirectionalArrowRelPos={1}
+        linkCurvature={0.1}
+        linkDirectionalParticles={1}
+        linkDirectionalParticleColor={() => '#dddddd'}
+      />
     </Container>
   )
 }

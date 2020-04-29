@@ -1,7 +1,8 @@
-import React, { useState } from 'react'
-import { navigate } from '@reach/router'
-
+import React, { useState, useMemo } from 'react'
 import styled from 'styled-components'
+import { navigate } from '@reach/router'
+import { Portal } from 'react-portal'
+
 import { useQuery } from 'react-apollo'
 import { GET_HOSTS, GET_LINKS } from '_graphql/actions'
 
@@ -18,18 +19,8 @@ import Graph from './graph'
 const Container = styled.div`
   display: flex;
   flex-direction: column;
-`
-
-const StyledHostCard = styled(HostCard)`
-  position: absolute;
-  top: 100px;
-  left: 20px;
-`
-
-const StyledLinkCard = styled(LinkCard)`
-  position: absolute;
-  top: 100px;
-  left: 20px;
+  grid-column: span 12;
+  height: 100vh;
 `
 
 const ErrorStateContainer = styled(Box).attrs({
@@ -54,12 +45,49 @@ const ErrorState = () => (
   </ErrorStateContainer>
 )
 
-const Topology = () => {
-  const [hoveredNodeID, setHoveredNodeID] = useState(undefined)
-  const [hoveredLinkID, setHoveredLinkID] = useState(undefined)
+const EmptyStateContainer = styled(Box).attrs({
+  border: 'discrete',
+  height: '300px',
+})`
+  svg {
+    height: 120px;
+  }
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+`
 
+const EmptyState = () => (
+  <EmptyStateContainer>
+    <icons.EmptyStateCube />
+    <Text textStyle="description" mt={4}>
+      Oops! It seems that there are no registered hosts.
+    </Text>
+  </EmptyStateContainer>
+)
+
+const StyledHostCard = styled(HostCard)`
+  position: absolute;
+  top: 100px;
+  left: 20px;
+  background: #fff;
+  z-index: 99;
+`
+
+const StyledLinkCard = styled(LinkCard)`
+  position: absolute;
+  top: 100px;
+  left: 20px;
+  background: #fff;
+  z-index: 99;
+`
+
+const Topology = () => {
   const [hosts, setHosts] = useState([])
   const [links, setLinks] = useState([])
+
+  const [selectedHostID, setSelectedHostID] = useState(undefined)
+  const [selectedLinkID, setSelectedLinkID] = useState(undefined)
 
   const getHostsQuery = useQuery(GET_HOSTS, {
     onCompleted: data => {
@@ -95,56 +123,71 @@ const Topology = () => {
     onError: () => {},
   })
 
-  const hoveredNode = hosts.find(h => h.id === hoveredNodeID)
-  const hoveredLink = links.find(l => l.id === hoveredLinkID)
-
   const handleNodeClick = n => {
-    navigate(`/hosts/${n.id}`)
+    if (n !== null) {
+      navigate(`/hosts/${n.id}`)
+    }
   }
 
   const handleNodeHover = n => {
-    setHoveredNodeID(n.id)
+    setSelectedHostID(n != null ? n.id : undefined)
   }
 
   const handleLinkHover = l => {
-    setHoveredLinkID(l.id)
+    setSelectedLinkID(l != null ? l.id : undefined)
   }
+
+  const isError = getHostsQuery.error || getLinksQuery.error
+  const isLoading = getHostsQuery.loading || getLinksQuery.loading
+  const isEmpty = !isLoading && hosts.length === 0
+
+  const MemoizedGraph = useMemo(
+    () => (
+      <Graph
+        nodes={hosts}
+        links={links}
+        onNodeHovered={handleNodeHover}
+        onLinkHovered={handleLinkHover}
+        onNodeClicked={handleNodeClick}
+      />
+    ),
+    [hosts, links]
+  )
+
+  const hoveredNode = hosts.find(h => h.id === selectedHostID) || { hostObj: { name: '' } }
+  const hoveredLink = links.find(l => l.id === selectedLinkID) || { sourceObj: {}, targetObj: {} }
 
   return (
     <Container>
-      <Box mb={3}>
+      <Box mb={3} width="100%">
         <Text textStyle="title">Overlay topology</Text>
       </Box>
-      {(getHostsQuery.loading || getLinksQuery.loading) && <Spinner />}
-      {hoveredNodeID !== undefined && (
-        <StyledHostCard
-          name={hoveredNode.hostObj.name}
-          address={hoveredNode.hostObj.address}
-          advertiseAddress={hoveredNode.hostObj.advertiseAddress}
-          listenPort={hoveredNode.hostObj.listenPort}
-          lastSeen={hoveredNode.hostObj.lastSeen}
-        />
+
+      {isLoading && <Spinner />}
+      {isError ? <ErrorState /> : isEmpty ? <EmptyState /> : MemoizedGraph}
+
+      {selectedLinkID && (
+        <Portal>
+          <StyledLinkCard
+            sourceName={hoveredLink.sourceObj.name}
+            sourceAddress={hoveredLink.sourceObj.address}
+            targetName={hoveredLink.targetObj.name}
+            targetAddress={hoveredLink.targetObj.address}
+            allowedIPs={hoveredLink.allowedIPs}
+            persistentKeepalive={hoveredLink.persistentKeepalive}
+          />
+        </Portal>
       )}
-      {hoveredLinkID !== undefined && (
-        <StyledLinkCard
-          sourceName={hoveredLink.sourceObj.name}
-          sourceAddress={hoveredLink.sourceObj.address}
-          targetName={hoveredLink.targetObj.name}
-          targetAddress={hoveredLink.targetObj.address}
-          allowedIPs={hoveredLink.allowedIPs}
-          persistentKeepalive={hoveredLink.persistentKeepalive}
-        />
-      )}
-      {getHostsQuery.error || getLinksQuery.error ? (
-        <ErrorState />
-      ) : (
-        <Graph
-          nodes={hosts}
-          links={links}
-          onNodeHovered={handleNodeHover}
-          onLinkHovered={handleLinkHover}
-          onNodeClicked={handleNodeClick}
-        />
+      {selectedHostID && (
+        <Portal>
+          <StyledHostCard
+            name={hoveredNode.hostObj.name}
+            address={hoveredNode.hostObj.address}
+            advertiseAddress={hoveredNode.hostObj.advertiseAddress}
+            listenPort={hoveredNode.hostObj.listenPort}
+            lastSeen={hoveredNode.hostObj.lastSeen}
+          />
+        </Portal>
       )}
     </Container>
   )
