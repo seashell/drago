@@ -10,6 +10,7 @@ import { ReactComponent as Search } from './icons/search.svg'
 import { ReactComponent as Buoy } from './icons/buoy.svg'
 import { ReactComponent as Bell } from './icons/bell.svg'
 import { ReactComponent as Cube } from './icons/cube.svg'
+import { ReactComponent as Network } from './icons/network.svg'
 import { ReactComponent as EmptyStateCube } from './icons/ghost-cube.svg'
 import { ReactComponent as ErrorStateCube } from './icons/error-cube.svg'
 import { ReactComponent as Link } from './icons/link.svg'
@@ -34,9 +35,10 @@ const icons = {
   Error,
   Warning,
   Cube,
+  Network,
+  Link,
   EmptyStateCube,
   ErrorStateCube,
-  Link,
 }
 
 const illustrations = {}

@@ -2,17 +2,19 @@ import React from 'react'
 import styled from 'styled-components'
 
 import HomeView from '_views/home'
+import NetworksView from '_views/networks'
+import NewNetwork from '_views/new-network'
 import NotFound from '_views/not-found'
 import HostsView from '_views/hosts'
 import Topology from '_views/topology'
 import NewHost from '_views/new-host'
 import EditHost from '_views/edit-host'
+import TokensView from '_views/tokens'
 
 import Header from '_containers/header'
 import Footer from '_containers/footer'
 
 import { Router } from '@reach/router'
-import TokensView from '_views/tokens'
 
 const Dashboard = styled.div`
   position: relative;
@@ -41,11 +43,13 @@ const App = () => (
     <Header />
     <Content>
       <HomeView path="/" />
-      <TokensView path="/settings/tokens" />
+      <NetworksView path="/networks" />
+      <NewNetwork path="/networks/new" />
       <HostsView path="/hosts" />
       <NewHost path="/hosts/new" />
       <EditHost path="/hosts/:hostId" />
       <Topology path="/topology" />
+      <TokensView path="/settings/tokens" />
       <NotFound default />
     </Content>
     <Footer gridArea="footer" />
