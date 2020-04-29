@@ -66,7 +66,7 @@ const EditHost = ({ hostId }) => {
 
   const [formState, { text }] = useFormState()
 
-  const query = useQuery(GET_HOST, {
+  const getHostQuery = useQuery(GET_HOST, {
     variables: { id: hostId },
     onCompleted: data => {
       formState.setField('name', data.result.name)
@@ -86,16 +86,16 @@ const EditHost = ({ hostId }) => {
   })
 
   useEffect(() => {
-    query.refetch()
+    getHostQuery.refetch()
   })
 
-  const [updateHost, mutation] = useMutation(UPDATE_HOST, {
+  const [updateHost, updateHostMutation] = useMutation(UPDATE_HOST, {
     variables: { id: hostId, ...formState.values },
     onCompleted: onHostUpdated,
     onError: onHostUpdateError,
   })
 
-  const [deleteLink, { loading: deletingLink }] = useMutation(DELETE_LINK, {
+  const [deleteLink, deleteLinkMutation] = useMutation(DELETE_LINK, {
     variables: { id: undefined },
     onCompleted: () => {
       toast.success('Link deleted successfully')
@@ -121,9 +121,11 @@ const EditHost = ({ hostId }) => {
     deleteLink({ variables: { id } })
   }
 
+  const isLoading = getHostQuery.loading || updateHostMutation.loading || deleteLinkMutation.loading
+
   return (
     <Container>
-      {query.loading || mutation.loading ? (
+      {isLoading ? (
         <Spinner />
       ) : (
         <Box flexDirection="column">
@@ -132,13 +134,15 @@ const EditHost = ({ hostId }) => {
               <IconButton ml="auto" icon={<icons.Cube />} />
               <StatusBadge
                 status={
-                  Math.abs(moment(query.data.result.lastSeen).diff(moment.now(), 'minutes')) < 5
+                  Math.abs(
+                    moment(getHostQuery.data.result.lastSeen).diff(moment.now(), 'minutes')
+                  ) < 5
                     ? 'online'
                     : 'offline'
                 }
               />
             </IconContainer>
-            {query.data.result.name}
+            {getHostQuery.data.result.name}
           </Text>
 
           <Text my={3}>Name</Text>
@@ -181,11 +185,7 @@ const EditHost = ({ hostId }) => {
           </Collapse>
 
           <Collapse isOpen title={<Text textStyle="description">Links</Text>}>
-            <LinksList
-              onLinkAdd={handleAddLink}
-              onLinkDelete={handleDeleteLink}
-              links={query.data.result.links.items}
-            />
+            <LinksList onLinkAdd={handleAddLink} onLinkDelete={handleDeleteLink} links={[]} />
           </Collapse>
 
           <Button width="100%" borderRadius={3} mt={3} mb={4} onClick={onSave}>
@@ -194,7 +194,7 @@ const EditHost = ({ hostId }) => {
 
           <NewLinkModal
             isOpen={isNewLinkModalOpen}
-            fromHost={query.data.result}
+            fromHost={getHostQuery.data.result}
             onBackgroundClick={() => setNewLinkModalOpen(false)}
             onEscapeKeydown={() => setNewLinkModalOpen(false)}
           />

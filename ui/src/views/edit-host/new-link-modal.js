@@ -3,17 +3,22 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { border, shadow } from 'styled-system'
 import Modal from 'styled-react-modal'
-import IconButton from '_components/icon-button'
+
+import { useFormState } from 'react-use-form-state'
+
 import { icons } from '_assets/'
-import Text from '_components/text'
+
 import Button from '_components/button'
+import IconButton from '_components/icon-button'
+
+import Box from '_components/box'
+import Text from '_components/text'
 import TextInput from '_components/inputs/text-input'
 import SearchInput from '_components/inputs/search-input'
-import { useFormState } from 'react-use-form-state'
-import Box from '_components/box'
+import toast from '_components/toast'
+
 import { GET_HOSTS, CREATE_LINK } from '_graphql/actions'
 import { useQuery, useMutation } from 'react-apollo'
-import toast from '_components/toast'
 
 const StyledModal = Modal.styled`
 background: white;
@@ -94,7 +99,7 @@ const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) 
 
   const [searchResults, setSearchResults] = useState([])
 
-  const [formState, { text, raw }] = useFormState({
+  const [formState, { text, number }] = useFormState({
     from: fromHost.id,
     to: null,
     allowedIPs: null,
@@ -195,11 +200,7 @@ const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) 
       <TextInput {...text('allowedIPs')} placeholder="0.0.0.0/0" mb={2} />
 
       <Text my={3}>Persistent keepalive</Text>
-      <TextInput
-        {...raw({ name: 'persistentKeepalive', onChange: pk => parseInt(pk, 10) })}
-        placeholder={20}
-        mb={2}
-      />
+      <TextInput {...number('persistentKeepalive')} placeholder={20} mb={2} />
 
       <Button borderRadius={3} mt={3} mx="auto" onClick={handleCreateButtonClicked}>
         Create
