@@ -83,6 +83,10 @@ const EditHost = ({ hostId }) => {
       formState.setField('publicKey', data.result.publicKey)
       formState.setField('jwt', data.result.jwt)
     },
+    onError: () => {
+      toast.error('Error fetching host details')
+      navigate('/hosts')
+    },
   })
 
   useEffect(() => {

@@ -9,6 +9,7 @@ import { GET_HOSTS, GET_LINKS } from '_graphql/actions'
 import { icons } from '_assets/'
 import Box from '_components/box'
 import Text from '_components/text'
+import Button from '_components/button'
 import { Dragon as Spinner } from '_components/spinner'
 
 import HostCard from './host-card'
@@ -137,6 +138,10 @@ const Topology = () => {
     setSelectedLinkID(l != null ? l.id : undefined)
   }
 
+  const handleListViewButtonClick = () => {
+    navigate(`/hosts`)
+  }
+
   const isError = getHostsQuery.error || getLinksQuery.error
   const isLoading = getHostsQuery.loading || getLinksQuery.loading
   const isEmpty = !isLoading && hosts.length === 0
@@ -161,6 +166,17 @@ const Topology = () => {
     <Container>
       <Box mb={3} width="100%">
         <Text textStyle="title">Overlay topology</Text>
+        <Button
+          onClick={handleListViewButtonClick}
+          variant="primaryInverted"
+          borderRadius={3}
+          width="100px"
+          height="40px"
+          ml="auto"
+          style={{ zIndex: '99' }}
+        >
+          List view
+        </Button>
       </Box>
 
       {isLoading && <Spinner />}

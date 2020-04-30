@@ -97,7 +97,11 @@ const HostsView = () => {
     deleteHost({ variables: { id } })
   }
 
-  const handleCreateHostClick = () => {
+  const handleGraphViewButtonClick = () => {
+    navigate('/topology')
+  }
+
+  const handleCreateHostButtonClick = () => {
     navigate('/hosts/new')
   }
 
@@ -110,12 +114,22 @@ const HostsView = () => {
       <Box mb={3}>
         <Text textStyle="title">Hosts</Text>
         <Button
-          onClick={handleCreateHostClick}
-          variant="primary"
+          onClick={handleGraphViewButtonClick}
+          variant="primaryInverted"
           borderRadius={3}
           width="100px"
           height="40px"
           ml="auto"
+        >
+          Graph view
+        </Button>
+        <Button
+          onClick={handleCreateHostButtonClick}
+          variant="primary"
+          borderRadius={3}
+          width="100px"
+          height="40px"
+          ml={2}
         >
           Create
         </Button>

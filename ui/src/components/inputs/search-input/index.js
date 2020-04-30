@@ -5,54 +5,95 @@ import { layout, space, border, color } from 'styled-system'
 
 import { icons } from '_assets/'
 
+import Select from 'react-select'
+
 const StyledIcon = styled(icons.Search).attrs({
   width: 22,
 })`
-  padding: 8px;
   fill: ${({ theme: { colors } }) => colors.neutralDark};
-`
-
-const StyledInput = styled.input.attrs({
-  type: 'text',
-})`
-  width: 100%;
-  height: 100%;
-
-  font-size: 15px;
-
-  background: none;
-  border: none;
-
-  padding: 0;
-
-  color: ${props => props.theme.colors.neutralDarker};
-
-  ::placeholder {
-    color: ${props => props.theme.colors.neutralDarker};
-  }
+  margin: auto;
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 99;
 `
 
 const Container = styled.div`
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  height: 100%;
-  width: 60%;
+  position: relative;
   ${layout}
   ${space}
   ${border}
   ${color}
+`
 
-  ${StyledInput}:focus + ${StyledIcon}{
-    fill: ${({ theme: { colors } }) => colors.primary};
+const StyledSelect = styled(Select).attrs({
+  classNamePrefix: 'select',
+  style: {
+    control: base => ({
+      ...base,
+      border: 0,
+      boxShadow: 'none',
+    }),
+  },
+})`
+  height: 100%;
+  border: 0px;
+
+  .select__control {
+    border: none;
+
+    height: 100%;
+    .select__value-container {
+      padding-left: 32px;
+      .select__placeholder {
+      }
+    }
+    :hover {
+      border: none;
+    }
+  }
+
+  .select__control--is-focused {
+    box-shadow: none;
+    border: none;
+  }
+
+  .select__control--is-focused.select__control--menu-is-open {
+    box-shadow: none;
+    border: 1px solid ${props => props.theme.colors.primary};
+    :hover {
+      border: 1px solid ${props => props.theme.colors.primary};
+    }
   }
 `
 
-const SearchInput = ({ ...props }) => (
+const SearchInput = ({
+  options,
+  placeholder,
+  optionComponent,
+  singleValueComponent,
+  filterOption,
+  onChange,
+  ...props
+}) => (
   <Container {...props}>
-    <StyledInput ref={props.innerRef} {...props} />
     <StyledIcon />
+    <StyledSelect
+      components={{ Option: optionComponent, SingleValue: singleValueComponent }}
+      options={options}
+      placeholder={placeholder}
+      onChange={onChange}
+      filterOption={filterOption}
+      isSearchable
+    />
   </Container>
 )
 
-export default React.forwardRef((props, ref) => <SearchInput innerRef={ref} {...props} />)
+SearchInput.defaultProps = {
+  placeholder: 'Select...',
+  options: [],
+  optionRenderer: undefined,
+}
+
+export default SearchInput
