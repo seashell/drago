@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 import styled from 'styled-components'
 import { navigate } from '@reach/router'
 import { useQuery, useMutation } from 'react-apollo'
-import { GET_HOSTS, DELETE_HOST } from '_graphql/actions'
+import { GET_NETWORKS, DELETE_NETWORK } from '_graphql/actions'
 
 import { Dragon as Spinner } from '_components/spinner'
 import Text from '_components/text'
@@ -13,7 +13,7 @@ import Box from '_components/box'
 
 import { icons } from '_assets/'
 
-import HostsList from './hosts-list'
+import NetworksList from './networks-list'
 
 const Container = styled(Flex)`
   flex-direction: column;
@@ -58,78 +58,64 @@ const EmptyState = () => (
   <EmptyStateContainer>
     <icons.EmptyStateCube />
     <Text textStyle="description" mt={4}>
-      Oops! It seems that there are no hosts registered.
+      Oops! It seems that there are no networks registered.
     </Text>
   </EmptyStateContainer>
 )
 
 export const StyledButton = styled(Button)``
 
-const HostsView = () => {
-  const getHostsQuery = useQuery(GET_HOSTS)
+const NetworksView = () => {
+  const getNetworksQuery = useQuery(GET_NETWORKS)
 
   useEffect(() => {
-    getHostsQuery.refetch()
+    getNetworksQuery.refetch()
   })
 
-  const handleHostDeleted = () => {
-    toast.success('Host deleted')
-    getHostsQuery.refetch()
+  const handleNetworkDeleted = () => {
+    toast.success('Network deleted')
+    getNetworksQuery.refetch()
   }
 
-  const handleHostDeleteError = () => {
+  const handleNetworkDeleteError = () => {
     toast.error('Error deleting host')
   }
 
-  const [deleteHost, deleteHostMutation] = useMutation(DELETE_HOST, {
+  const [deleteNetwork, deleteNetworkMutation] = useMutation(DELETE_NETWORK, {
     variables: { id: undefined },
-    onCompleted: handleHostDeleted,
-    onError: handleHostDeleteError,
+    onCompleted: handleNetworkDeleted,
+    onError: handleNetworkDeleteError,
   })
 
-  const handleHostSelect = id => {
-    navigate(`/hosts/${id}`)
+  const handleNetworkSelect = id => {
+    navigate(`/networks/${id}`)
   }
 
-  const handleHostDelete = (e, id) => {
+  const handleNetworkDelete = (e, id) => {
     e.preventDefault()
     e.stopPropagation()
-    deleteHost({ variables: { id } })
+    deleteNetwork({ variables: { id } })
   }
 
-  const handleGraphViewButtonClick = () => {
-    navigate('/topology')
+  const handleCreateNetworkClick = () => {
+    navigate('/networks/new')
   }
 
-  const handleCreateHostButtonClick = () => {
-    navigate('/hosts/new')
-  }
-
-  const isError = getHostsQuery.error
-  const isLoading = getHostsQuery.loading || deleteHostMutation.loading
-  const isEmpty = !isLoading && getHostsQuery.data.result.items.length === 0
+  const isError = getNetworksQuery.error
+  const isLoading = getNetworksQuery.loading || deleteNetworkMutation.loading
+  const isEmpty = !isError && !isLoading && getNetworksQuery.data.result.items.length === 0
 
   return (
     <Container>
       <Box mb={3}>
-        <Text textStyle="title">Hosts</Text>
+        <Text textStyle="title">Networks</Text>
         <Button
-          onClick={handleGraphViewButtonClick}
-          variant="primaryInverted"
-          borderRadius={3}
-          width="100px"
-          height="40px"
-          ml="auto"
-        >
-          Graph view
-        </Button>
-        <Button
-          onClick={handleCreateHostButtonClick}
+          onClick={handleCreateNetworkClick}
           variant="primary"
           borderRadius={3}
           width="100px"
           height="40px"
-          ml={2}
+          ml="auto"
         >
           Create
         </Button>
@@ -141,14 +127,14 @@ const HostsView = () => {
       ) : isEmpty ? (
         <EmptyState />
       ) : (
-        <HostsList
-          hosts={getHostsQuery.data.result.items}
-          onHostSelect={handleHostSelect}
-          onHostDelete={handleHostDelete}
+        <NetworksList
+          networks={getNetworksQuery.data.result.items}
+          onNetworkSelect={handleNetworkSelect}
+          onNetworkDelete={handleNetworkDelete}
         />
       )}
     </Container>
   )
 }
 
-export default HostsView
+export default NetworksView

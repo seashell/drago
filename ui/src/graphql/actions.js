@@ -1,5 +1,39 @@
 import gql from 'graphql-tag'
 
+const GET_NETWORKS = gql`
+  query getNetworks {
+    result @rest(type: "NetworksPayload", path: "networks") {
+      count
+      items @type(name: "Network") {
+        id
+        name
+        addressRange
+        hostCount
+      }
+    }
+  }
+`
+
+const CREATE_NETWORK = gql`
+  mutation createNetwork($name: String!, $addressRange: String!) {
+    createNetwork(input: { name: $name, addressRange: $addressRange })
+      @rest(method: "POST", path: "networks", type: "Network") {
+      id
+      name
+      addressRange
+      hostCount
+    }
+  }
+`
+
+const DELETE_NETWORK = gql`
+  mutation deleteNetwork($id: Int!) {
+    deleteNetwork(id: $id) @rest(method: "DELETE", path: "networks/{args.id}", type: "Network") {
+      id
+    }
+  }
+`
+
 const GET_HOSTS = gql`
   query getHosts {
     result @rest(type: "HostsPayload", path: "hosts") {
@@ -184,6 +218,9 @@ const GET_LINKS = gql`
 `
 
 export {
+  GET_NETWORKS,
+  CREATE_NETWORK,
+  DELETE_NETWORK,
   GET_HOSTS,
   GET_HOST,
   CREATE_HOST,

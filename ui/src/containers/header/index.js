@@ -5,6 +5,8 @@ import { grid, space, color, shadow, border } from 'styled-system'
 import Button from '_components/button'
 import Brand from '_containers/side-nav/brand'
 import { navigate } from '@reach/router'
+import Flex from '_components/flex'
+import Link from '_components/link'
 
 export const Container = styled.div`
   display: flex;
@@ -34,27 +36,22 @@ Container.defaultProps = {
   border: 'dark',
 }
 
-export const StyledButton = styled(Button).attrs({
-  variant: 'primary',
-  height: '40px',
-  width: '100px',
-  borderRadius: 3,
-  mr: 3,
-})`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 8px;
+const StyledLink = styled(Link)`
+  margin: auto;
+  padding-right: 18px;
+  :hover {
+    color: ${({ theme }) => theme.colors.primary};
+  }
 `
-
-const handleTopologyButtonClick = () => {
-  navigate('/topology')
-}
 
 const Header = props => (
   <Container {...props}>
     <Brand />
-    <StyledButton onClick={handleTopologyButtonClick}>Topology</StyledButton>
+    <Flex>
+      <StyledLink to="settings/tokens" color="neutralDark">
+        ACL Tokens
+      </StyledLink>
+    </Flex>
   </Container>
 )
 

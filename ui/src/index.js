@@ -2,8 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 
 import { ApolloProvider } from 'react-apollo'
-import { ThemeProvider } from 'styled-components'
-import { ModalProvider } from 'styled-react-modal'
+import { ModalProvider, BaseModalBackground } from 'styled-react-modal'
+import styled, { ThemeProvider } from 'styled-components'
+
 import { ToastContainer } from '_components/toast'
 
 import Router from './router'
@@ -13,10 +14,14 @@ import { themes, GlobalStyles } from './styles'
 
 const theme = 'light'
 
+const ModalBackground = styled(BaseModalBackground)`
+  z-index: 999;
+`
+
 ReactDOM.render(
   <ApolloProvider client={client}>
     <ThemeProvider theme={themes[theme]}>
-      <ModalProvider>
+      <ModalProvider backgroundComponent={ModalBackground}>
         <GlobalStyles />
         <Router />
         <ToastContainer />

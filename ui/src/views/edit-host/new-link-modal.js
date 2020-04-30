@@ -1,19 +1,25 @@
-import React, { useState, useRef, useEffect } from 'react'
+/* eslint-disable react/prop-types */
+import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { border, shadow } from 'styled-system'
 import Modal from 'styled-react-modal'
-import IconButton from '_components/icon-button'
+
+import { useFormState } from 'react-use-form-state'
+
 import { icons } from '_assets/'
-import Text from '_components/text'
+
 import Button from '_components/button'
+import IconButton from '_components/icon-button'
+
+import Box from '_components/box'
+import Text from '_components/text'
 import TextInput from '_components/inputs/text-input'
 import SearchInput from '_components/inputs/search-input'
-import { useFormState } from 'react-use-form-state'
-import Box from '_components/box'
+import toast from '_components/toast'
+
 import { GET_HOSTS, CREATE_LINK } from '_graphql/actions'
 import { useQuery, useMutation } from 'react-apollo'
-import toast from '_components/toast'
 
 const StyledModal = Modal.styled`
 background: white;
@@ -42,28 +48,10 @@ const StyledIconButton = styled(IconButton)`
 
 const StyledSearchInput = styled(SearchInput)`
   border: 1px solid ${props => props.theme.colors.neutralLighter};
-  padding-left: 12px;
   height: 48px;
   width: 100%;
 `
-const SearchContainer = styled(Box)`
-  position: relative;
-`
 
-const SearchResults = styled(Box)`
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 48px;
-
-  flex-direction: column;
-  background: white;
-  border: 1px solid #aaa;
-
-  :empty {
-    display: none;
-  }
-`
 const SearchResult = styled(Box)`
   cursor: pointer;
   height: 48px;
@@ -90,11 +78,7 @@ const IconContainer = styled(Box).attrs({
 `
 
 const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) => {
-  const searchInputRef = useRef(null)
-
-  const [searchResults, setSearchResults] = useState([])
-
-  const [formState, { text, raw }] = useFormState({
+  const [formState, { text, number }] = useFormState({
     from: fromHost.id,
     to: null,
     allowedIPs: null,
@@ -119,43 +103,39 @@ const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) 
     getHostsQuery.refetch()
   }, [getHostsQuery])
 
-  const handleSearchInputChanged = e => {
-    if (!getHostsQuery.loading) {
-      if (e.target.value === '') {
-        setSearchResults([])
-      } else {
-        setSearchResults(
-          getHostsQuery.data.result.items.filter(
-            r =>
-              r.name.includes(e.target.value) &&
-              r.id !== fromHost.id &&
-              fromHost.links.items.find(el => r.id === el.to.id) === undefined
-          )
-        )
-      }
-    }
-  }
+  const HostOption = ({ innerRef, innerProps, ...props }) => (
+    <SearchResult innerRef={innerRef} {...innerProps} {...props}>
+      <IconContainer mr="12px">
+        <IconButton ml="auto" icon={<icons.Cube />} />
+      </IconContainer>
+      {props.data.name} ({props.data.address})
+    </SearchResult>
+  )
 
-  const handleSearchResultSelected = selectedResult => {
-    formState.setField('to', selectedResult.id)
-    searchInputRef.current.value = `${selectedResult.name} (${selectedResult.address})`
-    setSearchResults([])
-  }
-
-  const handleSearchInputFocused = () => {
-    setSearchResults([])
-  }
-
-  const handleSearchInputBlurred = () => {
-    setTimeout(() => {
-      setSearchResults([])
-    }, 500)
+  const SelectedHostValue = ({ innerRef, innerProps, ...props }) => (
+    <div innerRef={innerRef} {...innerProps} {...props}>
+      {props.data.name} ({props.data.address})
+    </div>
+  )
+  const handleTargetHostSelected = targetHost => {
+    formState.setField('to', targetHost.id)
   }
 
   const handleCreateButtonClicked = () => {
     createLink()
   }
 
+  const filterHosts = (option, searchText) => {
+    if (
+      option.data.name.toLowerCase().includes(searchText.toLowerCase()) ||
+      option.data.address.toLowerCase().includes(searchText.toLowerCase())
+    ) {
+      return true
+    }
+    return false
+  }
+
+  const options = !getHostsQuery.loading ? getHostsQuery.data.result.items : []
   return (
     <StyledModal
       isOpen={isOpen}
@@ -169,37 +149,20 @@ const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) 
       </Text>
 
       <Text my={3}>To</Text>
-      <SearchContainer>
-        <StyledSearchInput
-          ref={searchInputRef}
-          onChange={handleSearchInputChanged}
-          onFocus={handleSearchInputFocused}
-          onBlur={handleSearchInputBlurred}
-          placeholder="Search for host name, or address"
-        />
-        {!getHostsQuery.loading && (
-          <SearchResults>
-            {searchResults.map(r => (
-              <SearchResult key={r.id} onClick={() => handleSearchResultSelected(r)}>
-                <IconContainer mr="12px">
-                  <IconButton ml="auto" icon={<icons.Cube />} />
-                </IconContainer>
-                {r.name} ({r.address})
-              </SearchResult>
-            ))}
-          </SearchResults>
-        )}
-      </SearchContainer>
+      <StyledSearchInput
+        options={options}
+        optionComponent={HostOption}
+        singleValueComponent={SelectedHostValue}
+        placeholder="Search for host name, or address"
+        filterOption={filterHosts}
+        onChange={handleTargetHostSelected}
+      />
 
       <Text my={3}>Allowed IPs</Text>
       <TextInput {...text('allowedIPs')} placeholder="0.0.0.0/0" mb={2} />
 
       <Text my={3}>Persistent keepalive</Text>
-      <TextInput
-        {...raw({ name: 'persistentKeepalive', onChange: pk => parseInt(pk, 10) })}
-        placeholder={20}
-        mb={2}
-      />
+      <TextInput {...number('persistentKeepalive')} placeholder={20} mb={2} />
 
       <Button borderRadius={3} mt={3} mx="auto" onClick={handleCreateButtonClicked}>
         Create
