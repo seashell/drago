@@ -1,10 +1,24 @@
 package rest
 
-import "github.com/labstack/echo/v4"
+import (
+	"github.com/labstack/echo/v4"
+)
 
 func (h *Handler) RegisterRoutes(e *echo.Echo) {
-	hosts := e.Group("/hosts")
-	hosts.Add("GET", "/", h.ListHosts)
-	hosts.Add("GET", "/:id", h.GetHost)
-	hosts.Add("POST", "/", h.CreateHost)
+
+	e.Add("GET", "/hosts", h.ListHosts)
+	e.Add("GET", "/hosts/:id", h.GetHost)
+	e.Add("POST", "/hosts", h.CreateHost)
+	e.Add("PUT", "/hosts", h.UpdateHost)
+
+	e.Add("GET", "/links", h.ListLinks)
+	e.Add("GET", "/links/:id", h.GetLink)
+	e.Add("POST", "/links", h.CreateLink)
+	e.Add("PUT", "/links", h.UpdateLink)
+
+	e.Add("GET", "/networks", h.ListNetworks)
+	e.Add("GET", "/networks/:id", h.GetNetwork)
+	e.Add("POST", "/networks", h.CreateNetwork)
+	e.Add("PUT", "/networks", h.UpdateNetwork)
+
 }

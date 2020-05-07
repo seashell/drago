@@ -9,9 +9,7 @@ import (
 	"github.com/seashell/drago/server/adapter/rest"
 )
 
-type HTTPServerConfig struct {
-	APIBindAddr string
-}
+type HTTPServerConfig struct{}
 
 // HTTPServer
 type HTTPServer struct {
@@ -30,7 +28,6 @@ func NewHTTPServer(handler *rest.Handler, c *HTTPServerConfig) (*HTTPServer, err
 
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-	e.Pre(middleware.AddTrailingSlash())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
