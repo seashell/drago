@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS link (
     persistent_keepalive integer NOT NULL,
     network_id uuid NOT NULL REFERENCES network ON DELETE CASCADE,
     to_host_id uuid NOT NULL REFERENCES host ON DELETE CASCADE,
-    from_host_id uuid NOT_NULL REFERENCES host ON DELETE CASCADE,
+    from_host_id uuid NOT NULL REFERENCES host ON DELETE CASCADE,
     UNIQUE(to_host_id, from_host_id)
 );`
 
