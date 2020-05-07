@@ -28,7 +28,7 @@ type AgentConfig struct {
 	Client  client.ClientConfig `mapstructure:"client"`
 }
 
-func NewAgent(c AgentConfig) (*agent, error) {
+func New(c AgentConfig) (*agent, error) {
 	return &agent{
 		config: c,
 	}, nil

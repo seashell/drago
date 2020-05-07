@@ -7,7 +7,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/seashell/drago/server/infrastructure/delivery/http"
+	"github.com/seashell/drago/agent"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -33,18 +33,17 @@ var Command = &cobra.Command{
 
 		fmt.Println("==> Starting drago agent...")
 
-		var wait time.Duration
+		config := agent.AgentConfig{}
+		viper.Unmarshal(&config)
 
-		// ----------------------- TODO: move this init logic somewhere else (encapsulate it within an Agent wrapper object)
-
-		s, err := http.NewHTTPServer(nil)
+		agent, err := agent.New(config)
 		if err != nil {
-			panic(err)
+			fmt.Printf("==> Error starting Drago agent: %s\n", err)
 		}
 
-		s.Start()
+		agent.Run()
 
-		// -----------------------
+		var wait time.Duration
 
 		c := make(chan os.Signal, 1)
 

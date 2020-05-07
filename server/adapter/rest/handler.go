@@ -15,8 +15,8 @@ type Handler struct {
 }
 
 // NewHandler : Create a new REST API handler
-func NewHandler(c *controller.Controller) *Handler {
+func NewHandler(c *controller.Controller) (*Handler, error) {
 	return &Handler{
 		controller: c,
-	}
+	}, nil
 }
