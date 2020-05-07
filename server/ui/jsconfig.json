@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "experimentalDecorators": true,
+        "baseUrl": "src",
+        "paths": {
+        "_components/*": ["components/*"],
+        "_containers/*": ["containers/*"],
+        "_views/*": ["views/*"],
+        "_graphql/*": ["graphql/*"],
+        "_utils/*": ["utils/*"],
+        "_assets/*": ["assets/*"]        
+        }
+    },
+    "exclude": ["node_modules", "dist", "dist-server"]
+}
+  

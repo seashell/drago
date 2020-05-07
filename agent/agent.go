@@ -3,8 +3,8 @@ package agent
 import (
 	"fmt"
 
-	"github.com/seashell/drago/agent/client"
-	"github.com/seashell/drago/agent/server"
+	"github.com/seashell/drago/client"
+	"github.com/seashell/drago/server"
 	"github.com/seashell/drago/version"
 )
 

@@ -1,0 +1,104 @@
+# Seashell UI
+
+This project is intended as a basic boileplate for any React-based frontend application.
+
+The UI provided as a template is heavily based on DigitalOcean's dashboard, and the project makes use of the following libraries and practices:
+- `styled-components` for CSS-in-JS;
+- `styled-system` for adding props to components and global styling;
+- `keycloak-js` / `react-keycloak` for authenticating and protecting views;
+- `apollo-client` / `react-apollo` / `@apollo/react-hooks` for interacting with GraphQL APIs and caching data with minimal boilerplate code;
+- `@reach/router` for routing;
+
+Differently from most React projects out there, we do not rely on the redux pattern for managing the application's global state. Instead, we use Apollo's local in-memory cache to store any application-wide variables, which allows us to deal with local and remote data in the exact same way.
+
+The project was bootstraped with [Create React App](https://github.com/facebook/create-react-app), and NOT ejected. We preferred to use the very convenient `react-app-rewired` and `customize-cra` modules to allow for arbitrary overwrites of the Webpack and Babel settings.
+
+A mobile-friendly version of the UI is still a work-in-progress, and we welcome any contributions :)
+
+## Directory structure
+
+Babel, ESLint, and Webpack configurations should be kept within the `/config` directory or in the their corresponding configuration files at the project root (`.eslintrc`, `.babelrc`).
+
+We suggest the organization of components in a three-level hierarchy:
+
+- Presentational components, stored in  `/src/components`;
+- Higher-order components, stored in `/src/containers`; and
+- Complete views, stored in `/views`.
+
+All style-related configurations, including themes, are stored in the `/src/styles` directory.
+
+All assets should be put into the `/src/assets` directory, and separated according to their type (icons, illustrations, etc).
+
+Finally, configurations of the Apollo client, including its caching structure, goes into the `/src/graphql` directory.
+
+## Available Scripts
+
+In the project directory, you can run:
+
+### `npm run fakeserver`
+
+Runs a graphql server which provides the application with fake data for development and testing purposes.
+You can edit the schema in the file `schema.faker.graphql`.
+
+### `npm run start`
+
+Runs the app in the development mode.<br>
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+The page will reload if you make edits.<br>
+You will also see any lint errors in the console.
+
+### `npm run test`
+
+Launches the test runner in the interactive watch mode.<br>
+See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+
+### `npm run build`
+
+Builds the app for production to the `build` folder.<br>
+It correctly bundles React in production mode and optimizes the build for the best performance.
+
+The build is minified and the filenames include the hashes.<br>
+Your app is ready to be deployed!
+
+See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `npm run eject`
+
+**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+
+If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+
+Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+
+You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+
+## Learn More
+
+You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+
+To learn React, check out the [React documentation](https://reactjs.org/).
+
+### Code Splitting
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
+
+### Analyzing the Bundle Size
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
+
+### Making a Progressive Web App
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
+
+### Advanced Configuration
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
+
+### Deployment
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
+
+### `npm run build` fails to minify
+
+This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
