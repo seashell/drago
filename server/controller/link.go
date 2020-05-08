@@ -124,9 +124,15 @@ func (c *Controller) DeleteLink(ctx context.Context, in *DeleteLinkInput) error 
 
 // ListLinks :
 func (c *Controller) ListLinks(ctx context.Context, in *ListLinksInput) (*pagination.Page, error) {
+
 	err := c.v.Struct(in)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
+	}
+
+	if in.Page == 0 {
+		in.Page = pagination.PAGINATION_DEFAULT_PAGE
+		in.PerPage = pagination.PAGINATION_DEFAULT_PER_PAGE
 	}
 
 	pageInfo := &domain.PageInfo{

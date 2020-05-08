@@ -79,9 +79,7 @@ func (c *Controller) UpdateNetwork(ctx context.Context, in *UpdateNetworkInput) 
 	}
 
 	n := &domain.Network{
-		BaseModel: domain.BaseModel{
-			ID: in.ID,
-		},
+		ID:             in.ID,
 		Name:           in.Name,
 		IPAddressRange: in.IPAddressRange,
 	}
@@ -111,9 +109,15 @@ func (c *Controller) DeleteNetwork(ctx context.Context, in *DeleteNetworkInput) 
 
 // ListNetworks :
 func (c *Controller) ListNetworks(ctx context.Context, in *ListNetworksInput) (*pagination.Page, error) {
+
 	err := c.v.Struct(in)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
+	}
+
+	if in.Page == 0 {
+		in.Page = pagination.PAGINATION_DEFAULT_PAGE
+		in.PerPage = pagination.PAGINATION_DEFAULT_PER_PAGE
 	}
 
 	pageInfo := &domain.PageInfo{
