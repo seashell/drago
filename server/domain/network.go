@@ -1,10 +1,14 @@
 package domain
 
+import "time"
+
 // Network : Network entity
 type Network struct {
-	BaseModel
-	Name           *string `json:"name"`
-	IPAddressRange *string `json:"ipAddressRange"`
+	ID             *string    `json:"id"`
+	Name           *string    `json:"name"`
+	IPAddressRange *string    `json:"ipAddressRange"`
+	CreatedAt      *time.Time `json:"createdAt"`
+	UpdatedAt      *time.Time `json:"updatedAt"`
 }
 
 // NetworkRepository : Network repository interface
