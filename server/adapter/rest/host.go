@@ -1,6 +1,7 @@
 package rest
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -90,9 +91,15 @@ func (h *Handler) ListHosts(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	res, err := h.controller.ListHosts(ctx, in)
-	if e := WrapControllerError(err); e != nil {
+	fmt.Println(res)
+	fmt.Println(err)
+
+	e := WrapControllerError(err)
+	if e != nil {
+		fmt.Println(e)
 		return c.JSON(e.Code, e)
 	}
+	fmt.Println("abc")
 
 	return c.JSON(http.StatusOK, res)
 }

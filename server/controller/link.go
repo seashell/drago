@@ -111,12 +111,12 @@ func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*stri
 func (c *Controller) DeleteLink(ctx context.Context, in *DeleteLinkInput) error {
 	err := c.v.Struct(in)
 	if err != nil {
-		return errors.Wrap(err, ErrInvalidInput.Error())
+		return errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	err = c.ls.DeleteByID(in.ID)
 	if err != nil {
-		return errors.Wrap(err, ErrInternal.Error())
+		return errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return nil

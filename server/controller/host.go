@@ -130,12 +130,12 @@ func (c *Controller) UpdateHost(ctx context.Context, in *UpdateHostInput) (*stri
 func (c *Controller) DeleteHost(ctx context.Context, in *DeleteHostInput) error {
 	err := c.v.Struct(in)
 	if err != nil {
-		return errors.Wrap(err, ErrInvalidInput.Error())
+		return errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	err = c.hs.DeleteByID(in.ID)
 	if err != nil {
-		return errors.Wrap(err, ErrInternal.Error())
+		return errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return nil
@@ -145,7 +145,7 @@ func (c *Controller) DeleteHost(ctx context.Context, in *DeleteHostInput) error 
 func (c *Controller) ListHosts(ctx context.Context, in *ListHostsInput) (*pagination.Page, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	pageInfo := &domain.PageInfo{
@@ -155,7 +155,7 @@ func (c *Controller) ListHosts(ctx context.Context, in *ListHostsInput) (*pagina
 
 	h, p, err := c.hs.FindAllByNetworkID(in.NetworkIDFilter, *pageInfo)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	page := &pagination.Page{
