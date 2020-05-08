@@ -25,6 +25,10 @@ func WrapControllerError(e error) *APIError {
 
 	code := generateStatusCode(e)
 
+	if e == nil {
+		return nil
+	}
+
 	return &APIError{
 		Err:       e,
 		Code:      code,
