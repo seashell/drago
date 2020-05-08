@@ -58,7 +58,7 @@ func (c *Controller) GetLink(ctx context.Context, in *GetLinkInput) (*domain.Lin
 }
 
 // CreateLink :
-func (c *Controller) CreateLink(ctx context.Context, in *CreateLinkInput) (*string, error) {
+func (c *Controller) CreateLink(ctx context.Context, in *CreateLinkInput) (*domain.Link, error) {
 	err := c.v.Struct(in)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
@@ -74,16 +74,16 @@ func (c *Controller) CreateLink(ctx context.Context, in *CreateLinkInput) (*stri
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	id, err := c.ls.Create(l)
+	res, err := c.ls.Create(l)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return id, nil
+	return res, nil
 }
 
 // UpdateLink :
-func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*string, error) {
+func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*domain.Link, error) {
 	err := c.v.Struct(in)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
@@ -99,12 +99,12 @@ func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*stri
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	id, err := c.ls.Update(l)
+	res, err := c.ls.Update(l)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return id, nil
+	return res, nil
 }
 
 // DeleteLink :

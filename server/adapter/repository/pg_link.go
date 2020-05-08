@@ -47,43 +47,47 @@ func (a *postgresqlLinkRepositoryAdapter) GetByID(id string) (*domain.Link, erro
 	return dl, nil
 }
 
-func (a *postgresqlLinkRepositoryAdapter) Create(l *domain.Link) (id *string, err error) {
+func (a *postgresqlLinkRepositoryAdapter) Create(l *domain.Link) (*string, error) {
 	guid, err := uuid.NewRandom()
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	sguid := guid.String()
 	now := time.Now()
 
+	var id string
+
 	err = a.db.QueryRow(
-		"INSERT INTO link (id, network_id, from_host_id, to_host_id, allowed_ips, persistent_keepalive, "+
-			"created_at, updated_at) "+
-			"VALUES ($1, $2, $3, $4, array_to_string($5, ';', '*'), $6, $7, $8) RETURNING id",
-		sguid, *l.NetworkID, *l.FromHostID, *l.ToHostID, l.AllowedIPs, *l.PersistentKeepalive, now, now).Scan(id)
+		`INSERT INTO link (id, network_id, from_host_id, to_host_id, allowed_ips, persistent_keepalive,
+			created_at, updated_at)
+			VALUES ($1, $2, $3, $4, array_to_string($5, ';', '*'), $6, $7, $8) RETURNING id`,
+		sguid, *l.NetworkID, *l.FromHostID, *l.ToHostID, l.AllowedIPs, *l.PersistentKeepalive, now, now).Scan(&id)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	return
+	return &id, nil
 }
 
-func (a *postgresqlLinkRepositoryAdapter) Update(l *domain.Link) (id *string, err error) {
+func (a *postgresqlLinkRepositoryAdapter) Update(l *domain.Link) (*string, error) {
 	now := time.Now()
 
-	err = a.db.QueryRow(
-		"UPDATE link SET "+
-			"allowed_ips = array_to_string($1, ';', '*'), "+
-			"persistent_keepalive = $2, "+
-			"updated_at = $3 "+
-			"WHERE id = $4 "+
-			"RETURNING id",
-		l.AllowedIPs, *l.PersistentKeepalive, now, *l.ID).Scan(id)
+	var id string
+
+	err := a.db.QueryRow(
+		`UPDATE link SET
+			allowed_ips = array_to_string($1, ';', '*'),
+			persistent_keepalive = $2,
+			updated_at = $3
+			WHERE id = $4
+			RETURNING id`,
+		l.AllowedIPs, *l.PersistentKeepalive, now, *l.ID).Scan(&id)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	return
+	return &id, nil
 }
 
 func (a *postgresqlLinkRepositoryAdapter) DeleteByID(id string) error {

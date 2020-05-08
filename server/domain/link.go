@@ -5,13 +5,13 @@ import "time"
 // Link :
 type Link struct {
 	ID                  *string    `json:"id"`
-	NetworkID           *string    `json:"network"`
-	FromHostID          *string    `json:"fromHost"`
-	ToHostID            *string    `json:"toHost"`
-	AllowedIPs          []string   `json:"allowedIps"`
-	PersistentKeepalive *int       `json:"persistentKeepalive"`
-	CreatedAt           *time.Time `json:"createdAt"`
-	UpdatedAt           *time.Time `json:"updatedAt"`
+	NetworkID           *string    `json:"network,omitempty"`
+	FromHostID          *string    `json:"fromHost,omitempty"`
+	ToHostID            *string    `json:"toHost,omitempty"`
+	AllowedIPs          []string   `json:"allowedIps,omitempty"`
+	PersistentKeepalive *int       `json:"persistentKeepalive,omitempty"`
+	CreatedAt           *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt           *time.Time `json:"updatedAt,omitempty"`
 }
 
 // LinkRepository :

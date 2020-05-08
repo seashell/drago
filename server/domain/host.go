@@ -5,22 +5,22 @@ import "time"
 // Host :
 type Host struct {
 	ID               *string    `json:"id"`
-	NetworkID        *string    `json:"network"`
-	LinkIDs          []string   `json:"links"`
-	Name             *string    `json:"name"`
-	IPAddress        *string    `json:"ipAddress"`
-	AdvertiseAddress *string    `json:"advertiseAddress"`
-	ListenPort       *string    `json:"listenPort"`
-	PublicKey        *string    `json:"publicKey"`
-	Table            *string    `json:"table"`
-	DNS              *string    `json:"dns"`
-	MTU              *string    `json:"mtu"`
-	PreUp            *string    `json:"preUp"`
-	PostUp           *string    `json:"postUp"`
-	PreDown          *string    `json:"preDown"`
-	PostDown         *string    `json:"postDown"`
-	CreatedAt        *time.Time `json:"createdAt"`
-	UpdatedAt        *time.Time `json:"updatedAt"`
+	NetworkID        *string    `json:"network,omitempty"`
+	LinkIDs          []string   `json:"links,omitempty"`
+	Name             *string    `json:"name,omitempty"`
+	IPAddress        *string    `json:"ipAddress,omitempty"`
+	AdvertiseAddress *string    `json:"advertiseAddress,omitempty"`
+	ListenPort       *string    `json:"listenPort,omitempty"`
+	PublicKey        *string    `json:"publicKey,omitempty"`
+	Table            *string    `json:"table,omitempty"`
+	DNS              *string    `json:"dns,omitempty"`
+	MTU              *string    `json:"mtu,omitempty"`
+	PreUp            *string    `json:"preUp,omitempty"`
+	PostUp           *string    `json:"postUp,omitempty"`
+	PreDown          *string    `json:"preDown,omitempty"`
+	PostDown         *string    `json:"postDown,omitempty"`
+	CreatedAt        *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt        *time.Time `json:"updatedAt,omitempty"`
 }
 
 // HostRepository :

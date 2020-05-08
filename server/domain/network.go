@@ -5,10 +5,10 @@ import "time"
 // Network : Network entity
 type Network struct {
 	ID             *string    `json:"id"`
-	Name           *string    `json:"name"`
-	IPAddressRange *string    `json:"ipAddressRange"`
-	CreatedAt      *time.Time `json:"createdAt"`
-	UpdatedAt      *time.Time `json:"updatedAt"`
+	Name           *string    `json:"name,omitempty"`
+	IPAddressRange *string    `json:"ipAddressRange,omitempty"`
+	CreatedAt      *time.Time `json:"createdAt,omitempty"`
+	UpdatedAt      *time.Time `json:"updatedAt,omitempty"`
 }
 
 // NetworkRepository : Network repository interface

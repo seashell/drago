@@ -7,8 +7,8 @@ import (
 // LinkService :
 type LinkService interface {
 	GetByID(id string) (*domain.Link, error)
-	Create(l *domain.Link) (*string, error)
-	Update(l *domain.Link) (*string, error)
+	Create(l *domain.Link) (*domain.Link, error)
+	Update(l *domain.Link) (*domain.Link, error)
 	DeleteByID(id string) error
 	FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
 	FindAllByHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
@@ -29,12 +29,16 @@ func (ls *linkService) GetByID(id string) (*domain.Link, error) {
 }
 
 // Create :
-func (ls *linkService) Create(l *domain.Link) (*string, error) {
-	return ls.lr.Create(l)
+func (ls *linkService) Create(l *domain.Link) (*domain.Link, error) {
+	id, err := ls.lr.Create(l)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Link{ID: id}, nil
 }
 
 // Update :
-func (ls *linkService) Update(l *domain.Link) (*string, error) {
+func (ls *linkService) Update(l *domain.Link) (*domain.Link, error) {
 	link, err := ls.lr.GetByID(*l.ID)
 	if err != nil {
 		return nil, err
@@ -42,7 +46,11 @@ func (ls *linkService) Update(l *domain.Link) (*string, error) {
 
 	mergeLinkUpdate(link, l)
 
-	return ls.lr.Update(link)
+	id, err := ls.lr.Update(link)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Link{ID: id}, nil
 }
 
 // Delete :

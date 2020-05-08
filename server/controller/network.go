@@ -52,7 +52,7 @@ func (c *Controller) GetNetwork(ctx context.Context, in *GetNetworkInput) (*doma
 }
 
 // CreateNetwork :
-func (c *Controller) CreateNetwork(ctx context.Context, in *CreateNetworkInput) (*string, error) {
+func (c *Controller) CreateNetwork(ctx context.Context, in *CreateNetworkInput) (*domain.Network, error) {
 	err := c.v.Struct(in)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
@@ -63,16 +63,16 @@ func (c *Controller) CreateNetwork(ctx context.Context, in *CreateNetworkInput) 
 		IPAddressRange: in.IPAddressRange,
 	}
 
-	id, err := c.ns.Create(n)
+	res, err := c.ns.Create(n)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return id, nil
+	return res, nil
 }
 
 // UpdateNetwork :
-func (c *Controller) UpdateNetwork(ctx context.Context, in *UpdateNetworkInput) (*string, error) {
+func (c *Controller) UpdateNetwork(ctx context.Context, in *UpdateNetworkInput) (*domain.Network, error) {
 	err := c.v.Struct(in)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
@@ -84,12 +84,12 @@ func (c *Controller) UpdateNetwork(ctx context.Context, in *UpdateNetworkInput) 
 		IPAddressRange: in.IPAddressRange,
 	}
 
-	id, err := c.ns.Update(n)
+	res, err := c.ns.Update(n)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return id, nil
+	return res, nil
 }
 
 // DeleteNetwork :

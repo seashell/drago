@@ -18,10 +18,10 @@ type GetHostInput struct {
 
 // CreateHostInput :
 type CreateHostInput struct {
-	Name             *string `json:"name" validate:"required,stringlength(1|50)"`
+	Name             *string `json:"name" validate:"required,min=1,max=50"`
 	IPAddress        *string `json:"ipAddress" validate:"required,cidr"`
-	AdvertiseAddress *string `json:"advertiseAddress" validate:"required,cidr"`
-	ListenPort       *string `json:"listenPort" validate:"required,numeric,stringlength(1|5)"`
+	AdvertiseAddress *string `json:"advertiseAddress" validate:"omitempty,cidr"`
+	ListenPort       *string `json:"listenPort" validate:"omitempty,numeric,min=1,max=5"`
 	PublicKey        *string `json:"publicKey" validate:""`
 	Table            *string `json:"table" validate:""`
 	DNS              *string `json:"dns" validate:""`
@@ -36,10 +36,10 @@ type CreateHostInput struct {
 // UpdateHostInput :
 type UpdateHostInput struct {
 	ID               *string `json:"id" validate:"required,uuid4"`
-	Name             *string `json:"name" validate:"stringlength(1|50)"`
+	Name             *string `json:"name" validate:"min=1,max=5"`
 	IPAddress        *string `json:"ipAddress" validate:"cidr"`
 	AdvertiseAddress *string `json:"advertiseAddress" validate:"cidr"`
-	ListenPort       *string `json:"listenPort" validate:"numeric,stringlength(1|5)"`
+	ListenPort       *string `json:"listenPort" validate:"numeric,min=1,max=5"`
 	PublicKey        *string `json:"publicKey" validate:""`
 	Table            *string `json:"table" validate:""`
 	DNS              *string `json:"dns" validate:""`
@@ -77,7 +77,7 @@ func (c *Controller) GetHost(ctx context.Context, in *GetHostInput) (*domain.Hos
 }
 
 // CreateHost :
-func (c *Controller) CreateHost(ctx context.Context, in *CreateHostInput) (*string, error) {
+func (c *Controller) CreateHost(ctx context.Context, in *CreateHostInput) (*domain.Host, error) {
 	err := c.v.Struct(in)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
@@ -93,16 +93,16 @@ func (c *Controller) CreateHost(ctx context.Context, in *CreateHostInput) (*stri
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	id, err := c.hs.Create(h)
+	res, err := c.hs.Create(h)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return id, nil
+	return res, nil
 }
 
 // UpdateHost :
-func (c *Controller) UpdateHost(ctx context.Context, in *UpdateHostInput) (*string, error) {
+func (c *Controller) UpdateHost(ctx context.Context, in *UpdateHostInput) (*domain.Host, error) {
 	err := c.v.Struct(in)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
@@ -118,12 +118,12 @@ func (c *Controller) UpdateHost(ctx context.Context, in *UpdateHostInput) (*stri
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	id, err := c.hs.Update(h)
+	res, err := c.hs.Update(h)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return id, nil
+	return res, nil
 }
 
 // DeleteHost :

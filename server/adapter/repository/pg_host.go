@@ -52,56 +52,60 @@ func (a *postgresqlHostRepositoryAdapter) GetByID(id string) (*domain.Host, erro
 	return dh, nil
 }
 
-func (a *postgresqlHostRepositoryAdapter) Create(h *domain.Host) (id *string, err error) {
+func (a *postgresqlHostRepositoryAdapter) Create(h *domain.Host) (*string, error) {
 	guid, err := uuid.NewRandom()
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	sguid := guid.String()
 	now := time.Now()
 
+	var id string
+
 	err = a.db.QueryRow(
-		"INSERT INTO host (id, network_id, name, address, advertise_address, listen_port, public_key, "+
-			"table, dns, mtu, pre_up, post_up, pre_down, post_down, created_at, updated_at) "+
-			"VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id",
-		sguid, *h.NetworkID, *h.Name, *h.IPAddress, *h.AdvertiseAddress, *h.ListenPort, *h.PublicKey,
-		*h.Table, *h.DNS, *h.MTU, *h.PreUp, *h.PostUp, *h.PreDown, *h.PostDown, now, now).Scan(id)
+		`INSERT INTO host (id, network_id, name, address, advertise_address, listen_port, public_key, 
+			"table", dns, mtu, pre_up, post_up, pre_down, post_down, created_at, updated_at) 
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id`,
+		sguid, h.NetworkID, h.Name, h.IPAddress, h.AdvertiseAddress, h.ListenPort, h.PublicKey,
+		h.Table, h.DNS, h.MTU, h.PreUp, h.PostUp, h.PreDown, h.PostDown, now, now).Scan(&id)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	return
+	return &id, nil
 }
 
-func (a *postgresqlHostRepositoryAdapter) Update(h *domain.Host) (id *string, err error) {
+func (a *postgresqlHostRepositoryAdapter) Update(h *domain.Host) (*string, error) {
 	now := time.Now()
 
-	err = a.db.QueryRow(
-		"UPDATE host SET "+
-			"name = $1, "+
-			"ip_address = $2, "+
-			"advertise_address = $3, "+
-			"listen_port = $4, "+
-			"public_key = $5, "+
-			"table = $6, "+
-			"dns = $7, "+
-			"mtu = $8, "+
-			"pre_up = $9, "+
-			"post_up = $10, "+
-			"pre_down = $11, "+
-			"post_down = $12, "+
-			"network_id = $13, "+
-			"updated_at = $14 "+
-			"WHERE id = $15 "+
-			"RETURNING id",
-		*h.Name, *h.IPAddress, *h.AdvertiseAddress, *h.ListenPort, *h.PublicKey, *h.Table, *h.DNS,
-		*h.MTU, *h.PreUp, *h.PostUp, *h.PreDown, *h.PostDown, *h.NetworkID, now, *h.ID).Scan(id)
+	var id string
+
+	err := a.db.QueryRow(
+		`UPDATE host SET
+			name = $1,
+			ip_address = $2,
+			advertise_address = $3,
+			listen_port = $4,
+			public_key = $5,
+			"table" = $6,
+			dns = $7,
+			mtu = $8,
+			pre_up = $9,
+			post_up = $10,
+			pre_down = $11,
+			post_down = $12,
+			network_id = $13,
+			updated_at = $14
+			WHERE id = $15
+			RETURNING id`,
+		h.Name, h.IPAddress, h.AdvertiseAddress, h.ListenPort, h.PublicKey, h.Table, h.DNS,
+		h.MTU, h.PreUp, h.PostUp, h.PreDown, h.PostDown, h.NetworkID, now, h.ID).Scan(&id)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	return
+	return &id, nil
 }
 
 func (a *postgresqlHostRepositoryAdapter) DeleteByID(id string) error {

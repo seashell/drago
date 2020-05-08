@@ -44,7 +44,6 @@ func WrapControllerError(e error) *APIError {
 }
 
 func generateStatusCode(err error) (int, error) {
-
 	dict := map[error]int{
 		controller.ErrInternal:       http.StatusInternalServerError,
 		controller.ErrNotFound:       http.StatusNotFound,

@@ -7,8 +7,8 @@ import (
 // NetworkService :
 type NetworkService interface {
 	GetByID(id string) (*domain.Network, error)
-	Create(n *domain.Network) (*string, error)
-	Update(n *domain.Network) (*string, error)
+	Create(n *domain.Network) (*domain.Network, error)
+	Update(n *domain.Network) (*domain.Network, error)
 	DeleteByID(id string) error
 	FindAll(pageInfo domain.PageInfo) ([]*domain.Network, *domain.Page, error)
 }
@@ -28,12 +28,16 @@ func (ns *networkService) GetByID(id string) (*domain.Network, error) {
 }
 
 // Create :
-func (ns *networkService) Create(n *domain.Network) (*string, error) {
-	return ns.nr.Create(n)
+func (ns *networkService) Create(n *domain.Network) (*domain.Network, error) {
+	id, err := ns.nr.Create(n)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Network{ID: id}, nil
 }
 
 // Update :
-func (ns *networkService) Update(n *domain.Network) (*string, error) {
+func (ns *networkService) Update(n *domain.Network) (*domain.Network, error) {
 	network, err := ns.nr.GetByID(*n.ID)
 	if err != nil {
 		return nil, err
@@ -41,7 +45,11 @@ func (ns *networkService) Update(n *domain.Network) (*string, error) {
 
 	mergeNetworkUpdate(network, n)
 
-	return ns.nr.Update(network)
+	id, err := ns.nr.Update(network)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Network{ID: id}, nil
 }
 
 // Delete :

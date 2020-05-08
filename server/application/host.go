@@ -7,8 +7,8 @@ import (
 // HostService :
 type HostService interface {
 	GetByID(id string) (*domain.Host, error)
-	Create(h *domain.Host) (*string, error)
-	Update(h *domain.Host) (*string, error)
+	Create(h *domain.Host) (*domain.Host, error)
+	Update(h *domain.Host) (*domain.Host, error)
 	DeleteByID(id string) error
 	FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error)
 }
@@ -28,12 +28,18 @@ func (hs *hostService) GetByID(id string) (*domain.Host, error) {
 }
 
 // Create :
-func (hs *hostService) Create(h *domain.Host) (*string, error) {
-	return hs.hr.Create(h)
+func (hs *hostService) Create(h *domain.Host) (*domain.Host, error) {
+
+	id, err := hs.hr.Create(h)
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.Host{ID: id}, nil
 }
 
 // Update :
-func (hs *hostService) Update(h *domain.Host) (*string, error) {
+func (hs *hostService) Update(h *domain.Host) (*domain.Host, error) {
 	host, err := hs.hr.GetByID(*h.ID)
 	if err != nil {
 		return nil, err
@@ -41,7 +47,12 @@ func (hs *hostService) Update(h *domain.Host) (*string, error) {
 
 	mergeHostUpdate(host, h)
 
-	return hs.hr.Update(host)
+	id, err := hs.hr.Update(host)
+	if err != nil {
+		return nil, err
+	}
+
+	return &domain.Host{ID: id}, nil
 }
 
 // Delete :
