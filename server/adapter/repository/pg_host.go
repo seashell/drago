@@ -133,7 +133,7 @@ func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 			"WHERE h.network_id = $1 "+
 			"GROUP BY h.id "+
 			"ORDER BY created_at DESC LIMIT $2 OFFSET $3",
-		id, page.PerPage, page.Page)
+		id, page.PerPage, (page.Page-1)*page.PerPage)
 	if err != nil {
 		return nil, page, err
 	}
@@ -153,7 +153,7 @@ func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 
 		host := &domain.Host{}
 
-		errs := model.Copy(host, receiver)
+		errs := model.Copy(host, receiver.Host)
 		if errs != nil {
 			for _, e := range errs {
 				err = multierror.Append(err, e)

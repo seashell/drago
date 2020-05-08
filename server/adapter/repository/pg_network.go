@@ -47,30 +47,34 @@ func (a *postgresqlNetworkRepositoryAdapter) GetByID(id string) (*domain.Network
 	return dn, nil
 }
 
-func (a *postgresqlNetworkRepositoryAdapter) Create(n *domain.Network) (id *string, err error) {
+func (a *postgresqlNetworkRepositoryAdapter) Create(n *domain.Network) (*string, error) {
 	guid, err := uuid.NewRandom()
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	sguid := guid.String()
 	now := time.Now()
 
+	var id string
+
 	err = a.db.QueryRow(
 		"INSERT INTO network (id, name, ip_address_range, created_at, updated_at) "+
 			"VALUES ($1, $2, $3, $4, $5) RETURNING id",
-		sguid, *n.Name, *n.IPAddressRange, now, now).Scan(id)
+		sguid, *n.Name, *n.IPAddressRange, now, now).Scan(&id)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	return
+	return &id, nil
 }
 
-func (a *postgresqlNetworkRepositoryAdapter) Update(n *domain.Network) (id *string, err error) {
+func (a *postgresqlNetworkRepositoryAdapter) Update(n *domain.Network) (*string, error) {
 	now := time.Now()
 
-	err = a.db.QueryRow(
+	var id string
+
+	err := a.db.QueryRow(
 		"UPDATE network SET "+
 			"name = $1, "+
 			"ip_address_range = $2, "+
@@ -79,10 +83,10 @@ func (a *postgresqlNetworkRepositoryAdapter) Update(n *domain.Network) (id *stri
 			"RETURNING id",
 		*n.Name, *n.IPAddressRange, now, *n.ID).Scan(id)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	return
+	return &id, nil
 }
 
 func (a *postgresqlNetworkRepositoryAdapter) DeleteByID(id string) error {
@@ -106,7 +110,7 @@ func (a *postgresqlNetworkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) (
 		page.PerPage = maxQueryRows
 	}
 
-	rows, err := a.db.Queryx("SELECT *, COUNT(*) OVER() AS total_count FROM network ORDER BY created_at DESC LIMIT $1 OFFSET $2", page.PerPage, page.Page)
+	rows, err := a.db.Queryx("SELECT *, COUNT(*) OVER() AS total_count FROM network ORDER BY created_at DESC LIMIT $1 OFFSET $2", page.PerPage, (page.Page-1)*page.PerPage)
 	if err != nil {
 		return nil, page, err
 	}
@@ -126,7 +130,7 @@ func (a *postgresqlNetworkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) (
 
 		network := &domain.Network{}
 
-		errs := model.Copy(network, receiver)
+		errs := model.Copy(network, receiver.Network)
 		if errs != nil {
 			for _, e := range errs {
 				err = multierror.Append(err, e)

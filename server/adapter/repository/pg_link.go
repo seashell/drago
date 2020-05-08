@@ -112,7 +112,7 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 			"string_to_array(allowed_ips, ';', '*') AS allowed_ips , COUNT(*) OVER() AS total_count "+
 			"FROM link "+
 			"WHERE network_id = $1 "+
-			"ORDER BY created_at DESC LIMIT $2 OFFSET $3", id, page.PerPage, page.Page)
+			"ORDER BY created_at DESC LIMIT $2 OFFSET $3", id, page.PerPage, (page.Page-1)*page.PerPage)
 	if err != nil {
 		return nil, page, err
 	}
@@ -132,7 +132,7 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 
 		link := &domain.Link{}
 
-		errs := model.Copy(link, receiver)
+		errs := model.Copy(link, receiver.Link)
 		if errs != nil {
 			for _, e := range errs {
 				err = multierror.Append(err, e)
