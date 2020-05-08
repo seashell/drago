@@ -144,8 +144,9 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 	}
 
 	page.TotalCount = receiver.TotalCount
-	page.PageCount = int(math.Ceil(float64(page.TotalCount) / float64(page.PerPage)))
-
+	if page.TotalCount > 0 {
+		page.PageCount = int(math.Ceil(float64(page.TotalCount) / float64(page.PerPage)))
+	}
 	return linkList, page, nil
 }
 
@@ -198,7 +199,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByHostID(id string, pageInfo do
 	}
 
 	page.TotalCount = receiver.TotalCount
-	page.PageCount = int(math.Ceil(float64(page.TotalCount) / float64(page.PerPage)))
-
+	if page.TotalCount > 0 {
+		page.PageCount = int(math.Ceil(float64(page.TotalCount) / float64(page.PerPage)))
+	}
 	return linkList, page, nil
 }

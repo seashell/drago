@@ -138,7 +138,9 @@ func (a *postgresqlNetworkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) (
 	}
 
 	page.TotalCount = receiver.TotalCount
-	page.PageCount = int(math.Ceil(float64(page.TotalCount) / float64(page.PerPage)))
+	if page.TotalCount > 0 {
+		page.PageCount = int(math.Ceil(float64(page.TotalCount) / float64(page.PerPage)))
+	}
 
 	return networkList, page, nil
 }
