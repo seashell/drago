@@ -1,5 +1,3 @@
-//go:generate go generate github.com/seashell/drago/server/ui
-
 package server
 
 import (

@@ -6,7 +6,7 @@ import { onError } from 'apollo-link-error'
 
 import log from 'loglevel'
 
-import { REST_API_URL } from '../environment'
+import { REST_API_URL, DEBUG } from '../environment'
 import { defaults } from './local-state'
 
 const composeUrl = (url, protocol) => `${protocol}://${url}`
@@ -25,12 +25,10 @@ const authLink = new ApolloLink((operation, forward) => {
   return forward(operation)
 })
 
-const errorLink = onError(({ graphQLErrors, networkError }) => {
-  if (graphQLErrors)
-    graphQLErrors.map(({ message, locations, path }) =>
-      log.error(`[GraphQL error]: Message: ${message}, Location: ${locations}, Path: ${path}`)
-    )
-  if (networkError) log.error(`[Network error]: ${networkError}`)
+const errorLink = onError(error => {
+  if (DEBUG) {
+    log.errors(error)
+  }
 })
 
 const cache = new InMemoryCache()

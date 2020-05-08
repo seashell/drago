@@ -107,7 +107,7 @@ const HostsView = () => {
 
   const isError = getHostsQuery.error
   const isLoading = getHostsQuery.loading || deleteHostMutation.loading
-  const isEmpty = !isLoading && getHostsQuery.data.result.items.length === 0
+  const isEmpty = !isLoading && !isError && getHostsQuery.data.result.items.length === 0
 
   return (
     <Container>

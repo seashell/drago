@@ -1,4 +1,4 @@
-//go:generate go generate github.com/seashell/drago/server
+//go:generate go generate github.com/seashell/drago/ui
 
 package main
 
