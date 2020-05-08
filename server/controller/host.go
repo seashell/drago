@@ -65,12 +65,12 @@ type ListHostsInput struct {
 func (c *Controller) GetHost(ctx context.Context, in *GetHostInput) (*domain.Host, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	h, err := c.hs.GetByID(in.ID)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return h, nil
@@ -80,7 +80,7 @@ func (c *Controller) GetHost(ctx context.Context, in *GetHostInput) (*domain.Hos
 func (c *Controller) CreateHost(ctx context.Context, in *CreateHostInput) (*string, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	h := &domain.Host{}
@@ -90,12 +90,12 @@ func (c *Controller) CreateHost(ctx context.Context, in *CreateHostInput) (*stri
 		for _, e := range errs {
 			err = multierror.Append(err, e)
 		}
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	id, err := c.hs.Create(h)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return id, nil
@@ -105,7 +105,7 @@ func (c *Controller) CreateHost(ctx context.Context, in *CreateHostInput) (*stri
 func (c *Controller) UpdateHost(ctx context.Context, in *UpdateHostInput) (*string, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	h := &domain.Host{}
@@ -115,12 +115,12 @@ func (c *Controller) UpdateHost(ctx context.Context, in *UpdateHostInput) (*stri
 		for _, e := range errs {
 			err = multierror.Append(err, e)
 		}
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	id, err := c.hs.Update(h)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return id, nil

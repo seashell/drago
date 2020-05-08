@@ -46,12 +46,12 @@ type ListLinksInput struct {
 func (c *Controller) GetLink(ctx context.Context, in *GetLinkInput) (*domain.Link, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	l, err := c.ls.GetByID(in.ID)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return l, nil
@@ -61,7 +61,7 @@ func (c *Controller) GetLink(ctx context.Context, in *GetLinkInput) (*domain.Lin
 func (c *Controller) CreateLink(ctx context.Context, in *CreateLinkInput) (*string, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	l := &domain.Link{}
@@ -71,12 +71,12 @@ func (c *Controller) CreateLink(ctx context.Context, in *CreateLinkInput) (*stri
 		for _, e := range errs {
 			err = multierror.Append(err, e)
 		}
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	id, err := c.ls.Create(l)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return id, nil
@@ -86,7 +86,7 @@ func (c *Controller) CreateLink(ctx context.Context, in *CreateLinkInput) (*stri
 func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*string, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	l := &domain.Link{}
@@ -96,12 +96,12 @@ func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*stri
 		for _, e := range errs {
 			err = multierror.Append(err, e)
 		}
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	id, err := c.ls.Update(l)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return id, nil
@@ -126,7 +126,7 @@ func (c *Controller) DeleteLink(ctx context.Context, in *DeleteLinkInput) error 
 func (c *Controller) ListLinks(ctx context.Context, in *ListLinksInput) (*pagination.Page, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	pageInfo := &domain.PageInfo{
@@ -140,16 +140,16 @@ func (c *Controller) ListLinks(ctx context.Context, in *ListLinksInput) (*pagina
 	if in.NetworkIDFilter != "" {
 		l, p, err = c.ls.FindAllByNetworkID(in.NetworkIDFilter, *pageInfo)
 		if err != nil {
-			return nil, errors.Wrap(err, ErrInternal.Error())
+			return nil, errors.Wrap(ErrInternal, err.Error())
 		}
 	} else if in.HostIDFilter != "" {
 		l, p, err = c.ls.FindAllByHostID(in.NetworkIDFilter, *pageInfo)
 		if err != nil {
-			return nil, errors.Wrap(err, ErrInternal.Error())
+			return nil, errors.Wrap(ErrInternal, err.Error())
 		}
 	} else {
 		err = errors.New("No filter provided")
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	page := &pagination.Page{

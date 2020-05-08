@@ -40,12 +40,12 @@ type ListNetworksInput struct {
 func (c *Controller) GetNetwork(ctx context.Context, in *GetNetworkInput) (*domain.Network, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	n, err := c.ns.GetByID(in.ID)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return n, nil
@@ -55,7 +55,7 @@ func (c *Controller) GetNetwork(ctx context.Context, in *GetNetworkInput) (*doma
 func (c *Controller) CreateNetwork(ctx context.Context, in *CreateNetworkInput) (*string, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	n := &domain.Network{
@@ -65,7 +65,7 @@ func (c *Controller) CreateNetwork(ctx context.Context, in *CreateNetworkInput) 
 
 	id, err := c.ns.Create(n)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return id, nil
@@ -75,7 +75,7 @@ func (c *Controller) CreateNetwork(ctx context.Context, in *CreateNetworkInput) 
 func (c *Controller) UpdateNetwork(ctx context.Context, in *UpdateNetworkInput) (*string, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	n := &domain.Network{
@@ -88,7 +88,7 @@ func (c *Controller) UpdateNetwork(ctx context.Context, in *UpdateNetworkInput) 
 
 	id, err := c.ns.Update(n)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	return id, nil
@@ -113,7 +113,7 @@ func (c *Controller) DeleteNetwork(ctx context.Context, in *DeleteNetworkInput) 
 func (c *Controller) ListNetworks(ctx context.Context, in *ListNetworksInput) (*pagination.Page, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInvalidInput.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
 	pageInfo := &domain.PageInfo{
@@ -123,7 +123,7 @@ func (c *Controller) ListNetworks(ctx context.Context, in *ListNetworksInput) (*
 
 	n, p, err := c.ns.FindAll(*pageInfo)
 	if err != nil {
-		return nil, errors.Wrap(err, ErrInternal.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
 	page := &pagination.Page{
