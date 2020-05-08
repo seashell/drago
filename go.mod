@@ -1,6 +1,6 @@
 module github.com/seashell/drago
 
-go 1.12
+go 1.14
 
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
