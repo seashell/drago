@@ -3,6 +3,7 @@ module github.com/seashell/drago
 go 1.14
 
 require (
+	github.com/cosmtrek/air v1.12.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/go-playground/validator/v10 v10.2.0
 	github.com/go-resty/resty/v2 v2.1.0
