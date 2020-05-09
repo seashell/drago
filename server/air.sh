@@ -1,1 +1,0 @@
-go run github.com/cosmtrek/air
