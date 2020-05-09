@@ -64,7 +64,7 @@ func (a *postgresqlHostRepositoryAdapter) Create(h *domain.Host) (*string, error
 	var id string
 
 	err = a.db.QueryRow(
-		`INSERT INTO host (id, network_id, name, address, advertise_address, listen_port, public_key, 
+		`INSERT INTO host (id, network_id, name, ip_address, advertise_address, listen_port, public_key, 
 			"table", dns, mtu, pre_up, post_up, pre_down, post_down, created_at, updated_at) 
 			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING id`,
 		sguid, h.NetworkID, h.Name, h.IPAddress, h.AdvertiseAddress, h.ListenPort, h.PublicKey,
@@ -131,7 +131,7 @@ func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 	}
 
 	rows, err := a.db.Queryx(
-		"SELECT h.*, COUNT(*) OVER() AS total_count, array_agg(l.id) AS link_ids "+
+		"SELECT h.*, COUNT(*) OVER() AS total_count "+
 			"FROM host h "+
 			"LEFT JOIN link l ON l.to_host_id = h.id OR l.from_host_id = h.id "+
 			"WHERE h.network_id = $1 "+

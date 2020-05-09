@@ -17,17 +17,16 @@ type Network struct {
 type Host struct {
 	ID               *string    `db:"id"`
 	NetworkID        *string    `db:"network_id"`
-	LinkIDs          []string   `db:"link_ids"`
 	Name             *string    `db:"name"`
 	IPAddress        *string    `db:"ip_address"`
 	AdvertiseAddress *string    `db:"advertise_address"`
 	ListenPort       *string    `db:"listen_port"`
 	PublicKey        *string    `db:"public_key"`
-	Table            *string    `db:"host_table"`
+	Table            *string    `db:"table"`
 	DNS              *string    `db:"dns"`
 	MTU              *string    `db:"mtu"`
 	PreUp            *string    `db:"pre_up"`
-	PostUp           *string    `db:"pre_down"`
+	PostUp           *string    `db:"post_up"`
 	PreDown          *string    `db:"pre_down"`
 	PostDown         *string    `db:"post_down"`
 	CreatedAt        *time.Time `db:"created_at"`
