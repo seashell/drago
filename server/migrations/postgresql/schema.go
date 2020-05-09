@@ -19,7 +19,7 @@ CREATE TABLE IF NOT EXISTS host (
     advertise_address text,
     listen_port varchar(5),
     public_key text,
-    host_table text,
+    "table" text,
     dns text,
     mtu text,
     pre_up text,
