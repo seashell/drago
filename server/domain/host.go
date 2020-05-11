@@ -26,8 +26,8 @@ type Host struct {
 // HostRepository :
 type HostRepository interface {
 	GetByID(id string) (*Host, error)
-	Create(h *Host) (id *string, err error)
-	Update(h *Host) (id *string, err error)
-	DeleteByID(id string) error
+	Create(h *Host) (*string, error)
+	Update(h *Host) (*string, error)
+	DeleteByID(id string) (*string, error)
 	FindAllByNetworkID(id string, pageInfo PageInfo) ([]*Host, *Page, error)
 }

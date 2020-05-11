@@ -69,12 +69,12 @@ func (h *Handler) DeleteLink(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	err := h.controller.DeleteLink(ctx, in)
+	res, err := h.controller.DeleteLink(ctx, in)
 	if e := WrapControllerError(err); e != nil {
 		return c.JSON(e.Code, e)
 	}
 
-	return c.JSON(http.StatusNoContent, nil)
+	return c.JSON(http.StatusOK, res)
 }
 
 // ListLinks :

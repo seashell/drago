@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { navigate } from '@reach/router'
 import { useQuery, useMutation } from 'react-apollo'
@@ -58,15 +59,17 @@ const EmptyState = () => (
   <EmptyStateContainer>
     <icons.EmptyStateCube />
     <Text textStyle="description" mt={4}>
-      Oops! It seems that there are no hosts registered.
+      Oops! It seems that there are no hosts registered in this network.
     </Text>
   </EmptyStateContainer>
 )
 
 export const StyledButton = styled(Button)``
 
-const HostsView = () => {
-  const getHostsQuery = useQuery(GET_HOSTS)
+const HostsView = ({ networkId }) => {
+  const getHostsQuery = useQuery(GET_HOSTS, {
+    variables: { networkId },
+  })
 
   useEffect(() => {
     getHostsQuery.refetch()
@@ -88,7 +91,7 @@ const HostsView = () => {
   })
 
   const handleHostSelect = id => {
-    navigate(`/hosts/${id}`)
+    navigate(`/networks/${networkId}/hosts/${id}`)
   }
 
   const handleHostDelete = (e, id) => {
@@ -98,11 +101,11 @@ const HostsView = () => {
   }
 
   const handleGraphViewButtonClick = () => {
-    navigate('/topology')
+    navigate(`/networks/${networkId}/topology`)
   }
 
   const handleCreateHostButtonClick = () => {
-    navigate('/hosts/new')
+    navigate(`/networks/${networkId}/hosts/new`)
   }
 
   const isError = getHostsQuery.error
@@ -149,6 +152,10 @@ const HostsView = () => {
       )}
     </Container>
   )
+}
+
+HostsView.propTypes = {
+  networkId: PropTypes.string.isRequired,
 }
 
 export default HostsView

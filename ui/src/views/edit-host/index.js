@@ -53,24 +53,24 @@ const StatusBadge = styled.div`
   background: ${props => (props.status === 'online' ? 'green' : props.theme.colors.neutralLight)};
 `
 
-const EditHost = ({ hostId }) => {
+const EditHost = ({ networkId, hostId }) => {
   const onHostUpdated = () => {
     toast.success('Host updated')
-    navigate('/hosts')
+    navigate(-1)
   }
 
   const onHostUpdateError = () => {
     toast.error('Error updating host')
-    navigate('/hosts')
+    navigate(-1)
   }
 
   const [formState, { text }] = useFormState()
 
   const getHostQuery = useQuery(GET_HOST, {
-    variables: { id: hostId },
+    variables: { networkId, id: hostId },
     onCompleted: data => {
       formState.setField('name', data.result.name)
-      formState.setField('address', data.result.address)
+      formState.setField('ipAddress', data.result.ipAddress)
       formState.setField('advertiseAddress', data.result.advertiseAddress)
       formState.setField('listenPort', data.result.listenPort)
       formState.setField('table', data.result.table)
@@ -85,7 +85,7 @@ const EditHost = ({ hostId }) => {
     },
     onError: () => {
       toast.error('Error fetching host details')
-      navigate('/hosts')
+      navigate(-1)
     },
   })
 
@@ -94,13 +94,13 @@ const EditHost = ({ hostId }) => {
   })
 
   const [updateHost, updateHostMutation] = useMutation(UPDATE_HOST, {
-    variables: { id: hostId, ...formState.values },
+    variables: { networkId, id: hostId, ...formState.values },
     onCompleted: onHostUpdated,
     onError: onHostUpdateError,
   })
 
   const [deleteLink, deleteLinkMutation] = useMutation(DELETE_LINK, {
-    variables: { id: undefined },
+    variables: { networkId, id: undefined },
     onCompleted: () => {
       toast.success('Link deleted successfully')
     },
@@ -153,7 +153,7 @@ const EditHost = ({ hostId }) => {
           <TextInput required {...text('name')} placeholder="new-host-1" mb={2} />
 
           <Text my={3}>Address</Text>
-          <TextInput required {...text('address')} placeholder="10.0.8.0/24" mb={2} />
+          <TextInput required {...text('ipAddress')} placeholder="10.0.8.0/24" mb={2} />
 
           <Text my={3}>Advertise address</Text>
           <TextInput {...text('advertiseAddress')} placeholder="wireguard.domain.io" mb={2} />
@@ -197,6 +197,7 @@ const EditHost = ({ hostId }) => {
           </Button>
 
           <NewLinkModal
+            networkId={networkId}
             isOpen={isNewLinkModalOpen}
             fromHost={getHostQuery.data.result}
             onBackgroundClick={() => setNewLinkModalOpen(false)}
@@ -215,11 +216,8 @@ const EditHost = ({ hostId }) => {
 }
 
 EditHost.propTypes = {
-  hostId: PropTypes.string,
-}
-
-EditHost.defaultProps = {
-  hostId: undefined,
+  networkId: PropTypes.string.isRequired,
+  hostId: PropTypes.string.isRequired,
 }
 
 export default EditHost

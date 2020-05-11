@@ -12,7 +12,7 @@ import { defaults } from './local-state'
 const composeUrl = (url, protocol) => `${protocol}://${url}`
 
 const restLink = new RestLink({
-  uri: composeUrl(REST_API_URL, 'https'),
+  uri: composeUrl(REST_API_URL, 'http'),
 })
 
 const authLink = new ApolloLink((operation, forward) => {

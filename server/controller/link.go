@@ -108,18 +108,18 @@ func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*doma
 }
 
 // DeleteLink :
-func (c *Controller) DeleteLink(ctx context.Context, in *DeleteLinkInput) error {
+func (c *Controller) DeleteLink(ctx context.Context, in *DeleteLinkInput) (*domain.Link, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return errors.Wrap(ErrInvalidInput, err.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
-	err = c.ls.DeleteByID(in.ID)
+	res, err := c.ls.DeleteByID(in.ID)
 	if err != nil {
-		return errors.Wrap(ErrInternal, err.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return nil
+	return res, nil
 }
 
 // ListLinks :

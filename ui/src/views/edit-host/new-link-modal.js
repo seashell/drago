@@ -77,7 +77,7 @@ const IconContainer = styled(Box).attrs({
   justify-content: center;
 `
 
-const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) => {
+const NewLinkModal = ({ networkId, fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) => {
   const [formState, { text, number }] = useFormState({
     from: fromHost.id,
     to: null,
@@ -85,10 +85,12 @@ const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) 
     persistentKeepalive: null,
   })
 
-  const getHostsQuery = useQuery(GET_HOSTS)
+  const getHostsQuery = useQuery(GET_HOSTS, {
+    variables: { networkId },
+  })
 
   const [createLink] = useMutation(CREATE_LINK, {
-    variables: formState.values,
+    variables: { networkId, ...formState.values },
     onCompleted: () => {
       toast.success('Link created')
       onEscapeKeydown()
@@ -108,13 +110,13 @@ const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) 
       <IconContainer mr="12px">
         <IconButton ml="auto" icon={<icons.Cube />} />
       </IconContainer>
-      {props.data.name} ({props.data.address})
+      {props.data.name} ({props.data.ipAddress})
     </SearchResult>
   )
 
   const SelectedHostValue = ({ innerRef, innerProps, ...props }) => (
     <div innerRef={innerRef} {...innerProps} {...props}>
-      {props.data.name} ({props.data.address})
+      {props.data.name} ({props.data.ipAddress})
     </div>
   )
   const handleTargetHostSelected = targetHost => {
@@ -128,7 +130,7 @@ const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) 
   const filterHosts = (option, searchText) => {
     if (
       option.data.name.toLowerCase().includes(searchText.toLowerCase()) ||
-      option.data.address.toLowerCase().includes(searchText.toLowerCase())
+      option.data.ipAddress.toLowerCase().includes(searchText.toLowerCase())
     ) {
       return true
     }
@@ -174,6 +176,7 @@ const NewLinkModal = ({ fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) 
 }
 
 NewLinkModal.propTypes = {
+  networkId: PropTypes.string.isRequired,
   fromHost: PropTypes.node.isRequired,
   onBackgroundClick: PropTypes.func.isRequired,
   onEscapeKeydown: PropTypes.func.isRequired,

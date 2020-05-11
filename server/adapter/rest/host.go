@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"net/http"
 
 	"github.com/labstack/echo/v4"
@@ -70,12 +69,12 @@ func (h *Handler) DeleteHost(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	err := h.controller.DeleteHost(ctx, in)
+	res, err := h.controller.DeleteHost(ctx, in)
 	if e := WrapControllerError(err); e != nil {
 		return c.JSON(e.Code, e)
 	}
 
-	return c.JSON(http.StatusNoContent, nil)
+	return c.JSON(http.StatusOK, res)
 
 }
 
@@ -91,15 +90,11 @@ func (h *Handler) ListHosts(c echo.Context) error {
 	ctx := c.Request().Context()
 
 	res, err := h.controller.ListHosts(ctx, in)
-	fmt.Println(res)
-	fmt.Println(err)
 
 	e := WrapControllerError(err)
 	if e != nil {
-		fmt.Println(e)
 		return c.JSON(e.Code, e)
 	}
-	fmt.Println("abc")
 
 	return c.JSON(http.StatusOK, res)
 }

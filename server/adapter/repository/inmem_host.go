@@ -23,16 +23,16 @@ func (a *inmemHostRepositoryAdapter) GetByID(id string) (*domain.Host, error) {
 	return nil, nil
 }
 
-func (a *inmemHostRepositoryAdapter) Create(h *domain.Host) (id *string, err error) {
+func (a *inmemHostRepositoryAdapter) Create(h *domain.Host) (*string, error) {
 	return nil, nil
 }
 
-func (a *inmemHostRepositoryAdapter) Update(h *domain.Host) (id *string, err error) {
+func (a *inmemHostRepositoryAdapter) Update(h *domain.Host) (*string, error) {
 	return nil, nil
 }
 
-func (a *inmemHostRepositoryAdapter) DeleteByID(id string) error {
-	return nil
+func (a *inmemHostRepositoryAdapter) DeleteByID(id string) (*string, error) {
+	return nil, nil
 }
 
 func (a *inmemHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {

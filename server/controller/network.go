@@ -93,18 +93,18 @@ func (c *Controller) UpdateNetwork(ctx context.Context, in *UpdateNetworkInput) 
 }
 
 // DeleteNetwork :
-func (c *Controller) DeleteNetwork(ctx context.Context, in *DeleteNetworkInput) error {
+func (c *Controller) DeleteNetwork(ctx context.Context, in *DeleteNetworkInput) (*domain.Network, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return errors.Wrap(ErrInvalidInput, err.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
-	err = c.ns.DeleteByID(in.ID)
+	res, err := c.ns.DeleteByID(in.ID)
 	if err != nil {
-		return errors.Wrap(ErrInternal, err.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return nil
+	return res, nil
 }
 
 // ListNetworks :

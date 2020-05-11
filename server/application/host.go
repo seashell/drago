@@ -9,7 +9,7 @@ type HostService interface {
 	GetByID(id string) (*domain.Host, error)
 	Create(h *domain.Host) (*domain.Host, error)
 	Update(h *domain.Host) (*domain.Host, error)
-	DeleteByID(id string) error
+	DeleteByID(id string) (*domain.Host, error)
 	FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error)
 }
 
@@ -56,8 +56,12 @@ func (hs *hostService) Update(h *domain.Host) (*domain.Host, error) {
 }
 
 // Delete :
-func (hs *hostService) DeleteByID(id string) error {
-	return hs.hr.DeleteByID(id)
+func (hs *hostService) DeleteByID(id string) (*domain.Host, error) {
+	_id, err := hs.hr.DeleteByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Host{ID: _id}, nil
 }
 
 // FindAllByNetworkID :

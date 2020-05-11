@@ -1,4 +1,5 @@
 import React from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import { useFormState } from 'react-use-form-state'
@@ -20,17 +21,22 @@ const Container = styled(Flex)`
   flex-direction: column;
 `
 
-const NewHost = () => {
-  const [formState, { text }] = useFormState()
+const NewHost = ({ networkId }) => {
+  const [formState, { text }] = useFormState({
+    networkId,
+    name: null,
+    ipAddress: null,
+    advertiseAddress: null,
+  })
 
   const onHostCreated = () => {
     toast.success('Host created')
-    navigate('/hosts')
+    navigate(-1)
   }
 
   const onHostCreationError = () => {
     toast.error('Error creating host')
-    navigate('/hosts')
+    navigate(-1)
   }
 
   const [createHost, { loading }] = useMutation(CREATE_HOST, {
@@ -55,11 +61,9 @@ const NewHost = () => {
           <Text my={3}>Name</Text>
           <TextInput required {...text('name')} placeholder="new-host-1" mb={2} />
           <Text my={3}>Address</Text>
-          <TextInput required {...text('address')} placeholder="10.0.8.0/24" mb={2} />
+          <TextInput required {...text('ipAddress')} placeholder="10.0.8.0/24" mb={2} />
           <Text my={3}>Advertise address</Text>
           <TextInput required {...text('advertiseAddress')} placeholder="wg.domain.com" mb={2} />
-          <Text my={3}>Listen port</Text>
-          <TextInput required {...text('listenPort')} placeholder="51820" mb={2} />
           <Button width="100%" borderRadius={3} mt={3} mb={4} onClick={onSave}>
             Save
           </Button>
@@ -73,6 +77,10 @@ const NewHost = () => {
       </Box>
     </Container>
   )
+}
+
+NewHost.propTypes = {
+  networkId: PropTypes.string.isRequired,
 }
 
 export default NewHost

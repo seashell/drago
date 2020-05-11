@@ -88,7 +88,7 @@ const NetworksView = () => {
   })
 
   const handleNetworkSelect = id => {
-    navigate(`/networks/${id}`)
+    navigate(`/networks/${id}/hosts`)
   }
 
   const handleNetworkDelete = (e, id) => {

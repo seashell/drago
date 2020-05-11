@@ -13,9 +13,9 @@ type Network struct {
 
 // NetworkRepository : Network repository interface
 type NetworkRepository interface {
-	GetByID(id string) (*Network, error)
-	Create(n *Network) (id *string, err error)
-	Update(n *Network) (id *string, err error)
-	DeleteByID(id string) error
+	GetByID(string) (*Network, error)
+	Create(n *Network) (*string, error)
+	Update(n *Network) (*string, error)
+	DeleteByID(string) (*string, error)
 	FindAll(pageInfo PageInfo) ([]*Network, *Page, error)
 }

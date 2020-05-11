@@ -61,9 +61,8 @@ const TokensView = () => {
         <Text textStyle="title">Access control tokens</Text>
       </Box>
       <Text textStyle="bodyText">
-        By providing a token Secret ID, each future request will be authenticated, potentially
-        authorizing read access to additional information. By providing a token Accessor ID, the
-        policies and rules for the token will be listed.
+        By providing a secret token, each future request will be authenticated, potentially
+        authorizing read access to additional information.
       </Text>
       <ImportantBox my={3} p={3} border="discrete">
         <div>

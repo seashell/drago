@@ -31,7 +31,7 @@ func NewHTTPServer(handler *rest.Handler, c *HTTPServerConfig) (*HTTPServer, err
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"HEAD", "GET"},
+		AllowMethods:     []string{"HEAD", "GET", "POST", "DELETE"},
 		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
 	}))

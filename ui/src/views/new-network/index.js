@@ -21,16 +21,19 @@ const Container = styled(Flex)`
 `
 
 const NewNetwork = () => {
-  const [formState, { text }] = useFormState()
+  const [formState, { text }] = useFormState({
+    name: undefined,
+    ipAddressRange: undefined,
+  })
 
   const onNetworkCreated = () => {
     toast.success('Network created')
-    navigate('/hosts')
+    navigate('/networks')
   }
 
-  const onNetworkCreationError = () => {
-    toast.error('Error creating host')
-    navigate('/hosts')
+  const onNetworkCreationError = e => {
+    toast.error('Error creating network')
+    navigate('/networks')
   }
 
   const [createNetwork, { loading }] = useMutation(CREATE_NETWORK, {
@@ -55,7 +58,7 @@ const NewNetwork = () => {
           <Text my={3}>Name</Text>
           <TextInput required {...text('name')} placeholder="new-network" mb={2} />
           <Text my={3}>Address range</Text>
-          <TextInput required {...text('address')} placeholder="10.0.8.0/24" mb={2} />
+          <TextInput required {...text('ipAddressRange')} placeholder="10.0.8.0/24" mb={2} />
           <Button width="100%" borderRadius={3} mt={3} mb={4} onClick={onSave}>
             Save
           </Button>
@@ -63,7 +66,7 @@ const NewNetwork = () => {
       )}
 
       <Box justifyContent="center" gridColumn="4 / span 6">
-        <Link color="primary" to="/hosts">
+        <Link color="primary" to="/networks">
           Cancel
         </Link>
       </Box>

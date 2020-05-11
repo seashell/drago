@@ -31,8 +31,8 @@ func (a *inmemNetworkRepositoryAdapter) Update(h *domain.Network) (id *string, e
 	return nil, nil
 }
 
-func (a *inmemNetworkRepositoryAdapter) DeleteByID(id string) error {
-	return nil
+func (a *inmemNetworkRepositoryAdapter) DeleteByID(id string) (*string, error) {
+	return nil, nil
 }
 
 func (a *inmemNetworkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*domain.Network, *domain.Page, error) {

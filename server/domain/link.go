@@ -17,9 +17,9 @@ type Link struct {
 // LinkRepository :
 type LinkRepository interface {
 	GetByID(id string) (*Link, error)
-	Create(l *Link) (id *string, err error)
-	Update(l *Link) (id *string, err error)
-	DeleteByID(id string) error
+	Create(l *Link) (*string, error)
+	Update(l *Link) (*string, error)
+	DeleteByID(id string) (*string, error)
 	FindAllByNetworkID(id string, pageInfo PageInfo) ([]*Link, *Page, error)
 	FindAllByHostID(id string, pageInfo PageInfo) ([]*Link, *Page, error)
 }

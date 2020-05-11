@@ -89,13 +89,12 @@ func (a *postgresqlNetworkRepositoryAdapter) Update(n *domain.Network) (*string,
 	return &id, nil
 }
 
-func (a *postgresqlNetworkRepositoryAdapter) DeleteByID(id string) error {
+func (a *postgresqlNetworkRepositoryAdapter) DeleteByID(id string) (*string, error) {
 	_, err := a.db.Exec("DELETE FROM network WHERE id = $1", id)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	return err
+	return &id, nil
 }
 
 func (a *postgresqlNetworkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*domain.Network, *domain.Page, error) {

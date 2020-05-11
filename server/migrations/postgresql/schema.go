@@ -14,7 +14,7 @@ CREATE TABLE IF NOT EXISTS host (
     id uuid PRIMARY KEY,
     created_at timestamp NOT NULL,
     updated_at timestamp NOT NULL,
-    name varchar(50) UNIQUE NOT NULL,
+    name varchar(50) NOT NULL,
     ip_address text,
     advertise_address text,
     listen_port varchar(5),
@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS host (
     post_up text,
     pre_down text,
     post_down text,
-    network_id uuid NOT NULL REFERENCES network ON DELETE CASCADE
+    network_id uuid NOT NULL REFERENCES network ON DELETE CASCADE,
+    unique (name, network_id)
 );
 
 CREATE TABLE IF NOT EXISTS link (

@@ -38,7 +38,7 @@ const IconContainer = styled(Box).attrs({
   justify-content: center;
 `
 
-const NetworkCard = ({ id, name, hostCount, onClick, onDelete }) => (
+const NetworkCard = ({ id, name, onClick, onDelete }) => (
   <Container onClick={() => onClick(id)}>
     <IconContainer mr="12px">
       <IconButton ml="auto" icon={<icons.Network />} />
@@ -46,9 +46,6 @@ const NetworkCard = ({ id, name, hostCount, onClick, onDelete }) => (
     <Box flexDirection="column">
       <Text textStyle="subtitle" fontSize="14px">
         {name}
-      </Text>
-      <Text textStyle="detail" fontSize="12px">
-        {hostCount} hosts
       </Text>
     </Box>
     <IconButton ml="auto" icon={<icons.Times />} onClick={onDelete} />
@@ -58,7 +55,6 @@ const NetworkCard = ({ id, name, hostCount, onClick, onDelete }) => (
 NetworkCard.propTypes = {
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
-  hostCount: PropTypes.number.isRequired,
   onClick: PropTypes.func,
   onDelete: PropTypes.func,
 }

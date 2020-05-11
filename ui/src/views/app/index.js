@@ -45,10 +45,10 @@ const App = () => (
       <HomeView path="/" />
       <NetworksView path="/networks" />
       <NewNetwork path="/networks/new" />
-      <HostsView path="/hosts" />
-      <NewHost path="/hosts/new" />
-      <EditHost path="/hosts/:hostId" />
-      <Topology path="/topology" />
+      <HostsView path="/networks/:networkId/hosts" />
+      <NewHost path="/networks/:networkId/hosts/new" />
+      <EditHost path="/networks/:networkId/hosts/:hostId" />
+      <Topology path="/networks/:networkId/topology" />
       <TokensView path="/settings/tokens" />
       <NotFound default />
     </Content>

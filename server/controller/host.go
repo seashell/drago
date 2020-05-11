@@ -127,18 +127,18 @@ func (c *Controller) UpdateHost(ctx context.Context, in *UpdateHostInput) (*doma
 }
 
 // DeleteHost :
-func (c *Controller) DeleteHost(ctx context.Context, in *DeleteHostInput) error {
+func (c *Controller) DeleteHost(ctx context.Context, in *DeleteHostInput) (*domain.Host, error) {
 	err := c.v.Struct(in)
 	if err != nil {
-		return errors.Wrap(ErrInvalidInput, err.Error())
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
-	err = c.hs.DeleteByID(in.ID)
+	res, err := c.hs.DeleteByID(in.ID)
 	if err != nil {
-		return errors.Wrap(ErrInternal, err.Error())
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return nil
+	return res, nil
 }
 
 // ListHosts :

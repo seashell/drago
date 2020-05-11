@@ -9,7 +9,7 @@ type LinkService interface {
 	GetByID(id string) (*domain.Link, error)
 	Create(l *domain.Link) (*domain.Link, error)
 	Update(l *domain.Link) (*domain.Link, error)
-	DeleteByID(id string) error
+	DeleteByID(id string) (*domain.Link, error)
 	FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
 	FindAllByHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
 }
@@ -54,8 +54,12 @@ func (ls *linkService) Update(l *domain.Link) (*domain.Link, error) {
 }
 
 // Delete :
-func (ls *linkService) DeleteByID(id string) error {
-	return ls.lr.DeleteByID(id)
+func (ls *linkService) DeleteByID(id string) (*domain.Link, error) {
+	_id, err := ls.lr.DeleteByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Link{ID: _id}, nil
 }
 
 // FindAllByNetworkID :

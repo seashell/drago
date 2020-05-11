@@ -29,11 +29,10 @@ func (a *postgresqlHostRepositoryAdapter) GetByID(id string) (*domain.Host, erro
 	sh := &sql.Host{}
 
 	err := a.db.Get(sh,
-		"SELECT h.*, array_agg(l.id) AS link_ids "+
-			"FROM host h "+
-			"LEFT JOIN link l ON l.to_host_id = h.id OR l.from_host_id = h.id "+
-			"WHERE id=$1 "+
-			"GROUP BY h.id",
+		`SELECT h.* FROM host h
+			LEFT JOIN link l ON l.to_host_id = h.id OR l.from_host_id = h.id
+			WHERE h.id=$1
+			GROUP BY h.id`,
 		id)
 	if err != nil {
 		return nil, err
@@ -108,13 +107,12 @@ func (a *postgresqlHostRepositoryAdapter) Update(h *domain.Host) (*string, error
 	return &id, nil
 }
 
-func (a *postgresqlHostRepositoryAdapter) DeleteByID(id string) error {
+func (a *postgresqlHostRepositoryAdapter) DeleteByID(id string) (*string, error) {
 	_, err := a.db.Exec("DELETE FROM host WHERE id = $1", id)
 	if err != nil {
-		return err
+		return nil, err
 	}
-
-	return err
+	return &id, nil
 }
 
 func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {

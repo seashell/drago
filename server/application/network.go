@@ -9,7 +9,7 @@ type NetworkService interface {
 	GetByID(id string) (*domain.Network, error)
 	Create(n *domain.Network) (*domain.Network, error)
 	Update(n *domain.Network) (*domain.Network, error)
-	DeleteByID(id string) error
+	DeleteByID(id string) (*domain.Network, error)
 	FindAll(pageInfo domain.PageInfo) ([]*domain.Network, *domain.Page, error)
 }
 
@@ -53,8 +53,12 @@ func (ns *networkService) Update(n *domain.Network) (*domain.Network, error) {
 }
 
 // Delete :
-func (ns *networkService) DeleteByID(id string) error {
-	return ns.nr.DeleteByID(id)
+func (ns *networkService) DeleteByID(id string) (*domain.Network, error) {
+	_id, err := ns.nr.DeleteByID(id)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.Network{ID: _id}, nil
 }
 
 // FindAllByNetworkID :

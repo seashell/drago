@@ -27,24 +27,9 @@ export const StyledButton = styled(Button).attrs({
   line-height: 8px;
 `
 
-const IconContainer = styled(Box).attrs({
-  display: 'flex',
-  height: '48px',
-  width: '48px',
-  bg: 'neutralLighter',
-  borderRadius: '4px',
-})`
-  position: relative;
-  button {
-    margin-right: auto;
-  }
-  align-items: center;
-  justify-content: center;
-`
-
 const HomeView = () => {
   useEffect(() => {
-    navigate(`/hosts`)
+    navigate(`/networks`)
   })
 
   return (

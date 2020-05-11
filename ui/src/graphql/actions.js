@@ -3,25 +3,26 @@ import gql from 'graphql-tag'
 const GET_NETWORKS = gql`
   query getNetworks {
     result @rest(type: "NetworksPayload", path: "networks") {
-      count
+      page
+      perPage
+      pageCount
+      totalCount
       items @type(name: "Network") {
         id
         name
-        addressRange
-        hostCount
+        ipAddressRange
+        createdAt
+        updatedAt
       }
     }
   }
 `
 
 const CREATE_NETWORK = gql`
-  mutation createNetwork($name: String!, $addressRange: String!) {
-    createNetwork(input: { name: $name, addressRange: $addressRange })
+  mutation createNetwork($name: String!, $ipAddressRange: String!) {
+    createNetwork(input: { name: $name, ipAddressRange: $ipAddressRange })
       @rest(method: "POST", path: "networks", type: "Network") {
       id
-      name
-      addressRange
-      hostCount
     }
   }
 `
@@ -35,15 +36,19 @@ const DELETE_NETWORK = gql`
 `
 
 const GET_HOSTS = gql`
-  query getHosts {
-    result @rest(type: "HostsPayload", path: "hosts") {
-      count
+  query getHosts($networkId: String) {
+    result: getHosts(networkId: $networkId)
+      @rest(type: "HostsPayload", path: "hosts?networkId={args.networkId}") {
+      page
+      perPage
+      pageCount
+      totalCount
       items @type(name: "Host") {
         id
         name
         publicKey
         advertiseAddress
-        address
+        ipAddress
         listenPort
         lastSeen
       }
@@ -52,13 +57,14 @@ const GET_HOSTS = gql`
 `
 
 const GET_HOST = gql`
-  query getHost($id: String) {
-    result: getHost(id: $id) @rest(path: "hosts/{args.id}", type: "Host") {
+  query getHost($networkId: String, $id: String) {
+    result: getHost(networkId: $networkId, id: $id)
+      @rest(path: "hosts/{args.id}?networkId={args.networkId}", type: "Host") {
       id
       name
       publicKey
       advertiseAddress
-      address
+      ipAddress
       listenPort
       lastSeen
       table
@@ -84,22 +90,22 @@ const GET_HOST = gql`
 
 const CREATE_HOST = gql`
   mutation createHost(
+    $networkId: String
     $name: String!
-    $address: String!
+    $ipAddress: String!
     $advertiseAddress: String
-    $listenPort: String
   ) {
     createHost(
       input: {
+        networkId: $networkId
         name: $name
-        address: $address
+        ipAddress: $ipAddress
         advertiseAddress: $advertiseAddress
-        listenPort: $listenPort
       }
     ) @rest(method: "POST", path: "hosts", type: "Host") {
       id
       name
-      address
+      ipAddress
       advertiseAddress
       listenPort
     }
@@ -126,7 +132,7 @@ const UPDATE_HOST = gql`
       id: $id
       input: {
         name: $name
-        address: $address
+        ipAddress: $address
         advertiseAddress: $advertiseAddress
         listenPort: $listenPort
         publicKey: $publicKey
@@ -143,7 +149,7 @@ const UPDATE_HOST = gql`
       name
       publicKey
       advertiseAddress
-      address
+      ipAddress
       listenPort
       table
       mtu
