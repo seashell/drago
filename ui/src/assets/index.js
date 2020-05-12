@@ -18,6 +18,11 @@ import { ReactComponent as Link } from './icons/link.svg'
 import { ReactComponent as Success } from './icons/success.svg'
 import { ReactComponent as Error } from './icons/error.svg'
 import { ReactComponent as Warning } from './icons/warning.svg'
+import { ReactComponent as Unknown } from './icons/unknown.svg'
+
+import { ReactComponent as EmptyIllustration } from './illustrations/empty.svg'
+import { ReactComponent as ErrorIllustration } from './illustrations/error.svg'
+import { ReactComponent as NotFoundIllustration } from './illustrations/not-found.svg'
 
 const icons = {
   Logo,
@@ -34,6 +39,7 @@ const icons = {
   Success,
   Error,
   Warning,
+  Unknown,
   Cube,
   Network,
   Link,
@@ -41,6 +47,10 @@ const icons = {
   ErrorStateCube,
 }
 
-const illustrations = {}
+const illustrations = {
+  NotFound: NotFoundIllustration,
+  Error: ErrorIllustration,
+  Empty: EmptyIllustration,
+}
 
 export { icons, illustrations }

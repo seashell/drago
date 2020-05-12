@@ -11,7 +11,7 @@ import toast from '_components/toast'
 import Button from '_components/button'
 import Box from '_components/box'
 
-import { icons } from '_assets/'
+import { icons, illustrations } from '_assets/'
 
 import NetworksList from './networks-list'
 
@@ -20,11 +20,12 @@ const Container = styled(Flex)`
 `
 
 const ErrorStateContainer = styled(Box).attrs({
-  border: 'discrete',
+  border: 'none',
   height: '300px',
 })`
   svg {
-    height: 120px;
+    height: 300px;
+    width: auto;
   }
   padding: 20px;
   flex-direction: column;
@@ -34,7 +35,7 @@ const ErrorStateContainer = styled(Box).attrs({
 
 const ErrorState = () => (
   <ErrorStateContainer>
-    <icons.ErrorStateCube />
+    <illustrations.Error />
     <Text textStyle="description" mt={4}>
       Oops! It seems that an error has occurred.
     </Text>
@@ -42,11 +43,12 @@ const ErrorState = () => (
 )
 
 const EmptyStateContainer = styled(Box).attrs({
-  border: 'discrete',
+  border: 'none',
   height: '300px',
 })`
   svg {
-    height: 120px;
+    height: 300px;
+    width: auto;
   }
   padding: 20px;
   flex-direction: column;
@@ -56,7 +58,7 @@ const EmptyStateContainer = styled(Box).attrs({
 
 const EmptyState = () => (
   <EmptyStateContainer>
-    <icons.EmptyStateCube />
+    <illustrations.Empty />
     <Text textStyle="description" mt={4}>
       Oops! It seems that there are no networks registered.
     </Text>

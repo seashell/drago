@@ -8,12 +8,12 @@ const GlobalStyles = createGlobalStyle`
     ${reset}
         
     :root {
+        @import url('https://fonts.googleapis.com/css?family=Lato|Raleway|Montserrat|Roboto&display=swap');
+
         height: 100%;
-        font-family: Lato;
+        font-family: Lato !important;
         text-rendering: optimizeLegibility;
         outline: none;
-
-        @import url('https://fonts.googleapis.com/css?family=Lato|Raleway|Montserrat|Roboto&display=swap');
     }
 
     body {

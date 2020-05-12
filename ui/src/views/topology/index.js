@@ -7,7 +7,7 @@ import { Portal } from 'react-portal'
 import { useQuery } from 'react-apollo'
 import { GET_HOSTS, GET_ALL_LINKS } from '_graphql/actions'
 
-import { icons } from '_assets/'
+import { illustrations } from '_assets/'
 import Box from '_components/box'
 import Text from '_components/text'
 import Button from '_components/button'
@@ -26,11 +26,12 @@ const Container = styled.div`
 `
 
 const ErrorStateContainer = styled(Box).attrs({
-  border: 'discrete',
+  border: 'none',
   height: '300px',
 })`
   svg {
-    height: 120px;
+    height: 300px;
+    width: auto;
   }
   padding: 20px;
   flex-direction: column;
@@ -40,7 +41,7 @@ const ErrorStateContainer = styled(Box).attrs({
 
 const ErrorState = () => (
   <ErrorStateContainer>
-    <icons.ErrorStateCube />
+    <illustrations.Error />
     <Text textStyle="description" mt={4}>
       Oops! It seems that an error has occurred.
     </Text>
@@ -48,12 +49,14 @@ const ErrorState = () => (
 )
 
 const EmptyStateContainer = styled(Box).attrs({
-  border: 'discrete',
+  border: 'none',
   height: '300px',
 })`
   svg {
-    height: 120px;
+    height: 300px;
+    width: auto;
   }
+  padding: 20px;
   flex-direction: column;
   align-items: center;
   justify-content: center;
@@ -61,9 +64,9 @@ const EmptyStateContainer = styled(Box).attrs({
 
 const EmptyState = () => (
   <EmptyStateContainer>
-    <icons.EmptyStateCube />
+    <illustrations.Empty />
     <Text textStyle="description" mt={4}>
-      Oops! It seems that there are no registered hosts.
+      Oops! It seems that there are no hosts registered in this network.
     </Text>
   </EmptyStateContainer>
 )
