@@ -3,16 +3,19 @@ package server
 import (
 	"github.com/seashell/drago/server/adapter/repository"
 	"github.com/seashell/drago/server/adapter/rest"
+	"github.com/seashell/drago/server/adapter/static"
 	"github.com/seashell/drago/server/application"
 	"github.com/seashell/drago/server/controller"
 	"github.com/seashell/drago/server/infrastructure/delivery/http"
 	"github.com/seashell/drago/server/infrastructure/storage"
 	"github.com/seashell/drago/server/migrations/postgresql"
+	"github.com/seashell/drago/ui"
 )
 
 type server struct {
-	config     ServerConfig
-	httpServer *http.HTTPServer
+	config    ServerConfig
+	apiServer *http.Server
+	uiServer  *http.Server
 }
 
 type ServerConfig struct {
@@ -32,7 +35,7 @@ func New(c ServerConfig) (*server, error) {
 		PostgreSQLSSLMode:  "disable",
 	})
 	if err != nil {
-		panic("Error creating backend")
+		panic("Error connecting to storage backend")
 	}
 
 	// Apply migrations
@@ -77,24 +80,38 @@ func New(c ServerConfig) (*server, error) {
 	}
 
 	// Create REST handler
-	handler, err := rest.NewHandler(ctrl)
+	restHandler, err := rest.NewHandler(ctrl)
 	if err != nil {
 		panic("Error creating API handler")
 	}
 
-	// Create HTTP server
-	httpServer, err := http.NewHTTPServer(handler, &http.HTTPServerConfig{})
+	// Create HTTP server for the API
+	apiServer, err := http.NewHTTPServer(restHandler, &http.ServerConfig{BindAddress: ":8080"})
 	if err != nil {
-		panic("Error creating HTTP server")
+		panic("Error creating API server")
+	}
+
+	// Create static content handler
+	staticHandler, err := static.NewHandler(ui.Bundle)
+	if err != nil {
+		panic("Error creating API handler")
+	}
+
+	// Create HTTP server for static files (UI)
+	uiServer, err := http.NewHTTPServer(staticHandler, &http.ServerConfig{BindAddress: ":8000"})
+	if err != nil {
+		panic("Error creating UI server")
 	}
 
 	return &server{
-		config:     c,
-		httpServer: httpServer,
+		config:    c,
+		apiServer: apiServer,
+		uiServer:  uiServer,
 	}, nil
 
 }
 
 func (s *server) Run() {
-	s.httpServer.Start()
+	s.apiServer.Start()
+	s.uiServer.Start()
 }

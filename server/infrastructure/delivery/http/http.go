@@ -6,33 +6,33 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"github.com/seashell/drago/server/adapter/rest"
-	"github.com/sirupsen/logrus"
 )
 
-type HTTPServerConfig struct{}
+type Handler interface {
+	RegisterRoutes(e *echo.Echo)
+}
+
+type ServerConfig struct {
+	BindAddress string `mapstructure:"bind_address"`
+}
 
 // HTTPServer
-type HTTPServer struct {
-	config  *HTTPServerConfig
-	handler *rest.Handler
+type Server struct {
+	config  *ServerConfig
+	handler Handler
 	echo    *echo.Echo
 	ch      chan struct{}
 }
 
-func NewHTTPServer(handler *rest.Handler, c *HTTPServerConfig) (*HTTPServer, error) {
+func NewHTTPServer(handler Handler, c *ServerConfig) (*Server, error) {
 
 	e := echo.New()
 
 	e.HideBanner = true
 	e.HidePort = true
 
-	Logger = logrus.New()
-	e.Logger = GetEchoLogger()
-	e.Use(LoggerMiddleware())
-
+	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
-
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"HEAD", "GET", "POST", "PATCH", "DELETE"},
@@ -40,7 +40,7 @@ func NewHTTPServer(handler *rest.Handler, c *HTTPServerConfig) (*HTTPServer, err
 		AllowCredentials: true,
 	}))
 
-	server := &HTTPServer{
+	server := &Server{
 		config:  c,
 		echo:    e,
 		handler: handler,
@@ -52,18 +52,18 @@ func NewHTTPServer(handler *rest.Handler, c *HTTPServerConfig) (*HTTPServer, err
 	return server, nil
 }
 
-func (s *HTTPServer) Start() {
+func (s *Server) Start() {
 	go func() {
 		defer close(s.ch)
 		s.echo.Logger.Fatal(s.echo.StartServer(&http.Server{
-			Addr:         ":8080",
+			Addr:         s.config.BindAddress,
 			ReadTimeout:  2 * time.Minute,
 			WriteTimeout: 2 * time.Minute,
 		}))
 	}()
 }
 
-func (s *HTTPServer) Shutdown() {
+func (s *Server) Shutdown() {
 	if s != nil {
 		s.echo.Close()
 		<-s.ch
