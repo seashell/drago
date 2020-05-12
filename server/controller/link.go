@@ -143,18 +143,18 @@ func (c *Controller) ListLinks(ctx context.Context, in *ListLinksInput) (*pagina
 	l := []*domain.Link{}
 	p := &domain.Page{}
 
-	if in.NetworkIDFilter != "" {
+	if in.HostIDFilter != "" {
+		l, p, err = c.ls.FindAllByHostID(in.HostIDFilter, *pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
+	} else if in.NetworkIDFilter != "" {
 		l, p, err = c.ls.FindAllByNetworkID(in.NetworkIDFilter, *pageInfo)
 		if err != nil {
 			return nil, errors.Wrap(ErrInternal, err.Error())
 		}
-	} else if in.HostIDFilter != "" {
-		l, p, err = c.ls.FindAllByHostID(in.NetworkIDFilter, *pageInfo)
-		if err != nil {
-			return nil, errors.Wrap(ErrInternal, err.Error())
-		}
 	} else {
-		err = errors.New("No filter provided")
+		err = errors.New("No filter provided. Must provide a network ID and, optionally, a source host ID.")
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
