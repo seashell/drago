@@ -1,5 +1,5 @@
 <h1 align="center"><br>
-    <a"><img src="../assets/logo.png" alt="Drago" width="96"></a>
+    <a"><img src="../assets/dragopher.png" width="128"></a>
     <br>
     Drago
 <br></h1>
@@ -97,3 +97,9 @@ Finally, you can build and run the Drago client:
 go build
 sudo ./drago --config="./dist/client.yml"
 ```
+
+## Roadmap
+- Unit tests
+- Backend API for issuing volatile access tokens
+- Integration with Hashicorp Vault
+- Integration with firewall tools for more sophisticated networking rules
