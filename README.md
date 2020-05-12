@@ -101,7 +101,8 @@ sudo ./drago --config="./dist/client.yml"
 ```
 
 ## Roadmap
-- Unit tests
-- Backend API for issuing volatile access tokens
-- Integration with Hashicorp Vault
-- Integration with firewall tools for more sophisticated networking rules
+- [ ] Website
+- [ ] Code coverage
+- [ ] Backend API for issuing volatile tokens
+- [ ] Integration with Hashicorp Vault
+- [ ] Integration with firewall tools for more sophisticated networking rules
