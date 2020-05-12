@@ -1,5 +1,5 @@
 <h1 align="center"><br>
-    <a"><img src="../asset/dragopher.png" width="180"></a>
+    <a"><img src="../assets/dragopher.png" width="180"></a>
     <br>
     Drago
 <br></h1>
