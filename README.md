@@ -31,9 +31,11 @@ Drago builds on top of Wireguard, allowing users to dynamically manage the confi
 
 ## How it works
 
-Drago follows a client-server paradigm, in which a centralized server provides multiple clients running alongside Wireguard with their desired state. The desired state is retrieved from the server in a periodic basis and applied to Wireguard running on each host.
+Drago follows a client-server paradigm, in which a centralized server provides multiple clients running alongside Wireguard with their desired state. The desired state is retrieved from the server in a periodic basis and applied to Wireguard running on each host. In other words, the Drago server works as a gateway for accessing network configurations safely stored in a database. 
 
-In other words, the Drago server works as a gateway for accessing network configurations safely stored in a database. 
+<h1 align="center"><br>
+    <a"><img src="../assets/architecture.png" width="400px"></a>
+<br></h1>
 
 It exposes a comprehensive API through which these configurations can be retrieved and modified, implements authentication mechanisms to prevent unauthorized access, and serves a slick web UI to facilitate the process of managing and visualizing the state of the managed networks.
 
