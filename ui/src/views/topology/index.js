@@ -163,9 +163,6 @@ const Topology = ({ networkId }) => {
   }
   const hoveredLink = links.find(l => l.id === selectedLinkID) || { linkObj: {} }
 
-  console.log(hoveredNode)
-  console.log(hoveredLink)
-
   return (
     <Container>
       <Box mb={3} width="100%">
