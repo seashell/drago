@@ -20,7 +20,7 @@ type GetHostInput struct {
 type CreateHostInput struct {
 	Name             *string `json:"name" validate:"required,min=1,max=50"`
 	IPAddress        *string `json:"ipAddress" validate:"required,cidr"`
-	AdvertiseAddress *string `json:"advertiseAddress" validate:"omitempty,cidr"`
+	AdvertiseAddress *string `json:"advertiseAddress" validate:"omitempty,cidr|hostname"`
 	ListenPort       *string `json:"listenPort" validate:"omitempty,numeric,min=1,max=5"`
 	PublicKey        *string `json:"publicKey" validate:""`
 	Table            *string `json:"table" validate:""`
@@ -36,10 +36,10 @@ type CreateHostInput struct {
 // UpdateHostInput :
 type UpdateHostInput struct {
 	ID               *string `json:"id" validate:"required,uuid4"`
-	Name             *string `json:"name" validate:"min=1,max=5"`
+	Name             *string `json:"name" validate:"min=1,max=50"`
 	IPAddress        *string `json:"ipAddress" validate:"cidr"`
-	AdvertiseAddress *string `json:"advertiseAddress" validate:"cidr"`
-	ListenPort       *string `json:"listenPort" validate:"numeric,min=1,max=5"`
+	AdvertiseAddress *string `json:"advertiseAddress" validate:"omitempty,cidr|hostname"`
+	ListenPort       *string `json:"listenPort" validate:"omitempty,numeric,min=1,max=5"`
 	PublicKey        *string `json:"publicKey" validate:""`
 	Table            *string `json:"table" validate:""`
 	DNS              *string `json:"dns" validate:""`

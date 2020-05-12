@@ -34,11 +34,6 @@ const AddLinkCard = styled(Box).attrs({
   position: relative;
   cursor: pointer;
 `
-const EmptyState = () => (
-  <EmptyStateContainer>
-    <Text>[TODO: Empty state] - No links found</Text>
-  </EmptyStateContainer>
-)
 
 const LinksList = ({ links, onLinkAdd, onLinkUpdate, onLinkDelete }) => {
   const handleAddLinkButtonClick = () => {
@@ -56,9 +51,9 @@ const LinksList = ({ links, onLinkAdd, onLinkUpdate, onLinkDelete }) => {
         <LinkCard
           key={l.id}
           id={l.id}
-          toName={l.to.name}
-          toAddress={l.to.address}
-          allowedIPs={l.allowedIPs}
+          fromHost={l.fromHost}
+          toHost={l.toHost}
+          allowedIps={l.allowedIps}
           persistentKeepalive={l.persistentKeepalive}
           onChange={onLinkUpdate}
           onDelete={e => onLinkDelete(e, l.id)}

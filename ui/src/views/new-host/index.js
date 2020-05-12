@@ -23,7 +23,6 @@ const Container = styled(Flex)`
 
 const NewHost = ({ networkId }) => {
   const [formState, { text }] = useFormState({
-    networkId,
     name: null,
     ipAddress: null,
     advertiseAddress: null,
@@ -40,7 +39,7 @@ const NewHost = ({ networkId }) => {
   }
 
   const [createHost, { loading }] = useMutation(CREATE_HOST, {
-    variables: formState.values,
+    variables: { networkId, ...formState.values },
     onCompleted: onHostCreated,
     onError: onHostCreationError,
   })
@@ -71,7 +70,7 @@ const NewHost = ({ networkId }) => {
       )}
 
       <Box justifyContent="center" gridColumn="4 / span 6">
-        <Link color="primary" to="/hosts">
+        <Link color="primary" to={`/networks/${networkId}/hosts`}>
           Cancel
         </Link>
       </Box>

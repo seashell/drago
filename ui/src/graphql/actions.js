@@ -102,7 +102,7 @@ const CREATE_HOST = gql`
         ipAddress: $ipAddress
         advertiseAddress: $advertiseAddress
       }
-    ) @rest(method: "POST", path: "hosts", type: "Host") {
+    ) @rest(method: "POST", path: "hosts?networkId={args.networkId}", type: "Host") {
       id
       name
       ipAddress
@@ -116,7 +116,7 @@ const UPDATE_HOST = gql`
   mutation updateHost(
     $id: Int!
     $name: String!
-    $address: String!
+    $ipAddress: String!
     $advertiseAddress: String
     $listenPort: String
     $publicKey: String
@@ -127,12 +127,14 @@ const UPDATE_HOST = gql`
     $postUp: String
     $preDown: String
     $postDown: String
+    $networkId: String
   ) {
     updateHost(
       id: $id
+      networkId: $networkId
       input: {
         name: $name
-        ipAddress: $address
+        ipAddress: $ipAddress
         advertiseAddress: $advertiseAddress
         listenPort: $listenPort
         publicKey: $publicKey
@@ -144,7 +146,7 @@ const UPDATE_HOST = gql`
         preDown: $preDown
         postDown: $postDown
       }
-    ) @rest(method: "PUT", path: "hosts/{args.id}", type: "Host") {
+    ) @rest(method: "PATCH", path: "hosts/{args.id}?networkId={args.networkId}", type: "Host") {
       id
       name
       publicKey
@@ -164,23 +166,25 @@ const UPDATE_HOST = gql`
 `
 
 const DELETE_HOST = gql`
-  mutation deleteHost($id: Int!) {
-    deleteHost(id: $id) @rest(method: "DELETE", path: "hosts/{args.id}", type: "Host") {
+  mutation deleteHost($networkId: String!, $id: String!) {
+    deleteHost(networkId: $networkId, id: $id)
+      @rest(method: "DELETE", path: "hosts/{args.id}?networkId={args.networkId}", type: "Host") {
       id
     }
   }
 `
 
 const CREATE_LINK = gql`
-  mutation createLink($from: String!, $to: String!) {
+  mutation createLink($networkId: String, $from: String!, $to: String!) {
     createLink(
+      networkId: $networkId
       input: {
-        from: $from
-        to: $to
+        fromHostId: $from
+        toHostId: $to
         allowedIPs: $allowedIPs
         persistentKeepalive: $persistentKeepalive
       }
-    ) @rest(method: "POST", path: "links", type: "Link") {
+    ) @rest(method: "POST", path: "links?networkId={args.networkId}", type: "Link") {
       id
       from
       to
@@ -191,32 +195,46 @@ const CREATE_LINK = gql`
 `
 
 const DELETE_LINK = gql`
-  mutation deleteLink($id: Int!) {
-    deleteLink(id: $id) @rest(method: "DELETE", path: "links/{args.id}", type: "Link") {
+  mutation deleteLink($networkId: String!, $id: String!) {
+    deleteLink(networkId: $networkId, id: $id)
+      @rest(method: "DELETE", path: "links/{args.id}?networkId={args.networkId}", type: "Link") {
       id
     }
   }
 `
 
-const GET_LINKS = gql`
-  query getHosts {
-    result @rest(type: "LinksPayload", path: "links") {
-      count
+const GET_LINKS_FROM_HOST = gql`
+  query getLinksFromHost($networkId: String!, $hostId: String!) {
+    result: getLinksFromHost(networkId: $networkId, hostId: $hostId)
+      @rest(type: "LinksPayload", path: "links?networkId={args.networkId}&hostId={args.hostId}") {
+      page
+      perPage
+      pageCount
+      totalCount
       items @type(name: "Link") {
         id
-        to @type(name: "Host") {
-          id
-          name
-          address
-          advertiseAddress
-        }
-        from @type(name: "Host") {
-          id
-          name
-          address
-          advertiseAddress
-        }
-        allowedIPs
+        toHost
+        fromHost
+        allowedIps
+        persistentKeepalive
+      }
+    }
+  }
+`
+
+const GET_ALL_LINKS = gql`
+  query getAllLinks($networkId: String!, $hostId: String!) {
+    result: getAllLinks(networkId: $networkId, hostId: $hostId)
+      @rest(type: "LinksPayload", path: "links?networkId={args.networkId}") {
+      page
+      perPage
+      pageCount
+      totalCount
+      items @type(name: "Link") {
+        id
+        toHost
+        fromHost
+        allowedIps
         persistentKeepalive
       }
     }
@@ -232,7 +250,8 @@ export {
   CREATE_HOST,
   UPDATE_HOST,
   DELETE_HOST,
-  GET_LINKS,
+  GET_ALL_LINKS,
+  GET_LINKS_FROM_HOST,
   CREATE_LINK,
   DELETE_LINK,
 }

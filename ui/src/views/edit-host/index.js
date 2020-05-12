@@ -16,7 +16,13 @@ import TextInput from '_components/inputs/text-input'
 import { icons } from '_assets/'
 
 import { useMutation, useQuery } from 'react-apollo'
-import { GET_HOST, UPDATE_HOST, DELETE_LINK } from '_graphql/actions'
+import {
+  GET_HOST,
+  UPDATE_HOST,
+  DELETE_LINK,
+  GET_LINKS_FROM_HOST,
+  CREATE_LINK,
+} from '_graphql/actions'
 import { navigate } from '@reach/router'
 import toast from '_components/toast'
 import Collapse from '_components/collapse'
@@ -89,8 +95,23 @@ const EditHost = ({ networkId, hostId }) => {
     },
   })
 
-  useEffect(() => {
-    getHostQuery.refetch()
+  const getLinksQuery = useQuery(GET_LINKS_FROM_HOST, {
+    variables: { networkId, hostId },
+    onError: () => {
+      toast.error('Error fetching links')
+      navigate(-1)
+    },
+  })
+
+  const [createLink, createLinkMutation] = useMutation(CREATE_LINK, {
+    variables: { networkId, ...formState.values },
+    onCompleted: () => {
+      toast.success('Link created')
+      getLinksQuery.refetch()
+    },
+    onError: () => {
+      toast.error('Error creating link')
+    },
   })
 
   const [updateHost, updateHostMutation] = useMutation(UPDATE_HOST, {
@@ -103,6 +124,7 @@ const EditHost = ({ networkId, hostId }) => {
     variables: { networkId, id: undefined },
     onCompleted: () => {
       toast.success('Link deleted successfully')
+      getLinksQuery.refetch()
     },
     onError: () => {
       toast.error('Error deleting link')
@@ -111,12 +133,20 @@ const EditHost = ({ networkId, hostId }) => {
 
   const [isNewLinkModalOpen, setNewLinkModalOpen] = useState(false)
 
+  useEffect(() => {
+    getHostQuery.refetch()
+  }, [hostId, getHostQuery, deleteLinkMutation.loading])
+
   const onSave = () => {
-    updateHost({ id: hostId, ...formState.values })
+    updateHost({ ...formState.values })
   }
 
-  const handleAddLink = () => {
+  const handleAddLinkButtonClicked = () => {
     setNewLinkModalOpen(true)
+  }
+
+  const handleCreateLink = modalFormState => {
+    createLink({ variables: { networkId, ...modalFormState.values } })
   }
 
   const handleDeleteLink = (e, id) => {
@@ -125,7 +155,12 @@ const EditHost = ({ networkId, hostId }) => {
     deleteLink({ variables: { id } })
   }
 
-  const isLoading = getHostQuery.loading || updateHostMutation.loading || deleteLinkMutation.loading
+  const isLoading =
+    getHostQuery.loading ||
+    getLinksQuery.loading ||
+    createLinkMutation.loading ||
+    updateHostMutation.loading ||
+    deleteLinkMutation.loading
 
   return (
     <Container>
@@ -189,7 +224,11 @@ const EditHost = ({ networkId, hostId }) => {
           </Collapse>
 
           <Collapse isOpen title={<Text textStyle="description">Links</Text>}>
-            <LinksList onLinkAdd={handleAddLink} onLinkDelete={handleDeleteLink} links={[]} />
+            <LinksList
+              onLinkAdd={handleAddLinkButtonClicked}
+              onLinkDelete={handleDeleteLink}
+              links={getLinksQuery.data.result.items}
+            />
           </Collapse>
 
           <Button width="100%" borderRadius={3} mt={3} mb={4} onClick={onSave}>
@@ -200,6 +239,7 @@ const EditHost = ({ networkId, hostId }) => {
             networkId={networkId}
             isOpen={isNewLinkModalOpen}
             fromHost={getHostQuery.data.result}
+            onCreateLink={handleCreateLink}
             onBackgroundClick={() => setNewLinkModalOpen(false)}
             onEscapeKeydown={() => setNewLinkModalOpen(false)}
           />
@@ -207,7 +247,7 @@ const EditHost = ({ networkId, hostId }) => {
       )}
 
       <Box justifyContent="center" gridColumn="4 / span 6">
-        <Link color="primary" to="/hosts">
+        <Link color="primary" to={`/networks/${networkId}/hosts`}>
           Cancel
         </Link>
       </Box>

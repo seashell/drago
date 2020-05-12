@@ -7,6 +7,8 @@ import Text from '_components/text'
 import IconButton from '_components/icon-button'
 import { icons } from '_assets/'
 import TextInput from '_components/inputs/text-input'
+import { useQuery } from 'react-apollo'
+import { GET_HOST } from '_graphql/actions'
 
 const Container = styled(Box).attrs({
   display: 'flex',
@@ -38,11 +40,11 @@ const IconContainer = styled(Box).attrs({
   }
 `
 
-const HostCard = ({
+const LinkCard = ({
   id,
   sourceName,
-  targetName,
   sourceAddress,
+  targetName,
   targetAddress,
   allowedIPs,
   persistentKeepalive,
@@ -52,22 +54,18 @@ const HostCard = ({
     <IconContainer mx="auto" mt={2} mb={3}>
       <IconButton ml="auto" icon={<icons.Link />} />
     </IconContainer>
-
     <Text textStyle="detail" my={1}>
       FROM
     </Text>
     <TextInput height={1} value={`${sourceName} (${sourceAddress})`} mb={1} />
-
     <Text textStyle="detail" my={1}>
       TO
     </Text>
     <TextInput height={1} value={`${targetName} (${targetAddress})`} mb={1} />
-
     <Text textStyle="detail" my={1}>
       ALLOWED IPS
     </Text>
     <TextInput height={1} value={allowedIPs} mb={1} />
-
     <Text textStyle="detail" my={1}>
       PERSISTENT KEEPALIVE
     </Text>
@@ -75,16 +73,19 @@ const HostCard = ({
   </Container>
 )
 
-HostCard.propTypes = {
+LinkCard.propTypes = {
   id: PropTypes.number.isRequired,
   sourceName: PropTypes.string.isRequired,
-  targetName: PropTypes.string.isRequired,
   sourceAddress: PropTypes.string.isRequired,
+  targetName: PropTypes.string.isRequired,
   targetAddress: PropTypes.string.isRequired,
-  allowedIPs: PropTypes.string.isRequired,
-  persistentKeepalive: PropTypes.string.isRequired,
+  allowedIPs: PropTypes.string,
+  persistentKeepalive: PropTypes.string,
 }
 
-HostCard.defaultProps = {}
+LinkCard.defaultProps = {
+  allowedIPs: undefined,
+  persistentKeepalive: undefined,
+}
 
-export default HostCard
+export default LinkCard

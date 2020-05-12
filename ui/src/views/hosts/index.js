@@ -97,7 +97,7 @@ const HostsView = ({ networkId }) => {
   const handleHostDelete = (e, id) => {
     e.preventDefault()
     e.stopPropagation()
-    deleteHost({ variables: { id } })
+    deleteHost({ variables: { networkId, id } })
   }
 
   const handleGraphViewButtonClick = () => {

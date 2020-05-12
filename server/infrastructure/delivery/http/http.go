@@ -7,6 +7,7 @@ import (
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"github.com/seashell/drago/server/adapter/rest"
+	"github.com/sirupsen/logrus"
 )
 
 type HTTPServerConfig struct{}
@@ -26,12 +27,15 @@ func NewHTTPServer(handler *rest.Handler, c *HTTPServerConfig) (*HTTPServer, err
 	e.HideBanner = true
 	e.HidePort = true
 
-	e.Use(middleware.Logger())
+	Logger = logrus.New()
+	e.Logger = GetEchoLogger()
+	e.Use(LoggerMiddleware())
+
 	e.Use(middleware.Recover())
 
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"HEAD", "GET", "POST", "DELETE"},
+		AllowMethods:     []string{"HEAD", "GET", "POST", "PATCH", "DELETE"},
 		AllowHeaders:     []string{"*"},
 		AllowCredentials: true,
 	}))

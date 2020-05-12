@@ -85,11 +85,15 @@ HostCard.propTypes = {
   id: PropTypes.number.isRequired,
   name: PropTypes.string.isRequired,
   address: PropTypes.string.isRequired,
-  advertiseAddress: PropTypes.string.isRequired,
-  listenPort: PropTypes.string.isRequired,
-  lastSeen: PropTypes.string.isRequired,
+  advertiseAddress: PropTypes.string,
+  listenPort: PropTypes.string,
+  lastSeen: PropTypes.string,
 }
 
-HostCard.defaultProps = {}
+HostCard.defaultProps = {
+  advertiseAddress: undefined,
+  listenPort: undefined,
+  lastSeen: undefined,
+}
 
 export default HostCard

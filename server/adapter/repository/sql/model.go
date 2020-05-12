@@ -39,7 +39,7 @@ type Link struct {
 	NetworkID           *string    `db:"network_id"`
 	FromHostID          *string    `db:"from_host_id"`
 	ToHostID            *string    `db:"to_host_id"`
-	AllowedIPs          []string   `db:"allowed_ips"`
+	AllowedIPs          []string   `db:"-"`
 	PersistentKeepalive *int       `db:"persistent_keepalive"`
 	CreatedAt           *time.Time `db:"created_at"`
 	UpdatedAt           *time.Time `db:"updated_at"`

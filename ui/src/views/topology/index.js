@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react'
+import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { navigate } from '@reach/router'
 import { Portal } from 'react-portal'
 
 import { useQuery } from 'react-apollo'
-import { GET_HOSTS, GET_LINKS } from '_graphql/actions'
+import { GET_HOSTS, GET_ALL_LINKS } from '_graphql/actions'
 
 import { icons } from '_assets/'
 import Box from '_components/box'
@@ -83,7 +84,7 @@ const StyledLinkCard = styled(LinkCard)`
   z-index: 99;
 `
 
-const Topology = () => {
+const Topology = ({ networkId }) => {
   const [hosts, setHosts] = useState([])
   const [links, setLinks] = useState([])
 
@@ -91,12 +92,12 @@ const Topology = () => {
   const [selectedLinkID, setSelectedLinkID] = useState(undefined)
 
   const getHostsQuery = useQuery(GET_HOSTS, {
+    variables: { networkId },
     onCompleted: data => {
       if (data === undefined) return
       setHosts(
         data.result.items.map(host => ({
-          id: parseInt(host.id, 10),
-          name: host.name,
+          id: host.id,
           hostObj: host,
           isHover: false,
         }))
@@ -105,18 +106,16 @@ const Topology = () => {
     onError: () => {},
   })
 
-  const getLinksQuery = useQuery(GET_LINKS, {
+  const getLinksQuery = useQuery(GET_ALL_LINKS, {
+    variables: { networkId },
     onCompleted: data => {
       if (data === undefined) return
       setLinks(
         data.result.items.map(link => ({
-          id: parseInt(link.id, 10),
-          source: link.from.id,
-          target: link.to.id,
-          sourceObj: link.from,
-          targetObj: link.to,
-          allowedIPs: link.allowedIPs,
-          persistentKeepalive: link.persistentKeepalive,
+          id: link.id,
+          source: link.fromHost,
+          target: link.toHost,
+          linkObj: link,
           isHover: false,
         }))
       )
@@ -126,7 +125,7 @@ const Topology = () => {
 
   const handleNodeClick = n => {
     if (n !== null) {
-      navigate(`/hosts/${n.id}`)
+      navigate(`/networks/${networkId}/hosts/${n.id}`)
     }
   }
 
@@ -139,7 +138,7 @@ const Topology = () => {
   }
 
   const handleListViewButtonClick = () => {
-    navigate(`/hosts`)
+    navigate(`/networks/${networkId}/hosts`)
   }
 
   const isError = getHostsQuery.error || getLinksQuery.error
@@ -156,11 +155,16 @@ const Topology = () => {
         onNodeClicked={handleNodeClick}
       />
     ),
-    [hosts, links]
+    [handleNodeClick, hosts, links]
   )
 
-  const hoveredNode = hosts.find(h => h.id === selectedHostID) || { hostObj: { name: '' } }
-  const hoveredLink = links.find(l => l.id === selectedLinkID) || { sourceObj: {}, targetObj: {} }
+  const hoveredNode = hosts.find(h => h.id === selectedHostID) || {
+    hostObj: { name: '', address: '' },
+  }
+  const hoveredLink = links.find(l => l.id === selectedLinkID) || { linkObj: {} }
+
+  console.log(hoveredNode)
+  console.log(hoveredLink)
 
   return (
     <Container>
@@ -185,10 +189,10 @@ const Topology = () => {
       {selectedLinkID && (
         <Portal>
           <StyledLinkCard
-            sourceName={hoveredLink.sourceObj.name}
-            sourceAddress={hoveredLink.sourceObj.address}
-            targetName={hoveredLink.targetObj.name}
-            targetAddress={hoveredLink.targetObj.address}
+            sourceName={hoveredLink.source.hostObj.name}
+            sourceAddress={hoveredLink.source.hostObj.address}
+            targetName={hoveredLink.target.hostObj.name}
+            targetAddress={hoveredLink.target.hostObj.address}
             allowedIPs={hoveredLink.allowedIPs}
             persistentKeepalive={hoveredLink.persistentKeepalive}
           />
@@ -198,15 +202,18 @@ const Topology = () => {
         <Portal>
           <StyledHostCard
             name={hoveredNode.hostObj.name}
-            address={hoveredNode.hostObj.address}
+            address={hoveredNode.hostObj.ipAddress}
             advertiseAddress={hoveredNode.hostObj.advertiseAddress}
             listenPort={hoveredNode.hostObj.listenPort}
-            lastSeen={hoveredNode.hostObj.lastSeen}
           />
         </Portal>
       )}
     </Container>
   )
+}
+
+Topology.propTypes = {
+  networkId: PropTypes.string.isRequired,
 }
 
 export default Topology

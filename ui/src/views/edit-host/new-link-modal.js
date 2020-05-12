@@ -4,8 +4,10 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import { border, shadow } from 'styled-system'
 import Modal from 'styled-react-modal'
-
 import { useFormState } from 'react-use-form-state'
+
+import { useQuery } from 'react-apollo'
+import * as _ from 'lodash'
 
 import { icons } from '_assets/'
 
@@ -16,10 +18,8 @@ import Box from '_components/box'
 import Text from '_components/text'
 import TextInput from '_components/inputs/text-input'
 import SearchInput from '_components/inputs/search-input'
-import toast from '_components/toast'
 
-import { GET_HOSTS, CREATE_LINK } from '_graphql/actions'
-import { useQuery, useMutation } from 'react-apollo'
+import { GET_HOSTS } from '_graphql/actions'
 
 const StyledModal = Modal.styled`
 background: white;
@@ -77,28 +77,23 @@ const IconContainer = styled(Box).attrs({
   justify-content: center;
 `
 
-const NewLinkModal = ({ networkId, fromHost, onBackgroundClick, onEscapeKeydown, isOpen }) => {
-  const [formState, { text, number }] = useFormState({
+const NewLinkModal = ({
+  networkId,
+  fromHost,
+  onCreateLink,
+  onBackgroundClick,
+  onEscapeKeydown,
+  isOpen,
+}) => {
+  const [formState, { raw }] = useFormState({
     from: fromHost.id,
     to: null,
-    allowedIPs: null,
+    allowedIPs: [],
     persistentKeepalive: null,
   })
 
   const getHostsQuery = useQuery(GET_HOSTS, {
     variables: { networkId },
-  })
-
-  const [createLink] = useMutation(CREATE_LINK, {
-    variables: { networkId, ...formState.values },
-    onCompleted: () => {
-      toast.success('Link created')
-      onEscapeKeydown()
-    },
-    onError: () => {
-      toast.error('Error creating link')
-      onEscapeKeydown()
-    },
   })
 
   useEffect(() => {
@@ -123,8 +118,11 @@ const NewLinkModal = ({ networkId, fromHost, onBackgroundClick, onEscapeKeydown,
     formState.setField('to', targetHost.id)
   }
 
-  const handleCreateButtonClicked = () => {
-    createLink()
+  const handleCreateButtonClicked = e => {
+    e.preventDefault()
+    e.stopPropagation()
+    onCreateLink(formState)
+    onEscapeKeydown()
   }
 
   const filterHosts = (option, searchText) => {
@@ -161,10 +159,33 @@ const NewLinkModal = ({ networkId, fromHost, onBackgroundClick, onEscapeKeydown,
       />
 
       <Text my={3}>Allowed IPs</Text>
-      <TextInput {...text('allowedIPs')} placeholder="0.0.0.0/0" mb={2} />
+      <TextInput
+        {...raw({
+          name: 'allowedIPs',
+          compare(initialValue, value) {
+            return _.isEqual(value.sort(), initialValue.sort())
+          },
+          value: formState.allowedIPs,
+          onChange: e => e.target.value.replace(/\s/g, '').split(','),
+        })}
+        placeholder="0.0.0.0/0"
+        mb={2}
+      />
 
       <Text my={3}>Persistent keepalive</Text>
-      <TextInput {...number('persistentKeepalive')} placeholder={20} mb={2} />
+      <TextInput
+        type="number"
+        {...raw({
+          name: 'persistentKeepalive',
+          compare(initialValue, value) {
+            return value === initialValue
+          },
+          value: formState.persistentKeepalive,
+          onChange: e => parseInt(e.target.value, 10),
+        })}
+        placeholder={20}
+        mb={2}
+      />
 
       <Button borderRadius={3} mt={3} mx="auto" onClick={handleCreateButtonClicked}>
         Create
@@ -178,6 +199,7 @@ const NewLinkModal = ({ networkId, fromHost, onBackgroundClick, onEscapeKeydown,
 NewLinkModal.propTypes = {
   networkId: PropTypes.string.isRequired,
   fromHost: PropTypes.node.isRequired,
+  onCreateLink: PropTypes.func.isRequired,
   onBackgroundClick: PropTypes.func.isRequired,
   onEscapeKeydown: PropTypes.func.isRequired,
   isOpen: PropTypes.bool.isRequired,

@@ -7,6 +7,8 @@ import Text from '_components/text'
 import IconButton from '_components/icon-button'
 import TextInput from '_components/inputs/text-input'
 import { icons } from '_assets/'
+import { GET_HOST } from '_graphql/actions'
+import { useQuery } from 'react-apollo'
 
 const Container = styled(Box).attrs({
   display: 'flex',
@@ -44,53 +46,50 @@ const StyledIconButton = styled(IconButton)`
   }
 `
 
-const LinkCard = ({
-  id,
-  toName,
-  toAddress,
-  allowedIPs,
-  persistentKeepalive,
-  onChange,
-  onDelete,
-}) => (
-  <Container>
-    <div>
-      <Text textStyle="subtitle" fontSize="14px">
-        {toName}
-      </Text>
-      <Text textStyle="detail" fontSize="14px">
-        {toAddress}
-      </Text>
-    </div>
-    <Box flexDirection="column" mt="auto">
-      <Text textStyle="detail" my={1}>
-        ALLOWED IPS
-      </Text>
-      <TextInput height={1} value={allowedIPs} placeholder="0.0.0.0/0" mb={1} />
-      <Text textStyle="detail" my={1}>
-        KEEPALIVE
-      </Text>
-      <TextInput height={1} value={persistentKeepalive} placeholder="20" mb={1} />
-    </Box>
-    <StyledIconButton ml="auto" icon={<icons.Times />} onClick={onDelete} />
-  </Container>
-)
+const LinkCard = ({ id, fromHost, toHost, allowedIps, persistentKeepalive, onDelete }) => {
+  const getTargetQuery = useQuery(GET_HOST, {
+    variables: { networkId: null, id: toHost },
+  })
+
+  const isLoading = getTargetQuery.loading
+
+  return (
+    <Container>
+      <div>
+        <Text textStyle="subtitle" fontSize="14px">
+          {isLoading ? '' : getTargetQuery.data.result.name}
+        </Text>
+        <Text textStyle="detail" fontSize="14px">
+          {isLoading ? '' : getTargetQuery.data.result.ipAddress}
+        </Text>
+      </div>
+      <Box flexDirection="column" mt="auto">
+        <Text textStyle="detail" my={1}>
+          ALLOWED IPS
+        </Text>
+        <TextInput height={1} value={allowedIps} placeholder="0.0.0.0/0" mb={1} />
+        <Text textStyle="detail" my={1}>
+          KEEPALIVE
+        </Text>
+        <TextInput height={1} value={persistentKeepalive} placeholder="20" mb={1} />
+      </Box>
+      <StyledIconButton ml="auto" icon={<icons.Times />} onClick={onDelete} />
+    </Container>
+  )
+}
+
 LinkCard.propTypes = {
   id: PropTypes.number.isRequired,
-  toName: PropTypes.string,
-  toAddress: PropTypes.string,
-  allowedIPs: PropTypes.string,
+  fromHost: PropTypes.string.isRequired,
+  toHost: PropTypes.string.isRequired,
+  allowedIps: PropTypes.string,
   persistentKeepalive: PropTypes.number,
-  onChange: PropTypes.func,
   onDelete: PropTypes.func,
 }
 
 LinkCard.defaultProps = {
-  toName: undefined,
-  toAddress: undefined,
-  allowedIPs: undefined,
+  allowedIps: undefined,
   persistentKeepalive: undefined,
-  onChange: () => {},
   onDelete: () => {},
 }
 

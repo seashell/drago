@@ -17,11 +17,11 @@ type GetLinkInput struct {
 
 // CreateLinkInput :
 type CreateLinkInput struct {
-	NetworkID           *string `json:"networkId" validate:"required,uuid4"`
-	ToHostID            *string `json:"toHostId" validate:"required,uuid4"`
-	FromHostID          *string `json:"fromhostId" validate:"required,uuid4"`
-	AllowedIPs          *string `json:"allowedIPs" validate:"dive,omitempty,cidr"`
-	PersistentKeepalive *int    `json:"persistentKeepalive" validate:"numeric"`
+	NetworkID           *string  `json:"networkId" validate:"required,uuid4"`
+	ToHostID            *string  `json:"toHostId" validate:"required,uuid4"`
+	FromHostID          *string  `json:"fromHostId" validate:"required,uuid4"`
+	AllowedIPs          []string `json:"allowedIPs" validate:"dive,omitempty,cidr"`
+	PersistentKeepalive *int     `json:"persistentKeepalive" validate:"omitempty,numeric"`
 }
 
 // UpdateLinkInput :
@@ -39,7 +39,7 @@ type DeleteLinkInput struct {
 type ListLinksInput struct {
 	pagination.Input
 	NetworkIDFilter string `query:"networkId" validate:"uuid4"`
-	HostIDFilter    string `query:"hostId" validate:"uuid4"`
+	HostIDFilter    string `query:"hostId" validate:"omitempty,uuid4"`
 }
 
 // GetLink :

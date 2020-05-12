@@ -1,6 +1,8 @@
 package application
 
 import (
+	"fmt"
+
 	"github.com/seashell/drago/server/domain"
 )
 
@@ -46,7 +48,9 @@ func (hs *hostService) Update(h *domain.Host) (*domain.Host, error) {
 	}
 
 	mergeHostUpdate(host, h)
-
+	fmt.Println("==== ADVERTISE ADDRESS ====")
+	fmt.Println(h.AdvertiseAddress)
+	fmt.Println("==== ====== ====")
 	id, err := hs.hr.Update(host)
 	if err != nil {
 		return nil, err
@@ -76,6 +80,10 @@ func mergeHostUpdate(current, update *domain.Host) {
 
 	if update.IPAddress != nil {
 		current.IPAddress = update.IPAddress
+	}
+
+	if update.AdvertiseAddress != nil {
+		current.AdvertiseAddress = update.AdvertiseAddress
 	}
 
 	if update.ListenPort != nil {

@@ -35,7 +35,7 @@ CREATE TABLE IF NOT EXISTS link (
     created_at timestamp NOT NULL,
     updated_at timestamp NOT NULL,
     allowed_ips text DEFAULT '{}',
-    persistent_keepalive integer NOT NULL,
+    persistent_keepalive integer,
     network_id uuid NOT NULL REFERENCES network ON DELETE CASCADE,
     to_host_id uuid NOT NULL REFERENCES host ON DELETE CASCADE,
     from_host_id uuid NOT NULL REFERENCES host ON DELETE CASCADE,

@@ -2,6 +2,7 @@ package repository
 
 import (
 	"math"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -58,11 +59,13 @@ func (a *postgresqlLinkRepositoryAdapter) Create(l *domain.Link) (*string, error
 
 	var id string
 
+	strAllowedIPs := strings.Join(l.AllowedIPs[:], ",")
+
 	err = a.db.QueryRow(
 		`INSERT INTO link (id, network_id, from_host_id, to_host_id, allowed_ips, persistent_keepalive,
 			created_at, updated_at)
-			VALUES ($1, $2, $3, $4, array_to_string($5, ';', '*'), $6, $7, $8) RETURNING id`,
-		sguid, *l.NetworkID, *l.FromHostID, *l.ToHostID, l.AllowedIPs, *l.PersistentKeepalive, now, now).Scan(&id)
+			VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING id`,
+		sguid, l.NetworkID, l.FromHostID, l.ToHostID, strAllowedIPs, l.PersistentKeepalive, now, now).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
@@ -75,14 +78,16 @@ func (a *postgresqlLinkRepositoryAdapter) Update(l *domain.Link) (*string, error
 
 	var id string
 
+	strAllowedIPs := strings.Join(l.AllowedIPs[:], ",")
+
 	err := a.db.QueryRow(
 		`UPDATE link SET
-			allowed_ips = array_to_string($1, ';', '*'),
+			allowed_ips = $1,
 			persistent_keepalive = $2,
 			updated_at = $3
 			WHERE id = $4
 			RETURNING id`,
-		l.AllowedIPs, *l.PersistentKeepalive, now, *l.ID).Scan(&id)
+		strAllowedIPs, l.PersistentKeepalive, now, l.ID).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
@@ -109,10 +114,9 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 	if page.PerPage > maxQueryRows {
 		page.PerPage = maxQueryRows
 	}
-
 	rows, err := a.db.Queryx(
-		"SELECT id, created_at, updated_at, network_id, from_host_id, to_host_id, persistent_keepalive, "+
-			"string_to_array(allowed_ips, ';', '*') AS allowed_ips , COUNT(*) OVER() AS total_count "+
+		"SELECT id, created_at, updated_at, network_id, from_host_id, to_host_id, persistent_keepalive, allowed_ips, "+
+			"COUNT(*) OVER() AS total_count "+
 			"FROM link "+
 			"WHERE network_id = $1 "+
 			"ORDER BY created_at DESC LIMIT $2 OFFSET $3", id, page.PerPage, (page.Page-1)*page.PerPage)
@@ -122,7 +126,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 
 	receiver := struct {
 		sql.Link
-		TotalCount int `db:"total_count"`
+		StrAllowedIPs string `db:"allowed_ips"`
+		TotalCount    int    `db:"total_count"`
 	}{}
 
 	linkList := []*domain.Link{}
@@ -142,6 +147,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 			}
 			return nil, page, err
 		}
+
+		link.AllowedIPs = strings.Fields(strings.Replace(receiver.StrAllowedIPs, ",", " ", -1))
 
 		linkList = append(linkList, link)
 	}
@@ -166,10 +173,10 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByHostID(id string, pageInfo do
 	}
 
 	rows, err := a.db.Queryx(
-		"SELECT id, created_at, updated_at, network_id, from_host_id, to_host_id, persistent_keepalive, "+
-			"string_to_array(allowed_ips, ';', '*') AS allowed_ips , COUNT(*) OVER() AS total_count "+
+		"SELECT id, created_at, updated_at, network_id, from_host_id, to_host_id, persistent_keepalive, allowed_ips, "+
+			"COUNT(*) OVER() AS total_count "+
 			"FROM link "+
-			"WHERE to_host_id = $1 OR from_host_id = $1 "+
+			"WHERE from_host_id = $1 "+
 			"ORDER BY created_at DESC LIMIT $2 OFFSET $3", id, page.PerPage, page.Page)
 	if err != nil {
 		return nil, page, err
@@ -177,7 +184,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByHostID(id string, pageInfo do
 
 	receiver := struct {
 		sql.Link
-		TotalCount int `db:"total_count"`
+		StrAllowedIPs string `db:"allowed_ips"`
+		TotalCount    int    `db:"total_count"`
 	}{}
 
 	linkList := []*domain.Link{}
@@ -197,6 +205,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByHostID(id string, pageInfo do
 			}
 			return nil, page, err
 		}
+
+		link.AllowedIPs = strings.Fields(strings.Replace(receiver.StrAllowedIPs, ",", " ", -1))
 
 		linkList = append(linkList, link)
 	}
