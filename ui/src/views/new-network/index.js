@@ -31,7 +31,7 @@ const NewNetwork = () => {
     navigate('/networks')
   }
 
-  const onNetworkCreationError = e => {
+  const onNetworkCreationError = () => {
     toast.error('Error creating network')
     navigate('/networks')
   }

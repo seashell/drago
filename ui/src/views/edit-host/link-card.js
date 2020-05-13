@@ -46,7 +46,7 @@ const StyledIconButton = styled(IconButton)`
   }
 `
 
-const LinkCard = ({ id, fromHost, toHost, allowedIps, persistentKeepalive, onDelete }) => {
+const LinkCard = ({ toHost, allowedIps, persistentKeepalive, onDelete }) => {
   const getTargetQuery = useQuery(GET_HOST, {
     variables: { networkId: null, id: toHost },
   })
@@ -79,8 +79,6 @@ const LinkCard = ({ id, fromHost, toHost, allowedIps, persistentKeepalive, onDel
 }
 
 LinkCard.propTypes = {
-  id: PropTypes.number.isRequired,
-  fromHost: PropTypes.string.isRequired,
   toHost: PropTypes.string.isRequired,
   allowedIps: PropTypes.string,
   persistentKeepalive: PropTypes.number,

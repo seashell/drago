@@ -1,7 +1,7 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { navigate } from '@reach/router'
+import { navigate, useLocation } from '@reach/router'
 import { Portal } from 'react-portal'
 
 import { useQuery } from 'react-apollo'
@@ -88,6 +88,8 @@ const StyledLinkCard = styled(LinkCard)`
 `
 
 const Topology = ({ networkId }) => {
+  const location = useLocation()
+
   const [hosts, setHosts] = useState([])
   const [links, setLinks] = useState([])
 
@@ -125,6 +127,10 @@ const Topology = ({ networkId }) => {
     },
     onError: () => {},
   })
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location])
 
   const handleNodeClick = n => {
     if (n !== null) {
@@ -190,11 +196,11 @@ const Topology = ({ networkId }) => {
         <Portal>
           <StyledLinkCard
             sourceName={hoveredLink.source.hostObj.name}
-            sourceAddress={hoveredLink.source.hostObj.address}
+            sourceAddress={hoveredLink.source.hostObj.ipAddress}
             targetName={hoveredLink.target.hostObj.name}
-            targetAddress={hoveredLink.target.hostObj.address}
-            allowedIPs={hoveredLink.allowedIPs}
-            persistentKeepalive={hoveredLink.persistentKeepalive}
+            targetAddress={hoveredLink.target.hostObj.ipAddress}
+            allowedIPs={hoveredLink.linkObj.allowedIps}
+            persistentKeepalive={hoveredLink.linkObj.persistentKeepalive}
           />
         </Portal>
       )}

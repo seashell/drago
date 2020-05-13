@@ -7,8 +7,6 @@ import Text from '_components/text'
 import IconButton from '_components/icon-button'
 import { icons } from '_assets/'
 import TextInput from '_components/inputs/text-input'
-import { useQuery } from 'react-apollo'
-import { GET_HOST } from '_graphql/actions'
 
 const Container = styled(Box).attrs({
   display: 'flex',

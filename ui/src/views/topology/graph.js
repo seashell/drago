@@ -32,7 +32,7 @@ const Graph = ({ nodes, links, onNodeClicked, onNodeHovered, onLinkHovered }) =>
     }
   }
 
-  const linkCanvasObject = (link, ctx, globalScale) => {}
+  const linkCanvasObject = () => {}
 
   const handleNodeHover = (node, prevNode) => {
     const elem = document.getElementById('wrapper')

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react'
-import PropTypes from 'prop-types'
+import { useMutation, useQuery } from 'react-apollo'
+import { navigate, useLocation } from '@reach/router'
 import styled from 'styled-components'
+import PropTypes from 'prop-types'
 import moment from 'moment'
 
 import { useFormState } from 'react-use-form-state'
@@ -10,12 +12,13 @@ import Flex from '_components/flex'
 import Link from '_components/link'
 import Text from '_components/text'
 import Button from '_components/button'
+import toast from '_components/toast'
+import Collapse from '_components/collapse'
 import { Dragon as Spinner } from '_components/spinner'
 import IconButton from '_components/icon-button'
 import TextInput from '_components/inputs/text-input'
 import { icons } from '_assets/'
 
-import { useMutation, useQuery } from 'react-apollo'
 import {
   GET_HOST,
   UPDATE_HOST,
@@ -23,9 +26,7 @@ import {
   GET_LINKS_FROM_HOST,
   CREATE_LINK,
 } from '_graphql/actions'
-import { navigate } from '@reach/router'
-import toast from '_components/toast'
-import Collapse from '_components/collapse'
+
 import LinksList from './links-list'
 import NewLinkModal from './new-link-modal'
 
@@ -60,6 +61,8 @@ const StatusBadge = styled.div`
 `
 
 const EditHost = ({ networkId, hostId }) => {
+  const location = useLocation()
+
   const onHostUpdated = () => {
     toast.success('Host updated')
     navigate(-1)
@@ -134,8 +137,9 @@ const EditHost = ({ networkId, hostId }) => {
   const [isNewLinkModalOpen, setNewLinkModalOpen] = useState(false)
 
   useEffect(() => {
+    window.scrollTo(0, 0)
     getHostQuery.refetch()
-  }, [hostId, getHostQuery, deleteLinkMutation.loading])
+  }, [location, getHostQuery, deleteLinkMutation.loading])
 
   const onSave = () => {
     updateHost({ ...formState.values })

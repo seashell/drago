@@ -1,7 +1,6 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import moment from 'moment'
 
 import Box from '_components/box'
 import Text from '_components/text'

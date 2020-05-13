@@ -2,9 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { grid, space, color, shadow, border } from 'styled-system'
 
-import Button from '_components/button'
 import Brand from '_containers/side-nav/brand'
-import { navigate } from '@reach/router'
 import Flex from '_components/flex'
 import Link from '_components/link'
 

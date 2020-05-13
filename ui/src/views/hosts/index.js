@@ -1,15 +1,17 @@
 import React, { useEffect } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { navigate } from '@reach/router'
-import { useQuery, useMutation } from 'react-apollo'
-import { GET_HOSTS, DELETE_HOST } from '_graphql/actions'
+
+import { navigate, useLocation } from '@reach/router'
+import { useMutation, useQuery } from 'react-apollo'
+
+import { DELETE_HOST, GET_HOSTS } from '_graphql/actions'
 
 import { Dragon as Spinner } from '_components/spinner'
-import Text from '_components/text'
-import Flex from '_components/flex'
-import toast from '_components/toast'
 import Button from '_components/button'
+import toast from '_components/toast'
+import Flex from '_components/flex'
+import Text from '_components/text'
 import Box from '_components/box'
 
 import { illustrations } from '_assets/'
@@ -69,13 +71,22 @@ const EmptyState = () => (
 export const StyledButton = styled(Button)``
 
 const HostsView = ({ networkId }) => {
+  const location = useLocation()
+
   const getHostsQuery = useQuery(GET_HOSTS, {
     variables: { networkId },
   })
 
-  useEffect(() => {
-    getHostsQuery.refetch()
+  const [deleteHost, deleteHostMutation] = useMutation(DELETE_HOST, {
+    variables: { id: undefined },
+    onCompleted: handleHostDeleted,
+    onError: handleHostDeleteError,
   })
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    getHostsQuery.refetch()
+  }, [location])
 
   const handleHostDeleted = () => {
     toast.success('Host deleted')
@@ -85,12 +96,6 @@ const HostsView = ({ networkId }) => {
   const handleHostDeleteError = () => {
     toast.error('Error deleting host')
   }
-
-  const [deleteHost, deleteHostMutation] = useMutation(DELETE_HOST, {
-    variables: { id: undefined },
-    onCompleted: handleHostDeleted,
-    onError: handleHostDeleteError,
-  })
 
   const handleHostSelect = id => {
     navigate(`/networks/${networkId}/hosts/${id}`)

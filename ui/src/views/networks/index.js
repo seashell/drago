@@ -1,17 +1,17 @@
 import React, { useEffect } from 'react'
 import styled from 'styled-components'
-import { navigate } from '@reach/router'
+import { navigate, useLocation } from '@reach/router'
 import { useQuery, useMutation } from 'react-apollo'
+
 import { GET_NETWORKS, DELETE_NETWORK } from '_graphql/actions'
 
 import { Dragon as Spinner } from '_components/spinner'
+import Button from '_components/button'
+import toast from '_components/toast'
 import Text from '_components/text'
 import Flex from '_components/flex'
-import toast from '_components/toast'
-import Button from '_components/button'
 import Box from '_components/box'
-
-import { icons, illustrations } from '_assets/'
+import { illustrations } from '_assets/'
 
 import NetworksList from './networks-list'
 
@@ -68,26 +68,25 @@ const EmptyState = () => (
 export const StyledButton = styled(Button)``
 
 const NetworksView = () => {
+  const location = useLocation()
+
   const getNetworksQuery = useQuery(GET_NETWORKS)
-
-  useEffect(() => {
-    getNetworksQuery.refetch()
-  })
-
-  const handleNetworkDeleted = () => {
-    toast.success('Network deleted')
-    getNetworksQuery.refetch()
-  }
-
-  const handleNetworkDeleteError = () => {
-    toast.error('Error deleting host')
-  }
 
   const [deleteNetwork, deleteNetworkMutation] = useMutation(DELETE_NETWORK, {
     variables: { id: undefined },
-    onCompleted: handleNetworkDeleted,
-    onError: handleNetworkDeleteError,
+    onCompleted: () => {
+      toast.success('Network deleted')
+      getNetworksQuery.refetch()
+    },
+    onError: () => {
+      toast.error('Error deleting host')
+    },
   })
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    getNetworksQuery.refetch()
+  }, [location])
 
   const handleNetworkSelect = id => {
     navigate(`/networks/${id}/hosts`)

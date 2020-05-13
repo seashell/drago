@@ -4,7 +4,6 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import Box from '_components/box'
-import Text from '_components/text'
 import Button from '_components/button'
 
 import LinkCard from './link-card'
@@ -13,11 +12,6 @@ const Container = styled(Box)`
   display: grid;
   grid-template-columns: repeat(4, 1fr);
 `
-
-const EmptyStateContainer = styled(Box).attrs({
-  border: 'discrete',
-  height: '100px',
-})``
 
 const AddLinkCard = styled(Box).attrs({
   display: 'flex',
