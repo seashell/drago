@@ -7,9 +7,11 @@ import Flex from '_components/flex'
 import Button from '_components/button'
 import Box from '_components/box'
 import TextInput from '_components/inputs/text-input'
+import validator from 'validator'
 
 import { useFormState } from 'react-use-form-state'
 import { useLocalStorage } from 'react-use'
+import { icons } from '_assets/'
 
 const Container = styled(Flex)`
   flex-direction: column;
@@ -29,9 +31,18 @@ const ImportantBox = styled(Box)`
   align-items: center;
 `
 
+const validators = {
+  token: value => {
+    if (validator.isJWT(value)) {
+      return true
+    }
+    return 'JWT is not valid.'
+  },
+}
+
 const TokensView = () => {
   const [formState, { text }] = useFormState({
-    token: undefined,
+    token: null,
   })
   const [token, setToken] = useLocalStorage('drago.settings.acl.token')
 
@@ -53,6 +64,22 @@ const TokensView = () => {
     } catch (error) {
       hasError = true
     }
+  }
+
+  const validityIndicator = name => {
+    const isValid = formState.validity[name]
+    const error = formState.errors[name]
+    const IconContainer = styled.div.attrs({
+      title: error,
+    })`
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: help;
+    `
+    if (!isValid && error === undefined) return null
+    return <IconContainer>{isValid ? <icons.Success /> : <icons.Error />}</IconContainer>
   }
 
   return (
@@ -81,13 +108,18 @@ const TokensView = () => {
 
       {decodedToken === undefined ? (
         <>
-          <Text my={3}>Secret ID</Text>
-          <TextInput
-            required
-            {...text('token')}
-            placeholder="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
-            mb={2}
-          />
+          <Text my={3}>JWT Token</Text>
+          <Box style={{ position: 'relative' }} mb={2}>
+            <TextInput
+              {...text({
+                name: 'token',
+                validate: validators.token,
+                validateOnBlur: true,
+              })}
+              placeholder="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+            />
+            {validityIndicator('token')}
+          </Box>
           <Text textStyle="detail">Sent with every request to determine authorization</Text>
           <StyledButton my={3} mb={4} px={2} onClick={handleSetTokenButtonClick}>
             Set token
