@@ -8,65 +8,19 @@ import { useMutation, useQuery } from 'react-apollo'
 import { DELETE_HOST, GET_HOSTS } from '_graphql/actions'
 
 import { Dragon as Spinner } from '_components/spinner'
+import ErrorState from '_components/error-state'
+import EmptyState from '_components/empty-state'
 import Button from '_components/button'
 import toast from '_components/toast'
 import Flex from '_components/flex'
 import Text from '_components/text'
 import Box from '_components/box'
 
-import { illustrations } from '_assets/'
-
 import HostsList from './hosts-list'
 
 const Container = styled(Flex)`
   flex-direction: column;
 `
-
-const ErrorStateContainer = styled(Box).attrs({
-  border: 'none',
-  height: '300px',
-})`
-  svg {
-    height: 300px;
-    width: auto;
-  }
-  padding: 20px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`
-
-const ErrorState = () => (
-  <ErrorStateContainer>
-    <illustrations.Error />
-    <Text textStyle="description" mt={4}>
-      Oops! It seems that an error has occurred.
-    </Text>
-  </ErrorStateContainer>
-)
-
-const EmptyStateContainer = styled(Box).attrs({
-  border: 'none',
-  height: '300px',
-})`
-  svg {
-    height: 300px;
-    width: auto;
-  }
-  padding: 20px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`
-
-const EmptyState = () => (
-  <EmptyStateContainer>
-    <illustrations.Empty />
-    <Text textStyle="description" mt={4}>
-      Oops! It seems that there are no hosts registered in this network.
-    </Text>
-  </EmptyStateContainer>
-)
 
 export const StyledButton = styled(Button)``
 
@@ -79,23 +33,19 @@ const HostsView = ({ networkId }) => {
 
   const [deleteHost, deleteHostMutation] = useMutation(DELETE_HOST, {
     variables: { id: undefined },
-    onCompleted: handleHostDeleted,
-    onError: handleHostDeleteError,
+    onCompleted: () => {
+      toast.success('Host deleted')
+      getHostsQuery.refetch()
+    },
+    onError: () => {
+      toast.error('Error deleting host')
+    },
   })
 
   useEffect(() => {
     window.scrollTo(0, 0)
     getHostsQuery.refetch()
   }, [location])
-
-  const handleHostDeleted = () => {
-    toast.success('Host deleted')
-    getHostsQuery.refetch()
-  }
-
-  const handleHostDeleteError = () => {
-    toast.error('Error deleting host')
-  }
 
   const handleHostSelect = id => {
     navigate(`/networks/${networkId}/hosts/${id}`)
@@ -149,7 +99,7 @@ const HostsView = ({ networkId }) => {
       ) : isLoading ? (
         <Spinner />
       ) : isEmpty ? (
-        <EmptyState />
+        <EmptyState description="Oops! It seems that you don't have any hosts yet registered in this network." />
       ) : (
         <HostsList
           hosts={getHostsQuery.data.result.items}

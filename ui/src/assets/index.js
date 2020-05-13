@@ -23,6 +23,7 @@ import { ReactComponent as Unknown } from './icons/unknown.svg'
 import { ReactComponent as EmptyIllustration } from './illustrations/empty.svg'
 import { ReactComponent as ErrorIllustration } from './illustrations/error.svg'
 import { ReactComponent as NotFoundIllustration } from './illustrations/not-found.svg'
+import { ReactComponent as UnauthorizedIllustration } from './illustrations/unauthorized.svg'
 
 const icons = {
   Logo,
@@ -51,6 +52,7 @@ const illustrations = {
   NotFound: NotFoundIllustration,
   Error: ErrorIllustration,
   Empty: EmptyIllustration,
+  Unauthorized: UnauthorizedIllustration,
 }
 
 export { icons, illustrations }

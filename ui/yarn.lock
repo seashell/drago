@@ -9913,10 +9913,10 @@ react-transition-group@^4, react-transition-group@^4.3.0:
     loose-envify "^1.4.0"
     prop-types "^15.6.2"
 
-react-use-form-state@^0.10.4:
-  version "0.10.4"
-  resolved "https://registry.yarnpkg.com/react-use-form-state/-/react-use-form-state-0.10.4.tgz#87fa68939fc0d951c89aaf8ea74ef76e78c92313"
-  integrity sha512-PaYuUocwSQDc3gDoT7SQ83Rtk9A/OSDKLRDe0buMQx1KHhJo4MH/M5dSDvFXGGl0VAg8Y2+uLs1Q8v3q3ZIv+Q==
+react-use-form-state@^0.12.1:
+  version "0.12.1"
+  resolved "https://registry.yarnpkg.com/react-use-form-state/-/react-use-form-state-0.12.1.tgz#92b3f416b465820858f44f0cb14f8a840108d111"
+  integrity sha512-umRm8m3DzscibP7nfC/d95UJ7NhDfF7UbvBvCzds5z52NmZUzgnZsETTYs95h6dqlvl5+BcIcCjXh9LIxDhJ7g==
 
 react-use@^14.2.0:
   version "14.2.0"
@@ -11862,6 +11862,11 @@ validate-npm-package-license@^3.0.1:
   dependencies:
     spdx-correct "^3.0.0"
     spdx-expression-parse "^3.0.0"
+
+validator@^13.0.0:
+  version "13.0.0"
+  resolved "https://registry.yarnpkg.com/validator/-/validator-13.0.0.tgz#0fb6c6bb5218ea23d368a8347e6d0f5a70e3bcab"
+  integrity sha512-anYx5fURbgF04lQV18nEQWZ/3wHGnxiKdG4aL8J+jEDsm98n/sU/bey+tYk6tnGJzm7ioh5FoqrAiQ6m03IgaA==
 
 value-equal@^1.0.1:
   version "1.0.1"

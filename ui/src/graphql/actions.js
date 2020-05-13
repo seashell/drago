@@ -96,12 +96,8 @@ const CREATE_HOST = gql`
     $advertiseAddress: String
   ) {
     createHost(
-      input: {
-        networkId: $networkId
-        name: $name
-        ipAddress: $ipAddress
-        advertiseAddress: $advertiseAddress
-      }
+      networkId: $networkId
+      input: { name: $name, ipAddress: $ipAddress, advertiseAddress: $advertiseAddress }
     ) @rest(method: "POST", path: "hosts?networkId={args.networkId}", type: "Host") {
       id
       name

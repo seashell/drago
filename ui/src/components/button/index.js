@@ -11,6 +11,15 @@ const Button = styled.button`
   letter-spacing: 0.08em;
   border: none;
 
+  :disabled {
+    background: ${props => props.theme.colors.neutralLighter};
+    box-shadow: none;
+    cursor: default;
+    :hover {
+      filter: none;
+    }
+  }
+
   &:hover {
     filter: brightness(90%);
     transition: all 0.7s ease;

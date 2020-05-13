@@ -9,7 +9,8 @@ const HostsList = ({ hosts, onHostSelect, onHostDelete }) =>
       key={n.id}
       id={n.id}
       label={n.name}
-      address={n.address}
+      address={n.ipAddress}
+      advertiseAddress={n.advertiseAddress}
       onClick={onHostSelect}
       onDelete={e => onHostDelete(e, n.id)}
     />

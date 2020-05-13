@@ -6,66 +6,19 @@ import { useQuery, useMutation } from 'react-apollo'
 import { GET_NETWORKS, DELETE_NETWORK } from '_graphql/actions'
 
 import { Dragon as Spinner } from '_components/spinner'
+import ErrorState from '_components/error-state'
+import EmptyState from '_components/empty-state'
 import Button from '_components/button'
 import toast from '_components/toast'
 import Text from '_components/text'
 import Flex from '_components/flex'
 import Box from '_components/box'
-import { illustrations } from '_assets/'
 
 import NetworksList from './networks-list'
 
 const Container = styled(Flex)`
   flex-direction: column;
 `
-
-const ErrorStateContainer = styled(Box).attrs({
-  border: 'none',
-  height: '300px',
-})`
-  svg {
-    height: 300px;
-    width: auto;
-  }
-  padding: 20px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`
-
-const ErrorState = () => (
-  <ErrorStateContainer>
-    <illustrations.Error />
-    <Text textStyle="description" mt={4}>
-      Oops! It seems that an error has occurred.
-    </Text>
-  </ErrorStateContainer>
-)
-
-const EmptyStateContainer = styled(Box).attrs({
-  border: 'none',
-  height: '300px',
-})`
-  svg {
-    height: 300px;
-    width: auto;
-  }
-  padding: 20px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`
-
-const EmptyState = () => (
-  <EmptyStateContainer>
-    <illustrations.Empty />
-    <Text textStyle="description" mt={4}>
-      Oops! It seems that there are no networks registered.
-    </Text>
-  </EmptyStateContainer>
-)
-
-export const StyledButton = styled(Button)``
 
 const NetworksView = () => {
   const location = useLocation()
@@ -122,11 +75,11 @@ const NetworksView = () => {
         </Button>
       </Box>
       {isError ? (
-        <ErrorState />
+        <ErrorState message="" />
       ) : isLoading ? (
         <Spinner />
       ) : isEmpty ? (
-        <EmptyState />
+        <EmptyState message="Oops! It seems that you don't have any networks yet registered." />
       ) : (
         <NetworksList
           networks={getNetworksQuery.data.result.items}

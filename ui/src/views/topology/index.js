@@ -7,10 +7,11 @@ import { Portal } from 'react-portal'
 import { useQuery } from 'react-apollo'
 import { GET_HOSTS, GET_ALL_LINKS } from '_graphql/actions'
 
-import { illustrations } from '_assets/'
 import Box from '_components/box'
 import Text from '_components/text'
 import Button from '_components/button'
+import ErrorState from '_components/error-state'
+import EmptyState from '_components/empty-state'
 import { Dragon as Spinner } from '_components/spinner'
 
 import HostCard from './host-card'
@@ -24,52 +25,6 @@ const Container = styled.div`
   grid-column: span 12;
   height: 100vh;
 `
-
-const ErrorStateContainer = styled(Box).attrs({
-  border: 'none',
-  height: '300px',
-})`
-  svg {
-    height: 300px;
-    width: auto;
-  }
-  padding: 20px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`
-
-const ErrorState = () => (
-  <ErrorStateContainer>
-    <illustrations.Error />
-    <Text textStyle="description" mt={4}>
-      Oops! It seems that an error has occurred.
-    </Text>
-  </ErrorStateContainer>
-)
-
-const EmptyStateContainer = styled(Box).attrs({
-  border: 'none',
-  height: '300px',
-})`
-  svg {
-    height: 300px;
-    width: auto;
-  }
-  padding: 20px;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-`
-
-const EmptyState = () => (
-  <EmptyStateContainer>
-    <illustrations.Empty />
-    <Text textStyle="description" mt={4}>
-      Oops! It seems that there are no hosts registered in this network.
-    </Text>
-  </EmptyStateContainer>
-)
 
 const StyledHostCard = styled(HostCard)`
   position: absolute;

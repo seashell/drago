@@ -46,7 +46,16 @@ const StatusBadge = styled.div`
   background: ${props => (props.status === 'online' ? 'green' : props.theme.colors.neutralLight)};
 `
 
-const HostCard = ({ id, label, address, onClick, onDelete }) => {
+const AdvertiseAddressBadge = styled.div`
+  background: ${props => props.theme.colors.neutralDarkest};
+  color: white;
+  border-radius: 4px;
+  font-size: 11px;
+  margin-left: auto;
+  padding: 4px 8px;
+`
+
+const HostCard = ({ id, label, address, advertiseAddress, onClick, onDelete }) => {
   // const isOnline = Math.abs(moment(lastSeen).diff(moment.now(), 'minutes')) < 5
   const isOnline = false
   return (
@@ -63,6 +72,7 @@ const HostCard = ({ id, label, address, onClick, onDelete }) => {
           {address}
         </Text>
       </Box>
+      {advertiseAddress && <AdvertiseAddressBadge>{advertiseAddress}</AdvertiseAddressBadge>}
       <IconButton ml="auto" icon={<icons.Times />} onClick={onDelete} />
     </Container>
   )
@@ -72,11 +82,13 @@ HostCard.propTypes = {
   id: PropTypes.string.isRequired,
   label: PropTypes.string.isRequired,
   address: PropTypes.string.isRequired,
+  advertiseAddress: PropTypes.string,
   onClick: PropTypes.func,
   onDelete: PropTypes.func,
 }
 
 HostCard.defaultProps = {
+  advertiseAddress: undefined,
   onClick: () => {},
   onDelete: () => {},
 }
