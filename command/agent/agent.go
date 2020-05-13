@@ -5,11 +5,14 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/seashell/drago/agent"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
+	"github.com/dimiro1/banner"
 )
 
 var cfgFile string
@@ -27,6 +30,9 @@ var Command = &cobra.Command{
 	as CLI arguments.
   `,
 	Run: func(cmd *cobra.Command, args []string) {
+
+		banner.Init(os.Stdout, true, true, strings.NewReader(Banner))
+
 		if cfgFile == "" {
 			fmt.Println("==> No config file specified. Using default values.")
 		}
