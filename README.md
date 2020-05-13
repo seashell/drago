@@ -80,23 +80,30 @@ drago agent --config=<config_file>
 
 ## Development
 
-For development purposes, start the Drago server:
+Build the project:
+```
+go generate
+go build
+```
+
+Start the Drago server with `air`:
 
 ```
-go run main.go agent --config="./demo/server.yml"
+./air.sh
 ```
 
-Once the server is up and running, run a dev server for the web UI:
+Once Drago server is up and running, start a dev server for the web UI:
 
 ```
 cd ui
 yarn start
 ```
 
-Finally, you can build and run the Drago client:
+Both the backend server and the UI server have hot-reloading capabilities.
+
+Build and run the Drago client:
 
 ```
-go build
 sudo ./drago --config="./dist/client.yml"
 ```
 
