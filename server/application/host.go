@@ -1,7 +1,7 @@
 package application
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/seashell/drago/server/domain"
 )
@@ -12,27 +12,29 @@ type HostService interface {
 	Create(h *domain.Host) (*domain.Host, error)
 	Update(h *domain.Host) (*domain.Host, error)
 	DeleteByID(id string) (*domain.Host, error)
+	FindAll(pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error)
 	FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error)
+	GetSettingsByID(id string) (*domain.HostSettings, error)
 }
 
 type hostService struct {
-	hr domain.HostRepository
+	repo domain.HostRepository
 }
 
 // NewHostService :
-func NewHostService(hr domain.HostRepository) (HostService, error) {
-	return &hostService{hr}, nil
+func NewHostService(repo domain.HostRepository) (HostService, error) {
+	return &hostService{repo}, nil
 }
 
 // GetByID :
-func (hs *hostService) GetByID(id string) (*domain.Host, error) {
-	return hs.hr.GetByID(id)
+func (s *hostService) GetByID(id string) (*domain.Host, error) {
+	return s.repo.GetByID(id)
 }
 
 // Create :
-func (hs *hostService) Create(h *domain.Host) (*domain.Host, error) {
+func (s *hostService) Create(h *domain.Host) (*domain.Host, error) {
 
-	id, err := hs.hr.Create(h)
+	id, err := s.repo.Create(h)
 	if err != nil {
 		return nil, err
 	}
@@ -41,17 +43,15 @@ func (hs *hostService) Create(h *domain.Host) (*domain.Host, error) {
 }
 
 // Update :
-func (hs *hostService) Update(h *domain.Host) (*domain.Host, error) {
-	host, err := hs.hr.GetByID(*h.ID)
+func (s *hostService) Update(h *domain.Host) (*domain.Host, error) {
+	host, err := s.repo.GetByID(*h.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	mergeHostUpdate(host, h)
-	fmt.Println("==== ADVERTISE ADDRESS ====")
-	fmt.Println(h.AdvertiseAddress)
-	fmt.Println("==== ====== ====")
-	id, err := hs.hr.Update(host)
+
+	id, err := s.repo.Update(host)
 	if err != nil {
 		return nil, err
 	}
@@ -60,65 +60,34 @@ func (hs *hostService) Update(h *domain.Host) (*domain.Host, error) {
 }
 
 // Delete :
-func (hs *hostService) DeleteByID(id string) (*domain.Host, error) {
-	_id, err := hs.hr.DeleteByID(id)
+func (s *hostService) DeleteByID(id string) (*domain.Host, error) {
+	_id, err := s.repo.DeleteByID(id)
 	if err != nil {
 		return nil, err
 	}
 	return &domain.Host{ID: _id}, nil
 }
 
+// FindAll :
+func (s *hostService) FindAll(pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {
+	return s.repo.FindAll(pageInfo)
+}
+
 // FindAllByNetworkID :
-func (hs *hostService) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {
-	return hs.hr.FindAllByNetworkID(id, pageInfo)
+func (s *hostService) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {
+	return s.repo.FindAllByNetworkID(id, pageInfo)
+}
+
+// GetSettingsByID :
+func (s *hostService) GetSettingsByID(id string) (*domain.HostSettings, error) {
+	return nil, errors.New("not implemented")
 }
 
 func mergeHostUpdate(current, update *domain.Host) {
 	if update.Name != nil {
 		current.Name = update.Name
 	}
-
-	if update.IPAddress != nil {
-		current.IPAddress = update.IPAddress
-	}
-
 	if update.AdvertiseAddress != nil {
 		current.AdvertiseAddress = update.AdvertiseAddress
-	}
-
-	if update.ListenPort != nil {
-		current.ListenPort = update.ListenPort
-	}
-
-	if update.PublicKey != nil {
-		current.PublicKey = update.PublicKey
-	}
-
-	if update.Table != nil {
-		current.Table = update.Table
-	}
-
-	if update.DNS != nil {
-		current.DNS = update.DNS
-	}
-
-	if update.MTU != nil {
-		current.MTU = update.MTU
-	}
-
-	if update.PreUp != nil {
-		current.PreUp = update.PreUp
-	}
-
-	if update.PostUp != nil {
-		current.PostUp = update.PostUp
-	}
-
-	if update.PreDown != nil {
-		current.PreDown = update.PreDown
-	}
-
-	if update.PostDown != nil {
-		current.PostDown = update.PostDown
 	}
 }
