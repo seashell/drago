@@ -1,9 +1,11 @@
 package server
 
 import (
+	"fmt"
+
 	"github.com/seashell/drago/server/adapter/repository"
 	"github.com/seashell/drago/server/adapter/rest"
-	"github.com/seashell/drago/server/adapter/static"
+	"github.com/seashell/drago/server/adapter/spa"
 	"github.com/seashell/drago/server/application"
 	"github.com/seashell/drago/server/controller"
 	"github.com/seashell/drago/server/infrastructure/delivery/http"
@@ -13,16 +15,18 @@ import (
 )
 
 type server struct {
-	config    ServerConfig
+	config    Config
 	apiServer *http.Server
 	uiServer  *http.Server
 }
 
-type ServerConfig struct {
-	Enabled bool `mapstructure:"enabled"`
+type Config struct {
+	Enabled bool
+	DataDir string
+	Storage storage.Config
 }
 
-func New(c ServerConfig) (*server, error) {
+func New(c Config) (*server, error) {
 
 	// Create storage backend
 	backend, err := storage.NewBackend(&storage.Config{
@@ -34,7 +38,9 @@ func New(c ServerConfig) (*server, error) {
 		PostgreSQLPassword: "password",
 		PostgreSQLSSLMode:  "disable",
 	})
+
 	if err != nil {
+		fmt.Println(err)
 		panic("Error connecting to storage backend")
 	}
 
@@ -42,17 +48,22 @@ func New(c ServerConfig) (*server, error) {
 	backend.ApplyMigrations(postgresql.Migrations...)
 
 	// Create repository adapters for each domain
-	networkRepo, err := repository.NewPostgreSQLNetworkRepositoryAdapter(backend)
+	networkRepo, err := repository.NewNetworkRepositoryAdapter(backend)
 	if err != nil {
 		panic("Error creating network repository")
 	}
 
-	hostRepo, err := repository.NewPostgreSQLHostRepositoryAdapter(backend)
+	hostRepo, err := repository.NewHostRepositoryAdapter(backend)
 	if err != nil {
 		panic("Error creating host repository")
 	}
 
-	linkRepo, err := repository.NewPostgreSQLLinkRepositoryAdapter(backend)
+	ifaceRepo, err := repository.NewInterfaceRepositoryAdapter(backend)
+	if err != nil {
+		panic("Error creating interface repository")
+	}
+
+	linkRepo, err := repository.NewLinkRepositoryAdapter(backend)
 	if err != nil {
 		panic("Error creating link repository")
 	}
@@ -68,13 +79,18 @@ func New(c ServerConfig) (*server, error) {
 		panic("Error creating host service")
 	}
 
+	is, err := application.NewInterfaceService(ifaceRepo, networkRepo)
+	if err != nil {
+		panic("Error creating interface service")
+	}
+
 	ls, err := application.NewLinkService(linkRepo)
 	if err != nil {
 		panic("Error creating link service")
 	}
 
 	// Create API controller
-	ctrl, err := controller.New(ns, hs, ls)
+	ctrl, err := controller.New(ns, hs, is, ls)
 	if err != nil {
 		panic("Error creating controller")
 	}
@@ -91,14 +107,14 @@ func New(c ServerConfig) (*server, error) {
 		panic("Error creating API server")
 	}
 
-	// Create static content handler
-	staticHandler, err := static.NewHandler(ui.Bundle)
+	// Create SPA adapter to handle static content
+	spaHandler, err := spa.NewHandler(ui.Bundle)
 	if err != nil {
-		panic("Error creating API handler")
+		panic("Error creating SPA handler")
 	}
 
 	// Create HTTP server for static files (UI)
-	uiServer, err := http.NewHTTPServer(staticHandler, &http.ServerConfig{BindAddress: ":8000"})
+	uiServer, err := http.NewHTTPServer(spaHandler, &http.ServerConfig{BindAddress: ":8000"})
 	if err != nil {
 		panic("Error creating UI server")
 	}
@@ -108,7 +124,6 @@ func New(c ServerConfig) (*server, error) {
 		apiServer: apiServer,
 		uiServer:  uiServer,
 	}, nil
-
 }
 
 func (s *server) Run() {
