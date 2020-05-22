@@ -112,4 +112,5 @@ sudo ./drago --config="./dist/client.yml"
 - [ ] Code coverage
 - [ ] Backend API for issuing volatile tokens
 - [ ] Integration with Hashicorp Vault
+- [ ] Integration with userspace WireGuard implementations such as `cloudflare/boringtun`
 - [ ] Integration with firewall tools for more sophisticated networking rules
