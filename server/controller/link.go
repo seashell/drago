@@ -17,9 +17,8 @@ type GetLinkInput struct {
 
 // CreateLinkInput :
 type CreateLinkInput struct {
-	NetworkID           *string  `json:"networkId" validate:"required,uuid4"`
-	ToHostID            *string  `json:"toHostId" validate:"required,uuid4"`
-	FromHostID          *string  `json:"fromHostId" validate:"required,uuid4"`
+	FromInterfaceID     *string  `json:"fromInterfaceId" validate:"required,uuid4"`
+	ToInterfaceID       *string  `json:"toInterfaceId" validate:"required,uuid4"`
 	AllowedIPs          []string `json:"allowedIPs" validate:"dive,omitempty,cidr"`
 	PersistentKeepalive *int     `json:"persistentKeepalive" validate:"omitempty,numeric"`
 }
@@ -38,8 +37,9 @@ type DeleteLinkInput struct {
 // ListLinksInput :
 type ListLinksInput struct {
 	pagination.Input
-	NetworkIDFilter string `query:"networkId" validate:"uuid4"`
-	HostIDFilter    string `query:"hostId" validate:"omitempty,uuid4"`
+	NetworkIDFilter         string `query:"networkId" validate:"omitempty,uuid4"`
+	SourceHostIDFilter      string `query:"sourceHostId" validate:"omitempty,uuid4"`
+	SourceInterfaceIDFilter string `query:"sourceInterfaceId" validate:"omitempty,uuid4"`
 }
 
 // GetLink :
@@ -143,8 +143,13 @@ func (c *Controller) ListLinks(ctx context.Context, in *ListLinksInput) (*pagina
 	l := []*domain.Link{}
 	p := &domain.Page{}
 
-	if in.HostIDFilter != "" {
-		l, p, err = c.ls.FindAllByHostID(in.HostIDFilter, *pageInfo)
+	if in.SourceInterfaceIDFilter != "" {
+		l, p, err = c.ls.FindAllBySourceInterfaceID(in.SourceInterfaceIDFilter, *pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
+	} else if in.SourceHostIDFilter != "" {
+		l, p, err = c.ls.FindAllBySourceHostID(in.SourceHostIDFilter, *pageInfo)
 		if err != nil {
 			return nil, errors.Wrap(ErrInternal, err.Error())
 		}
@@ -154,8 +159,10 @@ func (c *Controller) ListLinks(ctx context.Context, in *ListLinksInput) (*pagina
 			return nil, errors.Wrap(ErrInternal, err.Error())
 		}
 	} else {
-		err = errors.New("No filter provided. Must provide a network ID and, optionally, a source host ID.")
-		return nil, errors.Wrap(ErrInvalidInput, err.Error())
+		l, p, err = c.ls.FindAll(*pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
 	}
 
 	page := &pagination.Page{
