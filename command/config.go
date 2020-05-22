@@ -5,11 +5,18 @@ import (
 	"os"
 
 	"github.com/hashicorp/hcl/v2/hclsimple"
+	"github.com/seashell/drago/server/adapter/repository"
 )
 
 type StorageStanza struct {
-	Type string `hcl:"type,label"`
-	Path string `hcl:"path,optional"`
+	Type               repository.BackendType `hcl:"type,label"`
+	Path               string                 `hcl:"path,optional"`
+	PostgreSQLAddress  string                 `hcl:"postgresql_address,optional"`
+	PostgreSQLPort     uint16                 `hcl:"postgresql_port,optional"`
+	PostgreSQLDatabase string                 `hcl:"postgresql_dbname,optional"`
+	PostgreSQLUsername string                 `hcl:"postgresql_user,optional"`
+	PostgreSQLPassword string                 `hcl:"postgresql_password,optional"`
+	PostgreSQLSSLMode  string                 `hcl:"postgresql_sslmode,optional"`
 }
 
 type ServerStanza struct {
