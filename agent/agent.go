@@ -19,16 +19,17 @@ type Agent interface {
 }
 
 type agent struct {
-	config AgentConfig
+	config Config
 }
 
-type AgentConfig struct {
-	DataDir string              `mapstructure:"dataDir"`
-	Server  server.ServerConfig `mapstructure:"server"`
-	Client  client.ClientConfig `mapstructure:"client"`
+type Config struct {
+	UI      bool
+	DataDir string
+	Server  server.Config
+	Client  client.Config
 }
 
-func New(c AgentConfig) (*agent, error) {
+func New(c Config) (*agent, error) {
 	return &agent{
 		config: c,
 	}, nil
