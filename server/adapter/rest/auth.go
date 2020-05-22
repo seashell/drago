@@ -1,10 +1,14 @@
-package http
+package rest
 
 import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
+
+const TokenContextKey = "client"
+const TokenTypeManagement = "management"
+const TokenTypeClient = "client"
 
 type DragoClaims struct {
 	jwt.StandardClaims
@@ -18,7 +22,7 @@ func JWTProtected(secret []byte) echo.MiddlewareFunc {
 		SigningKey:    []byte("secret"),
 		TokenLookup:   "header:X-Drago-Token",
 		SigningMethod: middleware.AlgorithmHS256,
-		ContextKey:    "drago-claims",
+		ContextKey:    TokenContextKey,
 		AuthScheme:    "",
 		Claims:        &DragoClaims{},
 	})

@@ -1,4 +1,4 @@
-package static
+package spa
 
 import (
 	"net/http"
@@ -12,7 +12,7 @@ type Handler struct {
 	fsHandler http.Handler
 }
 
-// NewHandler : Create a new static files handler
+// NewHandler : Create a new SPA handler
 func NewHandler(fs http.FileSystem) (*Handler, error) {
 	return &Handler{
 		fs:        fs,

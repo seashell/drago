@@ -3,6 +3,7 @@ package rest
 import (
 	"net/http"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/seashell/drago/server/controller"
 )
@@ -93,6 +94,26 @@ func (h *Handler) ListHosts(c echo.Context) error {
 
 	e := WrapControllerError(err)
 	if e != nil {
+		return c.JSON(e.Code, e)
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// GetHostSettings :
+func (h *Handler) GetSelfSettings(c echo.Context) error {
+
+	token := c.Get(TokenContextKey).(*jwt.Token)
+	claims := token.Claims.(DragoClaims)
+
+	in := &controller.GetHostSettingsInput{
+		ID: claims.Subject,
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.controller.GetHostSettings(ctx, in)
+	if e := WrapControllerError(err); e != nil {
 		return c.JSON(e.Code, e)
 	}
 
