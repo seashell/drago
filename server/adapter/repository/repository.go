@@ -23,9 +23,8 @@ type Backend interface {
 
 func (bt BackendType) IsValid() error {
 	switch bt {
-	case BackendInMemory, BackendPostgreSQL, BackendSQLite, BackendBoltDB:
+	case BackendInMemory, BackendPostgreSQL:
 		return nil
 	}
-
 	return errors.New("Invalid backend type")
 }

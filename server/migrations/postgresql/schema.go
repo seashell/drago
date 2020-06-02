@@ -2,21 +2,30 @@ package postgresql
 
 var Migrations []string
 
-const schema = `CREATE TABLE IF NOT EXISTS network (
+const schema = `
+CREATE TABLE IF NOT EXISTS network (
     id uuid PRIMARY KEY,
-    created_at timestamp NOT NULL,
-    updated_at timestamp NOT NULL,
     name varchar(50) UNIQUE NOT NULL,
-    ip_address_range text NOT NULL
+    ip_address_range text NOT NULL,
+    created_at timestamp NOT NULL,
+    updated_at timestamp NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS host (
     id uuid PRIMARY KEY,
+    name varchar(50) NOT NULL,
+    advertise_address text,
     created_at timestamp NOT NULL,
     updated_at timestamp NOT NULL,
-    name varchar(50) NOT NULL,
+    UNIQUE(name)
+);
+
+CREATE TABLE IF NOT EXISTS interface (
+    id uuid PRIMARY KEY,
+    name varchar(32) NOT NULL,
+    host_id uuid NOT NULL REFERENCES host ON DELETE CASCADE,
+    network_id uuid REFERENCES network ON DELETE SET NULL,
     ip_address text,
-    advertise_address text,
     listen_port varchar(5),
     public_key text,
     "table" text,
@@ -26,20 +35,20 @@ CREATE TABLE IF NOT EXISTS host (
     post_up text,
     pre_down text,
     post_down text,
-    network_id uuid NOT NULL REFERENCES network ON DELETE CASCADE,
-    unique (name, network_id)
+    created_at timestamp NOT NULL,
+    updated_at timestamp NOT NULL,
+    UNIQUE(host_id, name)
 );
 
 CREATE TABLE IF NOT EXISTS link (
     id uuid PRIMARY KEY,
-    created_at timestamp NOT NULL,
-    updated_at timestamp NOT NULL,
+    from_interface_id uuid NOT NULL REFERENCES interface ON DELETE CASCADE,
+    to_interface_id uuid NOT NULL REFERENCES interface ON DELETE CASCADE,
     allowed_ips text DEFAULT '{}',
     persistent_keepalive integer,
-    network_id uuid NOT NULL REFERENCES network ON DELETE CASCADE,
-    to_host_id uuid NOT NULL REFERENCES host ON DELETE CASCADE,
-    from_host_id uuid NOT NULL REFERENCES host ON DELETE CASCADE,
-    UNIQUE(to_host_id, from_host_id)
+    created_at timestamp NOT NULL,
+    updated_at timestamp NOT NULL,
+    UNIQUE(from_interface_id, to_interface_id)
 );`
 
 func init() {

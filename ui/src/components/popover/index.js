@@ -8,10 +8,7 @@ const StyledTippy = styled(Tippy).attrs({
   sticky: true,
   touchHold: true,
   interactive: true,
-  trigger: 'click',
   boundary: 'viewport',
-  duration: [500, 200],
-  delay: [200, 10],
 })`
   background: #fff;
   border: ${props => props.theme.borders.discrete};
@@ -21,12 +18,12 @@ const StyledTippy = styled(Tippy).attrs({
     :before {
       content: '';
       position: absolute;
-      top: -6px;
+      top: -8px;
       left: -8px;
-      border-top: 8px solid transparent;
+      border-bottom: 8px solid transparent;
       border-left: 8px solid transparent;
       border-right: 8px solid transparent;
-      border-bottom: 8px solid ${props => props.theme.colors.white};
+      border-top: 8px solid ${props => props.theme.colors.white};
     }
   }
 
@@ -37,15 +34,24 @@ const StyledTippy = styled(Tippy).attrs({
   }
 `
 
-const Popover = ({ children, content, ...props }) => (
+const Popover = ({ trigger, duration, delay, children, content, ...props }) => (
   <StyledTippy content={content} {...props}>
     <div style={{ cursor: 'pointer' }}>{children}</div>
   </StyledTippy>
 )
 
 Popover.propTypes = {
+  trigger: PropTypes.string,
+  duration: PropTypes.arrayOf(PropTypes.number),
+  delay: PropTypes.arrayOf(PropTypes.number),
   children: PropTypes.node.isRequired,
   content: PropTypes.node.isRequired,
+}
+
+Popover.defaultProps = {
+  trigger: 'hover',
+  duration: [500, 200],
+  delay: [100, 10],
 }
 
 export default Popover

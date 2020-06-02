@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/seashell/drago/server/controller/pagination"
@@ -17,15 +19,15 @@ type GetLinkInput struct {
 
 // CreateLinkInput :
 type CreateLinkInput struct {
-	NetworkID           *string  `json:"networkId" validate:"required,uuid4"`
-	ToHostID            *string  `json:"toHostId" validate:"required,uuid4"`
-	FromHostID          *string  `json:"fromHostId" validate:"required,uuid4"`
+	FromInterfaceID     *string  `json:"fromInterfaceId" validate:"required,uuid4"`
+	ToInterfaceID       *string  `json:"toInterfaceId" validate:"required,uuid4"`
 	AllowedIPs          []string `json:"allowedIPs" validate:"dive,omitempty,cidr"`
 	PersistentKeepalive *int     `json:"persistentKeepalive" validate:"omitempty,numeric"`
 }
 
 // UpdateLinkInput :
 type UpdateLinkInput struct {
+	ID                  *string  `json:"id" validate:"required,uuid4"`
 	AllowedIPs          []string `json:"allowedIPs" validate:"dive,omitempty,cidr"`
 	PersistentKeepalive *int     `json:"persistentKeepalive"`
 }
@@ -38,8 +40,9 @@ type DeleteLinkInput struct {
 // ListLinksInput :
 type ListLinksInput struct {
 	pagination.Input
-	NetworkIDFilter string `query:"networkId" validate:"uuid4"`
-	HostIDFilter    string `query:"hostId" validate:"omitempty,uuid4"`
+	NetworkIDFilter         string `query:"networkId" validate:"omitempty,uuid4"`
+	SourceHostIDFilter      string `query:"fromHostId" validate:"omitempty,uuid4"`
+	SourceInterfaceIDFilter string `query:"fromInterfaceId" validate:"omitempty,uuid4"`
 }
 
 // GetLink :
@@ -98,7 +101,8 @@ func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*doma
 		}
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
-
+	fmt.Println("==== controller link ====")
+	spew.Dump(l)
 	res, err := c.ls.Update(l)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())
@@ -143,8 +147,13 @@ func (c *Controller) ListLinks(ctx context.Context, in *ListLinksInput) (*pagina
 	l := []*domain.Link{}
 	p := &domain.Page{}
 
-	if in.HostIDFilter != "" {
-		l, p, err = c.ls.FindAllByHostID(in.HostIDFilter, *pageInfo)
+	if in.SourceInterfaceIDFilter != "" {
+		l, p, err = c.ls.FindAllBySourceInterfaceID(in.SourceInterfaceIDFilter, *pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
+	} else if in.SourceHostIDFilter != "" {
+		l, p, err = c.ls.FindAllBySourceHostID(in.SourceHostIDFilter, *pageInfo)
 		if err != nil {
 			return nil, errors.Wrap(ErrInternal, err.Error())
 		}
@@ -154,8 +163,10 @@ func (c *Controller) ListLinks(ctx context.Context, in *ListLinksInput) (*pagina
 			return nil, errors.Wrap(ErrInternal, err.Error())
 		}
 	} else {
-		err = errors.New("No filter provided. Must provide a network ID and, optionally, a source host ID.")
-		return nil, errors.Wrap(ErrInvalidInput, err.Error())
+		l, p, err = c.ls.FindAll(*pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
 	}
 
 	page := &pagination.Page{

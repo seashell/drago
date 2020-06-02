@@ -8,7 +8,8 @@
         "_views/*": ["views/*"],
         "_graphql/*": ["graphql/*"],
         "_utils/*": ["utils/*"],
-        "_assets/*": ["assets/*"]        
+        "_assets/*": ["assets/*"],
+        "_hocs/*": ["hocs/*"]
         }
     },
     "exclude": ["node_modules", "dist", "dist-server"]

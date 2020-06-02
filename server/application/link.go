@@ -1,6 +1,9 @@
 package application
 
 import (
+	"fmt"
+
+	"github.com/davecgh/go-spew/spew"
 	"github.com/seashell/drago/server/domain"
 )
 
@@ -10,12 +13,16 @@ type LinkService interface {
 	Create(l *domain.Link) (*domain.Link, error)
 	Update(l *domain.Link) (*domain.Link, error)
 	DeleteByID(id string) (*domain.Link, error)
+	FindAll(pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
 	FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
-	FindAllByHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
+	FindAllBySourceHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
+	FindAllByTargetHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
+	FindAllByTargetInterfaceID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
+	FindAllBySourceInterfaceID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error)
 }
 
 type linkService struct {
-	lr domain.LinkRepository
+	repo domain.LinkRepository
 }
 
 // NewLinkService :
@@ -24,13 +31,13 @@ func NewLinkService(lr domain.LinkRepository) (LinkService, error) {
 }
 
 // GetByID :
-func (ls *linkService) GetByID(id string) (*domain.Link, error) {
-	return ls.lr.GetByID(id)
+func (s *linkService) GetByID(id string) (*domain.Link, error) {
+	return s.repo.GetByID(id)
 }
 
 // Create :
-func (ls *linkService) Create(l *domain.Link) (*domain.Link, error) {
-	id, err := ls.lr.Create(l)
+func (s *linkService) Create(l *domain.Link) (*domain.Link, error) {
+	id, err := s.repo.Create(l)
 	if err != nil {
 		return nil, err
 	}
@@ -38,15 +45,18 @@ func (ls *linkService) Create(l *domain.Link) (*domain.Link, error) {
 }
 
 // Update :
-func (ls *linkService) Update(l *domain.Link) (*domain.Link, error) {
-	link, err := ls.lr.GetByID(*l.ID)
+func (s *linkService) Update(l *domain.Link) (*domain.Link, error) {
+	fmt.Println("==== LINK TO UPDATE ====")
+	spew.Dump(l)
+
+	link, err := s.repo.GetByID(*l.ID)
 	if err != nil {
 		return nil, err
 	}
 
 	mergeLinkUpdate(link, l)
 
-	id, err := ls.lr.Update(link)
+	id, err := s.repo.Update(link)
 	if err != nil {
 		return nil, err
 	}
@@ -54,29 +64,48 @@ func (ls *linkService) Update(l *domain.Link) (*domain.Link, error) {
 }
 
 // Delete :
-func (ls *linkService) DeleteByID(id string) (*domain.Link, error) {
-	_id, err := ls.lr.DeleteByID(id)
+func (s *linkService) DeleteByID(id string) (*domain.Link, error) {
+	_id, err := s.repo.DeleteByID(id)
 	if err != nil {
 		return nil, err
 	}
 	return &domain.Link{ID: _id}, nil
 }
 
-// FindAllByNetworkID :
-func (ls *linkService) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
-	return ls.lr.FindAllByNetworkID(id, pageInfo)
+// FindAll :
+func (s *linkService) FindAll(pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
+	return s.repo.FindAll(pageInfo)
 }
 
-// FindAllByHostID :
-func (ls *linkService) FindAllByHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
-	return ls.lr.FindAllByHostID(id, pageInfo)
+// FindAllByNetworkID :
+func (s *linkService) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
+	return s.repo.FindAllByNetworkID(id, pageInfo)
+}
+
+// FindAllBySourceHostID :
+func (s *linkService) FindAllBySourceHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
+	return s.repo.FindAllBySourceHostID(id, pageInfo)
+}
+
+// FindAllByTargetHostID :
+func (s *linkService) FindAllByTargetHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
+	return s.repo.FindAllByTargetHostID(id, pageInfo)
+}
+
+// FindAllBySourceInterfaceID :
+func (s *linkService) FindAllBySourceInterfaceID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
+	return s.repo.FindAllBySourceInterfaceID(id, pageInfo)
+}
+
+// FindAllByTargetInterfaceID :
+func (s *linkService) FindAllByTargetInterfaceID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
+	return s.repo.FindAllByTargetInterfaceID(id, pageInfo)
 }
 
 func mergeLinkUpdate(current, update *domain.Link) {
 	if update.AllowedIPs != nil {
 		current.AllowedIPs = update.AllowedIPs
 	}
-
 	if update.PersistentKeepalive != nil {
 		current.PersistentKeepalive = update.PersistentKeepalive
 	}

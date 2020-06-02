@@ -19,35 +19,14 @@ type GetHostInput struct {
 // CreateHostInput :
 type CreateHostInput struct {
 	Name             *string `json:"name" validate:"required,min=1,max=50"`
-	IPAddress        *string `json:"ipAddress" validate:"required,cidr"`
 	AdvertiseAddress *string `json:"advertiseAddress" validate:"omitempty,cidr|hostname"`
-	ListenPort       *string `json:"listenPort" validate:"omitempty,numeric,min=1,max=5"`
-	PublicKey        *string `json:"publicKey" validate:""`
-	Table            *string `json:"table" validate:""`
-	DNS              *string `json:"dns" validate:""`
-	MTU              *string `json:"mtu" validate:""`
-	PreUp            *string `json:"preUp" validate:""`
-	PostUp           *string `json:"postUp" validate:""`
-	PreDown          *string `json:"preDown" validate:""`
-	PostDown         *string `json:"postDown" validate:""`
-	NetworkID        *string `json:"networkId" validate:"required,uuid4"`
 }
 
 // UpdateHostInput :
 type UpdateHostInput struct {
 	ID               *string `json:"id" validate:"required,uuid4"`
-	Name             *string `json:"name" validate:"min=1,max=50"`
-	IPAddress        *string `json:"ipAddress" validate:"cidr"`
+	Name             *string `json:"name" validate:"omitempty,min=1,max=50"`
 	AdvertiseAddress *string `json:"advertiseAddress" validate:"omitempty,cidr|hostname"`
-	ListenPort       *string `json:"listenPort" validate:"omitempty,numeric,min=1,max=5"`
-	PublicKey        *string `json:"publicKey" validate:""`
-	Table            *string `json:"table" validate:""`
-	DNS              *string `json:"dns" validate:""`
-	MTU              *string `json:"mtu" validate:""`
-	PreUp            *string `json:"preUp" validate:""`
-	PostUp           *string `json:"postUp" validate:""`
-	PreDown          *string `json:"preDown" validate:""`
-	PostDown         *string `json:"postDown" validate:""`
 }
 
 // DeleteHostInput :
@@ -58,7 +37,12 @@ type DeleteHostInput struct {
 // ListHostsInput :
 type ListHostsInput struct {
 	pagination.Input
-	NetworkIDFilter string `query:"networkId" validate:"required,uuid4"`
+	NetworkIDFilter string `query:"networkId" validate:"omitempty,uuid4"`
+}
+
+// GetHostSettingsInput :
+type GetHostSettingsInput struct {
+	ID string `validate:"required,uuid4"`
 }
 
 // GetHost :
@@ -159,9 +143,19 @@ func (c *Controller) ListHosts(ctx context.Context, in *ListHostsInput) (*pagina
 		PerPage: in.PerPage,
 	}
 
-	h, p, err := c.hs.FindAllByNetworkID(in.NetworkIDFilter, *pageInfo)
-	if err != nil {
-		return nil, errors.Wrap(ErrInternal, err.Error())
+	h := []*domain.Host{}
+	p := &domain.Page{}
+
+	if in.NetworkIDFilter != "" {
+		h, p, err = c.hs.FindAllByNetworkID(in.NetworkIDFilter, *pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
+	} else {
+		h, p, err = c.hs.FindAll(*pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
 	}
 
 	page := &pagination.Page{
@@ -173,4 +167,19 @@ func (c *Controller) ListHosts(ctx context.Context, in *ListHostsInput) (*pagina
 	}
 
 	return page, nil
+}
+
+// GetHostSettings :
+func (c *Controller) GetHostSettings(ctx context.Context, in *GetHostSettingsInput) (*domain.HostSettings, error) {
+	err := c.v.Struct(in)
+	if err != nil {
+		return nil, errors.Wrap(ErrInvalidInput, err.Error())
+	}
+
+	settings, err := c.hs.GetSettingsByID(in.ID)
+	if err != nil {
+		return nil, errors.Wrap(ErrInternal, err.Error())
+	}
+
+	return settings, nil
 }

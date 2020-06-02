@@ -8,5 +8,6 @@ module.exports = {
     _graphql: path.resolve(__dirname, '..', '..', 'src/graphql/'),
     _utils: path.resolve(__dirname, '..', '..', 'src/utils/'),
     _views: path.resolve(__dirname, '..', '..', 'src/views/'),
+    _hocs: path.resolve(__dirname, '..', '..', 'src/hocs/'),
   },
 }

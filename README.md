@@ -21,6 +21,24 @@ Drago is a flexible configuration manager for WireGuard networks which is design
 <img src="../assets/demo.gif"/>
 </p>
 
+## Features:
+- Single-binary, lightweight
+- Encrypted node-to-node communication
+- Support for multiple storage backends
+- Dynamic configuration capabilities
+- Automatic key rotation
+- Extensible via REST API
+- Slick management dashboard
+- Automatic IP assignment (soon)
+
+## Use cases:
+- Secure home automation, SSH access, etc
+- Establish secure VPNs for your company
+- Manage access to sensitive services deployed to private hosts
+- Expose development servers for debugging and demonstration purposes
+- Establish multi-cloud clusters with ease
+- Build your own cloud with RaspberryPIs
+
 ## Overview
 
 [WireGuard®](https://www.wireguard.com/) is an extremely simple yet fast and modern VPN that utilizes state-of-the-art cryptography. It aims to be faster, simpler, leaner, and more useful than IPsec, while avoiding the massive headache. It intends to be considerably more performant than OpenVPN. WireGuard is designed as a general purpose VPN for running on embedded interfaces and super computers alike, fit for many different circumstances. Initially released for the Linux kernel, it is now cross-platform and widely deployable, being regarded as the most secure, easiest to use, and simplest VPN solution in the industry. 
@@ -107,9 +125,23 @@ Build and run the Drago client:
 sudo ./drago --config="./dist/client.yml"
 ```
 
+## Contributing
+- Fork it
+- Download your fork (git clone https://github.com/your_username/drago && cd drago)
+- Create your feature branch (git checkout -b my-new-feature)
+- Make changes and stage them (git add .)
+- Commit your changes (git commit -m 'Add some feature')
+- Push to the branch (git push origin my-new-feature)
+- Create new pull request
+
+
 ## Roadmap
 - [ ] Website
 - [ ] Code coverage
 - [ ] Backend API for issuing volatile tokens
 - [ ] Integration with Hashicorp Vault
+- [ ] Integration with userspace WireGuard implementations such as `cloudflare/boringtun`
 - [ ] Integration with firewall tools for more sophisticated networking rules
+
+## License
+Drago is released under the Apache 2.0 license. See LICENSE.txt

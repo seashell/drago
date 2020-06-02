@@ -6,11 +6,19 @@ import (
 	"os"
 )
 
-const tmpl = `[Interface]
-{{ if .Interface.ListenPort -}}
+const tmpl = `
+{{with .Interfaces}}
+{{ range .}}
+[Interface]
+{{ if .IPAddress -}}
+IPAddress = {{ .IPAddress }}
+{{end -}}
+{{ if .ListenPort -}}
 ListenPort = {{ .Interface.ListenPort }}
 {{end -}}
-PrivateKey = {{ .Keys.PrivateKey | html }}
+PrivateKey = {{ .PrivateKey | html }}
+{{end -}}
+{{end -}}
 {{with .Peers}}
 {{ range . -}}
 {{ if .PublicKey -}}
@@ -19,8 +27,10 @@ PrivateKey = {{ .Keys.PrivateKey | html }}
 Endpoint = {{ .Endpoint }}
 {{end -}}
 PublicKey = {{ .PublicKey | html }}
-AllowedIPs = {{ .AllowedIPs }}
+AllowedIPs = {{ .AllowedIPsToString .AllowedIPs }}
+{{ if .PersistentKeepalive -}}
 PersistentKeepalive = {{ .PersistentKeepalive }}
+{{end -}}
 {{end}}
 {{end}}
 {{end}}

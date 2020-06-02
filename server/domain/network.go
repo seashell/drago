@@ -1,6 +1,10 @@
 package domain
 
-import "time"
+import (
+	"errors"
+	"net"
+	"time"
+)
 
 // Network : Network entity
 type Network struct {
@@ -18,4 +22,15 @@ type NetworkRepository interface {
 	Update(n *Network) (*string, error)
 	DeleteByID(string) (*string, error)
 	FindAll(pageInfo PageInfo) ([]*Network, *Page, error)
+}
+
+// CheckAddressInRange : Check whether an IP address in CIDR notation
+// is within the allowed range of the network.
+func (n *Network) CheckAddressInRange(ip string) error {
+	_, subnet, _ := net.ParseCIDR(*n.IPAddressRange)
+	addr, _, _ := net.ParseCIDR(ip)
+	if subnet.Contains(addr) {
+		return nil
+	}
+	return errors.New("ip address not within network's allowed range")
 }
