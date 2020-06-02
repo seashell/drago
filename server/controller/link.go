@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/seashell/drago/server/controller/pagination"
@@ -25,6 +27,7 @@ type CreateLinkInput struct {
 
 // UpdateLinkInput :
 type UpdateLinkInput struct {
+	ID                  *string  `json:"id" validate:"required,uuid4"`
 	AllowedIPs          []string `json:"allowedIPs" validate:"dive,omitempty,cidr"`
 	PersistentKeepalive *int     `json:"persistentKeepalive"`
 }
@@ -38,8 +41,8 @@ type DeleteLinkInput struct {
 type ListLinksInput struct {
 	pagination.Input
 	NetworkIDFilter         string `query:"networkId" validate:"omitempty,uuid4"`
-	SourceHostIDFilter      string `query:"sourceHostId" validate:"omitempty,uuid4"`
-	SourceInterfaceIDFilter string `query:"sourceInterfaceId" validate:"omitempty,uuid4"`
+	SourceHostIDFilter      string `query:"fromHostId" validate:"omitempty,uuid4"`
+	SourceInterfaceIDFilter string `query:"fromInterfaceId" validate:"omitempty,uuid4"`
 }
 
 // GetLink :
@@ -98,7 +101,8 @@ func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*doma
 		}
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
-
+	fmt.Println("==== controller link ====")
+	spew.Dump(l)
 	res, err := c.ls.Update(l)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())

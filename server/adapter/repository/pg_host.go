@@ -176,6 +176,7 @@ func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 		`SELECT h.*, COUNT(*) OVER() AS total_count 
 		FROM host h
 		LEFT JOIN interface if ON if.host_id = h.id
+		LEFT JOIN network net ON if.network_id = net.id
 		WHERE if.network_id = $1 
 		GROUP BY h.id 
 		ORDER BY created_at DESC LIMIT $2 OFFSET $3`,

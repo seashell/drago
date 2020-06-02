@@ -28,7 +28,7 @@ func NewPostgreSQLInterfaceRepositoryAdapter(backend Backend) (domain.InterfaceR
 func (a *postgresqlInterfaceRepositoryAdapter) GetByID(id string) (*domain.Interface, error) {
 	sqlOut := &sql.Interface{}
 	err := a.db.Get(sqlOut,
-		`SELECT iface.* FROM interface h
+		`SELECT iface.* FROM interface iface
 			WHERE iface.id=$1
 			GROUP BY iface.id`,
 		id)

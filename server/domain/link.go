@@ -5,9 +5,9 @@ import "time"
 // Link :
 type Link struct {
 	ID                  *string    `json:"id"`
-	FromInterfaceID     *string    `json:"fromInterface,omitempty"`
-	ToInterfaceID       *string    `json:"toInterface,omitempty"`
-	AllowedIPs          []string   `json:"allowedIps,omitempty"`
+	FromInterfaceID     *string    `json:"fromInterfaceId,omitempty"`
+	ToInterfaceID       *string    `json:"toInterfaceId,omitempty"`
+	AllowedIPs          []string   `json:"allowedIps"`
 	PersistentKeepalive *int       `json:"persistentKeepalive,omitempty"`
 	CreatedAt           *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt           *time.Time `json:"updatedAt,omitempty"`

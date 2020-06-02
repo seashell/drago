@@ -6,8 +6,8 @@ import "time"
 type Interface struct {
 	ID         *string    `json:"id"`
 	Name       *string    `json:"name,omitempty"`
-	HostID     *string    `json:"host,omitempty"`
-	NetworkID  *string    `json:"network,omitempty"`
+	HostID     *string    `json:"hostId,omitempty"`
+	NetworkID  *string    `json:"networkId,omitempty"`
 	IPAddress  *string    `json:"ipAddress,omitempty"`
 	ListenPort *string    `json:"listenPort,omitempty"`
 	Table      *string    `json:"table,omitempty"`

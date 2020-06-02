@@ -27,16 +27,20 @@ func NewPostgreSQLLinkRepositoryAdapter(backend Backend) (domain.LinkRepository,
 }
 
 func (a *postgresqlLinkRepositoryAdapter) GetByID(id string) (*domain.Link, error) {
-	sl := &sql.Link{}
 
-	err := a.db.Get(sl, "SELECT * FROM link WHERE id=$1", id)
+	receiver := struct {
+		sql.Link
+		StrAllowedIPs string `db:"allowed_ips"`
+	}{}
+
+	err := a.db.Get(&receiver, "SELECT * FROM link WHERE id=$1", id)
 	if err != nil {
 		return nil, err
 	}
 
-	dl := &domain.Link{}
+	res := &domain.Link{}
 
-	errs := model.Copy(dl, sl)
+	errs := model.Copy(res, receiver.Link)
 	if errs != nil {
 		for _, e := range errs {
 			err = multierror.Append(err, e)
@@ -44,7 +48,9 @@ func (a *postgresqlLinkRepositoryAdapter) GetByID(id string) (*domain.Link, erro
 		return nil, err
 	}
 
-	return dl, nil
+	res.AllowedIPs = commaSeparatedStrToSlice(receiver.StrAllowedIPs)
+
+	return res, nil
 }
 
 func (a *postgresqlLinkRepositoryAdapter) Create(l *domain.Link) (*string, error) {

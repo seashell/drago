@@ -143,9 +143,19 @@ func (c *Controller) ListHosts(ctx context.Context, in *ListHostsInput) (*pagina
 		PerPage: in.PerPage,
 	}
 
-	h, p, err := c.hs.FindAll(*pageInfo)
-	if err != nil {
-		return nil, errors.Wrap(ErrInternal, err.Error())
+	h := []*domain.Host{}
+	p := &domain.Page{}
+
+	if in.NetworkIDFilter != "" {
+		h, p, err = c.hs.FindAllByNetworkID(in.NetworkIDFilter, *pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
+	} else {
+		h, p, err = c.hs.FindAll(*pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
 	}
 
 	page := &pagination.Page{
