@@ -2,16 +2,16 @@ import React from 'react'
 import styled from 'styled-components'
 
 import HomeView from '_views/home'
-import NetworksView from '_views/networks'
-import NewNetwork from '_views/new-network'
 import NotFound from '_views/not-found'
-import HostsView from '_views/hosts'
-import Topology from '_views/topology'
-import NewHost from '_views/new-host'
-import EditHost from '_views/edit-host'
-import TokensView from '_views/tokens'
+
+import HostsRouter from '_views/hosts'
+import LinksRouter from '_views/links'
+import NetworksRouter from '_views/networks'
+import InterfacesRouter from '_views/interfaces'
+import SettingsRouter from '_views/settings'
 
 import Header from '_containers/header'
+import SideNav from '_containers/side-nav'
 import Footer from '_containers/footer'
 
 import { Router } from '@reach/router'
@@ -19,6 +19,7 @@ import { Router } from '@reach/router'
 const Dashboard = styled.div`
   position: relative;
   display: grid;
+  height: 100vh;
   grid-template: 72px auto 40px / auto;
   grid-template-areas:
     'header'
@@ -27,10 +28,9 @@ const Dashboard = styled.div`
 `
 
 const Content = styled(Router).attrs({ primary: false })`
-  padding-top: 44px;
+  padding-top: 84px;
   padding-bottom: 32px;
 
-  min-height: 100vh;
   grid-area: body;
 
   width: 90%;
@@ -41,15 +41,14 @@ const Content = styled(Router).attrs({ primary: false })`
 const App = () => (
   <Dashboard>
     <Header />
+    <SideNav />
     <Content>
       <HomeView path="/" />
-      <NetworksView path="/networks" />
-      <NewNetwork path="/networks/new" />
-      <HostsView path="/networks/:networkId/hosts" />
-      <NewHost path="/networks/:networkId/hosts/new" />
-      <EditHost path="/networks/:networkId/hosts/:hostId" />
-      <Topology path="/networks/:networkId/topology" />
-      <TokensView path="/settings/tokens" />
+      <HostsRouter path="/hosts/*" />
+      <InterfacesRouter path="/interfaces/*" />
+      <LinksRouter path="/links/*" />
+      <NetworksRouter path="/networks/*" />
+      <SettingsRouter path="/settings/*" />
       <NotFound default />
     </Content>
     <Footer gridArea="footer" />

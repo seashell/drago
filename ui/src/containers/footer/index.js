@@ -3,8 +3,6 @@ import styled from 'styled-components'
 import { grid, space, color } from 'styled-system'
 
 const Container = styled.div`
-  height: 36px;
-
   background: white;
   border-top: 1px solid #f1f1f1;
 
@@ -17,6 +15,8 @@ const Container = styled.div`
   }
   ${space}
   ${grid}
+
+  z-index: 99;
 `
 
 const StyledLink = styled.a`
@@ -41,7 +41,7 @@ const Footer = props => (
 )
 
 Footer.defaultProps = {
-  padding: 2,
+  padding: 0,
 }
 
 export default Footer

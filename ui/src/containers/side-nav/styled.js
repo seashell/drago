@@ -12,14 +12,19 @@ ${layout}
 ${colorStyle}
 
 position: fixed;
-width: 200px;
+width: 240px;
 
 display: flex;
 flex-direction: column;
+padding-top:110px;
 
 top:0;
 left:0;
 bottom:0;
+
+background: transparent;
+
+z-index: 99;
 `
 
 export const StyledSeparator = styled(Separator).attrs({
@@ -27,44 +32,18 @@ export const StyledSeparator = styled(Separator).attrs({
   my: 3,
 })``
 
-export const NavLink = styled(Link).attrs({
+export const NavLink = styled(Link).attrs(props => ({
   px: 3,
   py: 2,
-  hoverStyle: { background: 'rgba(255,255,255,0.05)' },
-  activeStyle: { background: 'rgba(255,255,255,0.1)' },
-})`
+  getProps: ({ isPartiallyCurrent }) => ({
+    style: { color: isPartiallyCurrent && props.theme.colors.primary },
+  }),
+}))`
   display: flex;
-  ${color}
-  ${space}
-  ${layout}
-`
-
-export const ActionNavLink = styled(Link).attrs({
-  px: 3,
-  py: 2,
-  color: 'secondary',
-  hoverStyle: { background: 'none' },
-  activeStyle: { background: 'none' },
-})`
-  display: flex;
-
-  svg {
-    pading: 16px;
-    width: 20px;
-    height: 20px;
-    border-radius: 1px;
-    margin-right: 8px;
-    fill: ${props => props.theme.colors.secondary};
-  }
-
+  align-items: center;
   :hover {
-    svg {
-      background: ${props => props.theme.colors.secondary};
-      fill: ${props => props.theme.colors.white};
-      transition: 0.5s ease-in;
-    }
-  }
-
+    color: ${({ theme }) => theme.colors.neutralDark};
+  };
   ${color}
   ${space}
   ${layout}
@@ -74,12 +53,7 @@ export const CollapsibleSection = styled(Collapse).attrs({
   px: 3,
   py: 2,
 })`
-  opacity: 0.5;
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-
-  .indicator {
-    fill: ${props => props.theme.colors.neutralDarker};
-  }
 `

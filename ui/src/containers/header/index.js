@@ -19,7 +19,7 @@ export const Container = styled.div`
   right:0;
   left: 0;
 
-  z-index: 99;
+  z-index: 199;
 
   ${border}
   ${shadow}
@@ -38,7 +38,7 @@ const StyledLink = styled(Link)`
   margin: auto;
   padding-right: 18px;
   :hover {
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.neutralDarker};
   }
 `
 

@@ -3,7 +3,6 @@ import styled from 'styled-components'
 import { buttonStyle, shadow, layout, typography, border, space } from 'styled-system'
 
 const Button = styled.button`
-  height: 48px;
   border-radius: 24px;
   
   font-family: 'Lato';
@@ -35,8 +34,10 @@ const Button = styled.button`
 Button.defaultProps = {
   variant: 'primary',
   boxShadow: 'light',
-  width: '120px',
-  height: '48px',
+  width: '100px',
+  height: '40px',
+  borderRadius: 3,
+  type: 'button',
 }
 
 export default Button

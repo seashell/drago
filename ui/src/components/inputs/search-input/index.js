@@ -1,11 +1,8 @@
-/* eslint-disable react/prop-types */
 import React from 'react'
 import styled from 'styled-components'
 import { layout, space, border, color } from 'styled-system'
 
 import { icons } from '_assets/'
-
-import Select from 'react-select'
 
 const StyledIcon = styled(icons.Search).attrs({
   width: 22,
@@ -21,79 +18,42 @@ const StyledIcon = styled(icons.Search).attrs({
 
 const Container = styled.div`
   position: relative;
+  height: 40px;
   ${layout}
   ${space}
   ${border}
   ${color}
 `
 
-const StyledSelect = styled(Select).attrs({
-  classNamePrefix: 'select',
-  style: {
-    control: base => ({
-      ...base,
-      border: 0,
-      boxShadow: 'none',
-    }),
-  },
-})`
+const StyledInput = styled.input`
+  box-sizing: border-box;
+  padding-left: 32px;
+  border: 1px solid ${props => props.theme.colors.neutralLighter};
+  border-radius: 2px;
+  font-size: 14px;
+  width: 100%;
   height: 100%;
-  border: 0px;
-
-  .select__control {
-    border: none;
-
-    height: 100%;
-    .select__value-container {
-      padding-left: 32px;
-      .select__placeholder {
-      }
-    }
-    :hover {
-      border: none;
-    }
-  }
-
-  .select__control--is-focused {
-    box-shadow: none;
-    border: none;
-  }
-
-  .select__control--is-focused.select__control--menu-is-open {
-    box-shadow: none;
+  :focus {
     border: 1px solid ${props => props.theme.colors.primary};
-    :hover {
-      border: 1px solid ${props => props.theme.colors.primary};
-    }
   }
+  :disabled {
+    background: inherit;
+    opacity: 0.5;
+    border: none;
+  }
+  :invalid {
+    border: 1px solid ${props => props.theme.colors.danger};
+  }
+  ${space}
+  ${layout}
 `
 
-const SearchInput = ({
-  options,
-  placeholder,
-  optionComponent,
-  singleValueComponent,
-  filterOption,
-  onChange,
-  ...props
-}) => (
+// eslint-disable-next-line react/prop-types
+const SearchInput = ({ placeholder, onChange, ...props }) => (
   <Container {...props}>
     <StyledIcon />
-    <StyledSelect
-      components={{ Option: optionComponent, SingleValue: singleValueComponent }}
-      options={options}
-      placeholder={placeholder}
-      onChange={onChange}
-      filterOption={filterOption}
-      isSearchable
-    />
+    <StyledInput onChange={onChange} placeholder={placeholder} />
   </Container>
 )
-
-SearchInput.defaultProps = {
-  placeholder: 'Select...',
-  options: [],
-  optionRenderer: undefined,
-}
 
 export default SearchInput

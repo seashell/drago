@@ -1,13 +1,11 @@
+import log from 'loglevel'
 import { ApolloClient } from 'apollo-client'
 import { ApolloLink } from 'apollo-link'
-import { RestLink } from 'apollo-link-rest'
 import { InMemoryCache } from 'apollo-cache-inmemory'
+import { RestLink } from 'apollo-link-rest'
 import { onError } from 'apollo-link-error'
 
-import log from 'loglevel'
-
 import { REST_API_URL, DEBUG } from '../environment'
-import { defaults } from './local-state'
 
 const composeUrl = (url, protocol) => `${protocol}://${url}`
 
@@ -31,14 +29,13 @@ const errorLink = onError(error => {
   }
 })
 
-const cache = new InMemoryCache()
-cache.writeData(defaults)
-
 const link = ApolloLink.from([authLink, errorLink, restLink])
+
+const inMemoryCache = new InMemoryCache()
 
 export default new ApolloClient({
   link,
-  cache,
-  typeDefs: {},
+  cache: inMemoryCache,
   connectToDevTools: true,
+  typeDefs: {},
 })
