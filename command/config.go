@@ -16,6 +16,7 @@ type StorageStanza struct {
 	PostgreSQLUsername string `hcl:"postgresql_user,optional"`
 	PostgreSQLPassword string `hcl:"postgresql_password,optional"`
 	PostgreSQLSSLMode  string `hcl:"postgresql_sslmode,optional"`
+	SQLiteFilename     string `hcl:"sqlite_filename,optional"`
 }
 
 type ServerStanza struct {
