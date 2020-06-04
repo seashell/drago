@@ -18,9 +18,7 @@ server {
 }
 
 client {
-    enabled = true
-    servers = ["localhost:8080"]
-    data_dir="/opt/drago/client" 
+    enabled = false
 }
 
 vault {
