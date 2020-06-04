@@ -39,8 +39,8 @@ func NewAgentCmd() *cobra.Command {
 
 			fmt.Println("==> Starting drago agent...")
 
-			// TODO: move this to prerun hook into root cmd, and pass config through context
-			config := LoadConfigFromFile(_configFile)
+			config := cmd.Context().Value(ctxKeyType("config")).(DragoConfig)
+
 			mergo.Merge(&config, DefaultConfig)
 
 			err := env.Decode(&config)

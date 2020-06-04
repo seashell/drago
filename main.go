@@ -3,6 +3,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -20,7 +21,9 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 
 	rootCmd := command.NewRootCmd()
-	if err := rootCmd.Execute(); err != nil {
+
+	ctx := context.TODO()
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
