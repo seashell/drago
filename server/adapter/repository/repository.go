@@ -18,7 +18,6 @@ const (
 type Backend interface {
 	DB() interface{}
 	Type() BackendType
-	ApplyMigrations(...string) error
 }
 
 func (bt BackendType) IsValid() error {
