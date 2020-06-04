@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/cockroachdb/apd v1.1.0 // indirect
+	github.com/cosmtrek/air v1.12.1 // indirect
 	github.com/davecgh/go-spew v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dimiro1/banner v1.0.0
