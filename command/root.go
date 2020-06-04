@@ -1,8 +1,10 @@
 package command
 
 import (
-	"github.com/spf13/cobra"
+	"github.com/seashell/cobra"
 )
+
+var _configFile string
 
 func NewRootCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -11,8 +13,7 @@ func NewRootCmd() *cobra.Command {
 		Long:  `Usage: drago [-version] [-help] [-autocomplete-(un)install] <command> [args]`,
 	}
 
-	var config string
-	cmd.PersistentFlags().StringVarP(&config, "config", "", "/etc/drago.d", "config file (default is /etc/drago.d)")
+	cmd.PersistentFlags().StringVarP(&_configFile, "config", "", "/etc/drago.d", "config file (default is /etc/drago.d)")
 
 	cmd.AddCommand(NewAgentCmd())
 

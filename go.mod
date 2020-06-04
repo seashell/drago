@@ -20,9 +20,9 @@ require (
 	github.com/labstack/echo/v4 v4.1.16
 	github.com/pkg/errors v0.9.1
 	github.com/rakyll/statik v0.1.7
+	github.com/seashell/cobra v1.0.1
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.6.0
-	github.com/spf13/cobra v1.0.0
 	google.golang.org/appengine v1.5.0 // indirect
 	gopkg.in/jeevatkm/go-model.v1 v1.1.0
 	gopkg.in/yaml.v2 v2.2.4 // indirect

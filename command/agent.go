@@ -10,10 +10,12 @@ import (
 
 	"github.com/imdario/mergo"
 	env "github.com/joeshaw/envdecode"
+	"github.com/seashell/cobra"
 	"github.com/seashell/drago/agent"
 	"github.com/seashell/drago/client"
 	"github.com/seashell/drago/server"
-	"github.com/spf13/cobra"
+	"github.com/seashell/drago/server/adapter/repository"
+	"github.com/seashell/drago/server/infrastructure/storage"
 
 	"github.com/dimiro1/banner"
 )
@@ -38,7 +40,7 @@ func NewAgentCmd() *cobra.Command {
 			fmt.Println("==> Starting drago agent...")
 
 			// TODO: move this to prerun hook into root cmd, and pass config through context
-			config := LoadConfigFromFile("./demo/server.hcl")
+			config := LoadConfigFromFile(_configFile)
 			mergo.Merge(&config, DefaultConfig)
 
 			err := env.Decode(&config)
@@ -47,10 +49,23 @@ func NewAgentCmd() *cobra.Command {
 				UI:      config.UI,
 				DataDir: config.DataDir,
 				Server: server.Config{
-					Enabled: true,
+					Enabled: config.Server.Enabled,
+					DataDir: config.Server.DataDir,
+					Storage: storage.Config{
+						Type:               repository.BackendType(config.Server.Storage.Type),
+						Path:               config.Server.Storage.Path,
+						PostgreSQLAddress:  config.Server.Storage.PostgreSQLAddress,
+						PostgreSQLPort:     config.Server.Storage.PostgreSQLPort,
+						PostgreSQLDatabase: config.Server.Storage.PostgreSQLDatabase,
+						PostgreSQLUsername: config.Server.Storage.PostgreSQLUsername,
+						PostgreSQLPassword: config.Server.Storage.PostgreSQLPassword,
+						PostgreSQLSSLMode:  config.Server.Storage.PostgreSQLSSLMode,
+					},
 				},
 				Client: client.Config{
-					Enabled: false,
+					Enabled: config.Client.Enabled,
+					Servers: config.Client.Servers,
+					DataDir: config.Client.DataDir,
 				},
 			}
 

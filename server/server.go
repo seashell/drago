@@ -29,27 +29,20 @@ type Config struct {
 func New(c Config) (*server, error) {
 
 	// Create storage backend
-	backend, err := storage.NewBackend(&storage.Config{
-		Type:               "postgresql",
-		PostgreSQLAddress:  "127.0.0.1",
-		PostgreSQLPort:     5432,
-		PostgreSQLDatabase: "seashell",
-		PostgreSQLUsername: "admin",
-		PostgreSQLPassword: "password",
-		PostgreSQLSSLMode:  "disable",
-	})
 
+	backend, err := storage.NewBackend(&c.Storage)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error connecting to storage backend")
 	}
 
 	// Apply migrations
-	backend.ApplyMigrations(postgresql.Migrations...)
+	backend.ApplyMigrations(postgresql.Migrations...)NewBackendNewBackend
 
 	// Create repository adapters for each domain
 	networkRepo, err := repository.NewNetworkRepositoryAdapter(backend)
 	if err != nil {
+		fmt.Println(err)
 		panic("Error creating network repository")
 	}
 
