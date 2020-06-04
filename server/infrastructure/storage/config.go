@@ -4,6 +4,7 @@ import "github.com/seashell/drago/server/adapter/repository"
 
 type Config struct {
 	Type               repository.BackendType
+	Path               string
 	PostgreSQLAddress  string
 	PostgreSQLPort     uint16
 	PostgreSQLDatabase string

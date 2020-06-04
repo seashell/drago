@@ -1,5 +1,9 @@
 package command
 
-var DevConfig = DragoConfig{}
+var DevConfig = DragoConfig{
+	// TODO: define sane defaults
+}
 
-var DefaultConfig = DragoConfig{}
+var DefaultConfig = DragoConfig{
+	// TODO: define sane defaults
+}

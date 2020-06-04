@@ -25,10 +25,15 @@ func NewPostgreSQLBackend(address string, port uint16, dbname, username, passwor
 	}
 
 	db := sqlx.NewDb(stdlib.OpenDB(pgconf), "pgx")
+
+	// apply migrations on creation
+	for _, m := range Migrations {
+		db.MustExec(m)
+	}
+
 	if db.Ping() != nil {
 		return nil, errors.New("Error creating new PostgreSQL backend")
 	}
-
 	return &PostgreSQLBackend{db}, nil
 }
 
@@ -38,11 +43,4 @@ func (b *PostgreSQLBackend) DB() interface{} {
 
 func (b *PostgreSQLBackend) Type() repository.BackendType {
 	return repository.BackendPostgreSQL
-}
-
-func (b *PostgreSQLBackend) ApplyMigrations(migrations ...string) error {
-	for _, m := range migrations {
-		b.db.MustExec(m)
-	}
-	return nil
 }
