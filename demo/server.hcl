@@ -9,10 +9,10 @@ server {
     data_dir = "/opt/drago/server"
     storage "postgresql" {
 		postgresql_address  = "127.0.0.1"
-	 	postgresql_port     = 5432
-	 	postgresql_dbname = "seashell"
-	 	postgresql_user = "root"
-	 	postgresql_password = "password"
+	 	postgresql_port     = 5431
+	 	postgresql_dbname = "drago"
+	 	postgresql_user = "admin"
+	 	postgresql_password = "admin"
 	 	postgresql_sslmode  = "disable"
     }
 }

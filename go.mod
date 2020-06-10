@@ -16,7 +16,9 @@ require (
 	github.com/hashicorp/hcl/v2 v2.5.1
 	github.com/imdario/mergo v0.3.8
 	github.com/jackc/fake v0.0.0-20150926172116-812a484cc733 // indirect
+	github.com/jackc/pgconn v1.5.0
 	github.com/jackc/pgx v3.6.2+incompatible
+	github.com/jackc/pgx/v4 v4.6.0
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/joeshaw/envdecode v0.0.0-20200121155833-099f1fc765bd
 	github.com/juju/errgo v0.0.0-20140925100237-08cceb5d0b53 // indirect
