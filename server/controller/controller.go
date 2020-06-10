@@ -12,10 +12,15 @@ type Controller struct {
 	hs application.HostService
 	is application.InterfaceService
 	ls application.LinkService
+	ss application.SynchronizationService
 }
 
 // New :
-func New(ns application.NetworkService, hs application.HostService, is application.InterfaceService, ls application.LinkService) (*Controller, error) {
+func New(ns application.NetworkService,
+	hs application.HostService,
+	is application.InterfaceService,
+	ls application.LinkService,
+	ss application.SynchronizationService) (*Controller, error) {
 	return &Controller{
 		v:  validator.New(),
 		ns: ns,

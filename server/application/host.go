@@ -1,8 +1,6 @@
 package application
 
 import (
-	"errors"
-
 	"github.com/seashell/drago/server/domain"
 )
 
@@ -14,7 +12,6 @@ type HostService interface {
 	DeleteByID(id string) (*domain.Host, error)
 	FindAll(pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error)
 	FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error)
-	GetSettingsByID(id string) (*domain.HostSettings, error)
 }
 
 type hostService struct {
@@ -76,11 +73,6 @@ func (s *hostService) FindAll(pageInfo domain.PageInfo) ([]*domain.Host, *domain
 // FindAllByNetworkID :
 func (s *hostService) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {
 	return s.repo.FindAllByNetworkID(id, pageInfo)
-}
-
-// GetSettingsByID :
-func (s *hostService) GetSettingsByID(id string) (*domain.HostSettings, error) {
-	return nil, errors.New("not implemented")
 }
 
 func mergeHostUpdate(current, update *domain.Host) {

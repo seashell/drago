@@ -53,3 +53,11 @@ type Link struct {
 	CreatedAt           *time.Time `db:"created_at"`
 	UpdatedAt           *time.Time `db:"updated_at"`
 }
+
+// Peer :
+type Peer struct {
+	PublicKey           *string  `db:"public_key"`
+	Endpoint            *string  `db:"endpoint"`
+	AllowedIPs          []string `db:"-"`
+	PersistentKeepalive *int     `db:"persistent_keepalive"`
+}

@@ -40,11 +40,6 @@ type ListHostsInput struct {
 	NetworkIDFilter string `query:"networkId" validate:"omitempty,uuid4"`
 }
 
-// GetHostSettingsInput :
-type GetHostSettingsInput struct {
-	ID string `validate:"required,uuid4"`
-}
-
 // GetHost :
 func (c *Controller) GetHost(ctx context.Context, in *GetHostInput) (*domain.Host, error) {
 	err := c.v.Struct(in)
@@ -167,19 +162,4 @@ func (c *Controller) ListHosts(ctx context.Context, in *ListHostsInput) (*pagina
 	}
 
 	return page, nil
-}
-
-// GetHostSettings :
-func (c *Controller) GetHostSettings(ctx context.Context, in *GetHostSettingsInput) (*domain.HostSettings, error) {
-	err := c.v.Struct(in)
-	if err != nil {
-		return nil, errors.Wrap(ErrInvalidInput, err.Error())
-	}
-
-	settings, err := c.hs.GetSettingsByID(in.ID)
-	if err != nil {
-		return nil, errors.Wrap(ErrInternal, err.Error())
-	}
-
-	return settings, nil
 }

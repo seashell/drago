@@ -1,8 +1,9 @@
 package server
 
 import (
-	"fmt"
+	"time"
 
+	"github.com/giantswarm/retry-go"
 	"github.com/seashell/drago/server/adapter/repository"
 	"github.com/seashell/drago/server/adapter/rest"
 	"github.com/seashell/drago/server/adapter/spa"
@@ -84,8 +85,13 @@ func New(c Config) (*server, error) {
 		panic("Error creating link service")
 	}
 
+	ss, err := application.NewSynchronizationService(hostRepo, ifaceRepo, linkRepo)
+	if err != nil {
+		panic("Error creating link service")
+	}
+
 	// Create API controller
-	ctrl, err := controller.New(ns, hs, is, ls)
+	ctrl, err := controller.New(ns, hs, is, ls, ss)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating controller")

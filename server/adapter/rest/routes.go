@@ -14,7 +14,8 @@ func (h *Handler) RegisterRoutes(e *echo.Echo) {
 	e.Add("POST", "/hosts", h.CreateHost)
 	e.Add("PATCH", "/hosts/:id", h.UpdateHost)
 	e.Add("DELETE", "/hosts/:id", h.DeleteHost)
-	e.Add("GET", "/hosts/self/settings", JWTProtected([]byte{})(h.GetSelfSettings))
+	//e.Add("GET", "/hosts/self/settings", JWTProtected([]byte{})(h.GetSelfSettings))
+	e.Add("GET", "/hosts/self/settings", h.GetSelfSettings)
 
 	e.Add("GET", "/interfaces", h.ListInterfaces)
 	e.Add("GET", "/interfaces/:id", h.GetInterface)
