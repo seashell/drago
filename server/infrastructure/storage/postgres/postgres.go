@@ -2,9 +2,9 @@ package postgres
 
 import (
 	"errors"
+	"fmt"
 
-	"github.com/jackc/pgx"
-	"github.com/jackc/pgx/stdlib"
+	_ "github.com/jackc/pgx/stdlib"
 	"github.com/jmoiron/sqlx"
 	"github.com/seashell/drago/server/adapter/repository"
 )
@@ -15,20 +15,25 @@ type PostgreSQLBackend struct {
 
 func NewPostgreSQLBackend(address string, port uint16, dbname, username, password, sslmode string) (*PostgreSQLBackend, error) {
 
-	pgconf := pgx.ConnConfig{
-		Host:      address,
-		Port:      port,
-		Database:  dbname,
-		User:      username,
-		Password:  password,
-		TLSConfig: nil,
+	url := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		username,
+		password,
+		address,
+		port,
+		dbname,
+		sslmode)
+
+	db, err := sqlx.Connect("pgx", url)
+	if err != nil {
+		return nil, err
 	}
 
-	db := sqlx.NewDb(stdlib.OpenDB(pgconf), "pgx")
-
-	// apply migrations on creation
+	// Apply migrations on creation
 	for _, m := range Migrations {
-		db.MustExec(m)
+		_, err := db.Exec(m)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if db.Ping() != nil {

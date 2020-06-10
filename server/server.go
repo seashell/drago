@@ -1,9 +1,9 @@
 package server
 
 import (
+	"fmt"
 	"time"
 
-	"github.com/giantswarm/retry-go"
 	"github.com/seashell/drago/server/adapter/repository"
 	"github.com/seashell/drago/server/adapter/rest"
 	"github.com/seashell/drago/server/adapter/spa"
@@ -29,10 +29,16 @@ type Config struct {
 func New(c Config) (*server, error) {
 
 	// Create storage backend
-	backend, err := storage.NewBackend(&c.Storage)
-	if err != nil {
-		fmt.Println(err)
-		panic("Error connecting to storage backend")
+	var backend repository.Backend
+	for {
+		if b, err := storage.NewBackend(&c.Storage); err == nil {
+			backend = b
+			break
+		} else {
+			fmt.Println("Error creating storage backend. Trying again in 2s...")
+			fmt.Println(err)
+			time.Sleep(2 * time.Second)
+		}
 	}
 
 	// Create repository adapters for each domain
