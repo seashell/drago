@@ -31,7 +31,7 @@ const NotFound = () => (
         Page not found
       </Text>
       <Text textStyle="description" my={3}>
-        {`Oops! It seems that the page you're trying to access does not exist or has been moved.`}
+        Oops! It seems that the page you are trying to access does not exist or has been moved.
       </Text>
     </StyledBox>
   </Container>

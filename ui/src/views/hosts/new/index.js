@@ -75,33 +75,32 @@ const NewHostView = ({ networkId }) => {
       <Text textStyle="title" mb={4}>
         New host
       </Text>
-      {
-        <Box flexDirection="column">
-          <form>
-            <Text my={3}>Name</Text>
-            {withValidityIndicator(
-              <TextInput name="name" {...formik.getFieldProps('name')} placeholder="host-1" />,
-              formik.errors.name
-            )}
-            <Text my={3}>Advertise address</Text>
-            {withValidityIndicator(
-              <TextInput
-                name="advertiseAddress"
-                {...formik.getFieldProps('advertiseAddress')}
-                placeholder="wireguard.domain.io"
-              />,
-              formik.errors.advertiseAddress
-            )}
-            <Button width="100%" borderRadius={3} mt={3} mb={3} onClick={handleSaveButtonClick}>
-              Save
-            </Button>
-          </form>
-          <Link mx="auto" to="/ui/hosts">
-            Cancel
-          </Link>
-          <FormikState {...formik} />
-        </Box>
-      }
+
+      <Box flexDirection="column">
+        <form>
+          <Text my={3}>Name</Text>
+          {withValidityIndicator(
+            <TextInput name="name" {...formik.getFieldProps('name')} placeholder="host-1" />,
+            formik.errors.name
+          )}
+          <Text my={3}>Advertise address</Text>
+          {withValidityIndicator(
+            <TextInput
+              name="advertiseAddress"
+              {...formik.getFieldProps('advertiseAddress')}
+              placeholder="wireguard.domain.io"
+            />,
+            formik.errors.advertiseAddress
+          )}
+          <Button width="100%" borderRadius={3} mt={3} mb={3} onClick={handleSaveButtonClick}>
+            Save
+          </Button>
+        </form>
+        <Link mx="auto" to="/ui/hosts">
+          Cancel
+        </Link>
+        <FormikState {...formik} />
+      </Box>
     </Container>
   )
 }

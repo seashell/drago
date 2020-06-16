@@ -26,7 +26,10 @@ const NetworksView = () => {
 
   const location = useLocation()
 
-  const getNetworksQuery = useQuery(GET_NETWORKS)
+  const getNetworksQuery = useQuery(GET_NETWORKS, {
+    errorPolicy: 'all',
+    onError: err => console.log(err),
+  })
 
   const [deleteNetwork, deleteNetworkMutation] = useMutation(DELETE_NETWORK, {
     variables: { id: undefined },
@@ -58,14 +61,16 @@ const NetworksView = () => {
 
   const isError = getNetworksQuery.error
   const isLoading = getNetworksQuery.loading || deleteNetworkMutation.loading
-  const isEmpty = !isError && !isLoading && getNetworksQuery.data.result.items.length === 0
+  const isEmpty =
+    getNetworksQuery.data === undefined || getNetworksQuery.data.result === null
+      ? true
+      : getNetworksQuery.data.result.items.length === 0
 
-  const filteredNetworks =
-    isError || isLoading
-      ? []
-      : getNetworksQuery.data.result.items.filter(
-          el => el.name.includes(searchFilter) || el.ipAddressRange.includes(searchFilter)
-        )
+  const filteredNetworks = isEmpty
+    ? []
+    : getNetworksQuery.data.result.items.filter(
+        el => el.name.includes(searchFilter) || el.ipAddressRange.includes(searchFilter)
+      )
 
   if (isLoading) {
     return <Spinner />

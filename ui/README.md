@@ -5,8 +5,7 @@ This project is intended as a basic boileplate for any React-based frontend appl
 The UI provided as a template is heavily based on DigitalOcean's dashboard, and the project makes use of the following libraries and practices:
 - `styled-components` for CSS-in-JS;
 - `styled-system` for adding props to components and global styling;
-- `keycloak-js` / `react-keycloak` for authenticating and protecting views;
-- `apollo-client` / `react-apollo` / `@apollo/react-hooks` for interacting with GraphQL APIs and caching data with minimal boilerplate code;
+- `apollo-client` for interacting with GraphQL APIs and caching data with minimal boilerplate code;
 - `@reach/router` for routing;
 
 Differently from most React projects out there, we do not rely on the redux pattern for managing the application's global state. Instead, we use Apollo's local in-memory cache to store any application-wide variables, which allows us to deal with local and remote data in the exact same way.
