@@ -75,7 +75,7 @@ const NewHostView = ({ networkId }) => {
           <form>
             <Text my={3}>Name</Text>
             {withValidityIndicator(
-              <TextInput name="name" {...formik.getFieldProps('name')} placeholder="wg0" />,
+              <TextInput name="name" {...formik.getFieldProps('name')} placeholder="host-1" />,
               formik.errors.name
             )}
             <Text my={3}>Advertise address</Text>
@@ -87,11 +87,11 @@ const NewHostView = ({ networkId }) => {
               />,
               formik.errors.advertiseAddress
             )}
-            <Button width="100%" borderRadius={3} mt={3} mb={4} onClick={handleSaveButtonClick}>
+            <Button width="100%" borderRadius={3} mt={3} mb={3} onClick={handleSaveButtonClick}>
               Save
             </Button>
           </form>
-          <Link mx="auto" to="/hosts">
+          <Link mx="auto" to="../">
             Cancel
           </Link>
           <FormikState {...formik} />

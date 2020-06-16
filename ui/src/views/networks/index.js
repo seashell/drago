@@ -6,7 +6,7 @@ import New from './new'
 import Details from './details'
 
 const NetworksRouter = props => (
-  <Router primary={false} {...props}>
+  <Router {...props}>
     <List path="/" />
     <New path="/new" />
     <Details path="/:networkId" />

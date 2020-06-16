@@ -10,7 +10,7 @@ import { REST_API_URL, DEBUG } from '../environment'
 const composeUrl = (url, protocol) => `${protocol}://${url}`
 
 const restLink = new RestLink({
-  uri: composeUrl(REST_API_URL, 'http'),
+  uri: composeUrl(REST_API_URL || `${window.location.host}/api/`, 'http'),
 })
 
 const authLink = new ApolloLink((operation, forward) => {

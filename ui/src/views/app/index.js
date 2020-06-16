@@ -44,11 +44,11 @@ const App = () => (
     <SideNav />
     <Content>
       <HomeView path="/" />
-      <HostsRouter path="/hosts/*" />
-      <InterfacesRouter path="/interfaces/*" />
-      <LinksRouter path="/links/*" />
-      <NetworksRouter path="/networks/*" />
-      <SettingsRouter path="/settings/*" />
+      <HostsRouter path="hosts/*" />
+      <InterfacesRouter path="interfaces/*" />
+      <LinksRouter path="links/*" />
+      <NetworksRouter path="networks/*" />
+      <SettingsRouter path="settings/*" />
       <NotFound default />
     </Content>
     <Footer gridArea="footer" />

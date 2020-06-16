@@ -45,7 +45,7 @@ const NetworksView = () => {
   }, [location])
 
   const handleNetworkSelect = id => {
-    navigate(`/networks/${id}`)
+    navigate(`networks/${id}`)
   }
 
   const handleNetworkDelete = id => {
@@ -53,11 +53,12 @@ const NetworksView = () => {
   }
 
   const handleCreateNetworkClick = () => {
-    navigate('/networks/new')
+    navigate('networks/new')
   }
 
   const isError = getNetworksQuery.error
   const isLoading = getNetworksQuery.loading || deleteNetworkMutation.loading
+  console.log(getNetworksQuery)
   const isEmpty = !isError && !isLoading && getNetworksQuery.data.result.items.length === 0
 
   const filteredNetworks = isLoading

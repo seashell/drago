@@ -47,7 +47,7 @@ const HostsListView = () => {
   }, [location])
 
   const handleHostSelect = id => {
-    navigate(`/hosts/${id}`)
+    navigate(`hosts/${id}`)
   }
 
   const handleHostDelete = (e, id) => {
@@ -57,7 +57,7 @@ const HostsListView = () => {
   }
 
   const handleCreateHostButtonClick = () => {
-    navigate(`/hosts/new`)
+    navigate(`hosts/new`)
   }
 
   const isError = getHostsQuery.error

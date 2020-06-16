@@ -20,17 +20,25 @@ func NewHandler(fs http.FileSystem) (*Handler, error) {
 	}, nil
 }
 
-func (h *Handler) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	r.URL.Path = "/"
-	h.fsHandler.ServeHTTP(rw, r)
-}
-
 func (h *Handler) RegisterRoutes(e *echo.Echo) {
-	e.GET("/", echo.WrapHandler(h.fsHandler))
-	e.GET("/static/*", echo.WrapHandler(h.fsHandler))
-	e.GET("/logo.svg", echo.WrapHandler(h.fsHandler))
-	e.GET("/manifest.json", echo.WrapHandler(h.fsHandler))
-	e.GET("/service-worker.js", echo.WrapHandler(h.fsHandler))
-	e.GET("/favicon.ico", echo.WrapHandler(h.fsHandler))
-	e.GET("/*", echo.WrapHandler(h))
+
+	ui := e.Group("/ui/")
+
+	ui.GET("", echo.WrapHandler(http.StripPrefix("/ui/", h.fsHandler)))
+	ui.GET("static/*", echo.WrapHandler(http.StripPrefix("/ui/", h.fsHandler)))
+
+	ui.GET("*", echo.WrapHandler(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		r.URL.Path = "/"
+		h.fsHandler.ServeHTTP(rw, r)
+	})))
+
+	// Root fallthrough
+	e.GET("/", echo.WrapHandler(http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/" {
+			http.Redirect(rw, r, "/ui/", http.StatusTemporaryRedirect)
+		} else {
+			rw.WriteHeader(http.StatusNotFound)
+		}
+	})))
+
 }

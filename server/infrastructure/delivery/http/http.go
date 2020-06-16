@@ -24,7 +24,7 @@ type Server struct {
 	ch      chan struct{}
 }
 
-func NewHTTPServer(handler Handler, c *ServerConfig) (*Server, error) {
+func NewHTTPServer(c *ServerConfig) (*Server, error) {
 
 	e := echo.New()
 
@@ -41,15 +41,16 @@ func NewHTTPServer(handler Handler, c *ServerConfig) (*Server, error) {
 	}))
 
 	server := &Server{
-		config:  c,
-		echo:    e,
-		handler: handler,
-		ch:      make(chan struct{}),
+		config: c,
+		echo:   e,
+		ch:     make(chan struct{}),
 	}
 
-	server.handler.RegisterRoutes(server.echo)
-
 	return server, nil
+}
+
+func (s *Server) AddHandler(handler Handler) {
+	handler.RegisterRoutes(s.echo)
 }
 
 func (s *Server) Start() {

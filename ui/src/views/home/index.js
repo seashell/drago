@@ -29,7 +29,7 @@ export const StyledButton = styled(Button).attrs({
 
 const HomeView = () => {
   useEffect(() => {
-    navigate(`/networks`)
+    navigate(`networks`)
   })
 
   return (

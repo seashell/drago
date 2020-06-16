@@ -15,9 +15,8 @@ import (
 )
 
 type server struct {
-	config    Config
-	apiServer *http.Server
-	uiServer  *http.Server
+	config     Config
+	httpServer *http.Server
 }
 
 type Config struct {
@@ -104,17 +103,10 @@ func New(c Config) (*server, error) {
 	}
 
 	// Create REST handler
-	restHandler, err := rest.NewHandler(ctrl)
+	apiHandler, err := rest.NewHandler(ctrl)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating API handler")
-	}
-
-	// Create HTTP server for the API
-	apiServer, err := http.NewHTTPServer(restHandler, &http.ServerConfig{BindAddress: ":8080"})
-	if err != nil {
-		fmt.Println(err)
-		panic("Error creating API server")
 	}
 
 	// Create SPA adapter to handle static content
@@ -124,21 +116,22 @@ func New(c Config) (*server, error) {
 		panic("Error creating SPA handler")
 	}
 
-	// Create HTTP server for static files (UI)
-	uiServer, err := http.NewHTTPServer(spaHandler, &http.ServerConfig{BindAddress: ":8000"})
+	// Create HTTP server for the API
+	httpServer, err := http.NewHTTPServer(&http.ServerConfig{BindAddress: ":8080"})
 	if err != nil {
 		fmt.Println(err)
-		panic("Error creating UI server")
+		panic("Error creating API server")
 	}
 
+	httpServer.AddHandler(apiHandler)
+	httpServer.AddHandler(spaHandler)
+
 	return &server{
-		config:    c,
-		apiServer: apiServer,
-		uiServer:  uiServer,
+		config:     c,
+		httpServer: httpServer,
 	}, nil
 }
 
 func (s *server) Run() {
-	s.apiServer.Start()
-	s.uiServer.Start()
+	s.httpServer.Start()
 }

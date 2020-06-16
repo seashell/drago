@@ -90,7 +90,7 @@ const NewNetwork = () => {
               />,
               formik.errors.ipAddressRange
             )}
-            <Button width="100%" borderRadius={3} mt={3} mb={4} onClick={handleSaveButtonClick}>
+            <Button width="100%" borderRadius={3} mt={3} mb={3} onClick={handleSaveButtonClick}>
               Save
             </Button>
           </form>
@@ -98,7 +98,7 @@ const NewNetwork = () => {
         </Box>
       )}
       <Box justifyContent="center" gridColumn="4 / span 6">
-        <Link color="primary" to="/networks">
+        <Link color="primary" to="../">
           Cancel
         </Link>
       </Box>
