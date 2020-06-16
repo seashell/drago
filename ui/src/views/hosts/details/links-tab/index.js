@@ -33,11 +33,11 @@ const HostLinksTab = ({ hostId }) => {
   }, [location, getHostLinksQuery])
 
   const handleCreateButtonClicked = () => {
-    navigate(`/links/new`, { state: { hostId } })
+    navigate(`/ui/links/new`, { state: { hostId } })
   }
 
   const handleLinkSelect = id => {
-    navigate(`/links/${id}`, { state: { hostId } })
+    navigate(`/ui/links/${id}`, { state: { hostId } })
   }
 
   const handleLinkDelete = id => {

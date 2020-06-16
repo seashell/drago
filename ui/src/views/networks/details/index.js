@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { navigate, useLocation } from '@reach/router'
+import { navigate, useLocation, useParams } from '@reach/router'
 import { Portal } from 'react-portal'
 
 import { useQuery } from 'react-apollo'
@@ -41,8 +40,9 @@ const StyledLinkCard = styled(LinkCard)`
   z-index: 99;
 `
 
-const Topology = ({ networkId }) => {
+const Topology = () => {
   const location = useLocation()
+  const urlParams = useParams()
 
   const [interfaces, setInterfaces] = useState([])
   const [links, setLinks] = useState([])
@@ -51,7 +51,7 @@ const Topology = ({ networkId }) => {
   const [selectedLinkID, setSelectedLinkID] = useState(undefined)
 
   const getInterfacesQuery = useQuery(GET_INTERFACES, {
-    variables: { networkId },
+    variables: { networkId: urlParams.networkId },
     onCompleted: data => {
       if (data === undefined) return
       setInterfaces(data.result.items)
@@ -152,10 +152,12 @@ const Topology = ({ networkId }) => {
   const isLoading = getInterfacesQuery.loading || getLinksQuery.loading
   const isEmpty = !isLoading && interfaces.length === 0
 
+  if (isLoading) {
+    return <Spinner />
+  }
+
   return isError ? (
     <ErrorState />
-  ) : isLoading ? (
-    <Spinner />
   ) : isEmpty ? (
     <EmptyState description="Oops! It seems that you don't have any hosts yet registered in this network." />
   ) : (
@@ -192,8 +194,6 @@ const Topology = ({ networkId }) => {
   )
 }
 
-Topology.propTypes = {
-  networkId: PropTypes.string.isRequired,
-}
+Topology.propTypes = {}
 
 export default Topology

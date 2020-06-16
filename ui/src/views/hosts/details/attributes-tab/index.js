@@ -51,7 +51,7 @@ const HostAttributesTab = () => {
     },
     onError: () => {
       toast.error('Error fetching host details')
-      navigate(-1)
+      navigate('/ui/hosts/')
     },
   })
 
@@ -59,10 +59,11 @@ const HostAttributesTab = () => {
     variables: { id: urlParams.hostId, ...formik.values },
     onCompleted: () => {
       toast.success('Host updated')
+      getHostQuery.refetch()
     },
     onError: () => {
       toast.error('Error updating host')
-      navigate(-1)
+      navigate('/ui/hosts/')
     },
   })
 

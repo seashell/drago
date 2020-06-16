@@ -7,7 +7,7 @@ import * as Yup from 'yup'
 import { useLocation, useNavigate, useParams } from '@reach/router'
 import { useFormik } from 'formik'
 
-import { useQuery, useMutation, useLazyQuery } from 'react-apollo'
+import { useQuery, useMutation } from 'react-apollo'
 import { GET_INTERFACE, UPDATE_INTERFACE } from '_graphql/actions/interfaces'
 import { GET_NETWORKS } from '_graphql/actions/networks'
 
@@ -83,7 +83,7 @@ const InterfaceDetailsView = () => {
   const { hostId } = location.state || {}
 
   if (hostId === undefined) {
-    navigate(`/hosts`)
+    navigate(`/ui/hosts`)
   }
 
   const formik = useFormik({
@@ -131,7 +131,7 @@ const InterfaceDetailsView = () => {
     variables: {},
     onCompleted: () => {
       toast.success('Interface updated')
-      navigate(`/hosts/${hostId}/interfaces`)
+      navigate(`/ui/hosts/${hostId}/interfaces`)
     },
     onError: () => {
       toast.error('Error updating interface')
@@ -149,7 +149,7 @@ const InterfaceDetailsView = () => {
     formik.validateForm().then(errors => {
       if (_.isEmpty(errors)) {
         updateInterface({ variables: { id: urlParams.interfaceId, ...formik.values } })
-        navigate(`/hosts/${hostId}/interfaces`)
+        navigate(`/ui/hosts/${hostId}/interfaces`)
       } else {
         toast.error('Form has errors')
       }
@@ -232,7 +232,7 @@ const InterfaceDetailsView = () => {
               Save
             </Button>
           </form>
-          <Link mx="auto" to={`/hosts/${hostId}/interfaces`}>
+          <Link mx="auto" to={`/ui/hosts/${hostId}/interfaces`}>
             Cancel
           </Link>
           <FormikState {...formik} />

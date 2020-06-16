@@ -44,15 +44,15 @@ const NewNetwork = () => {
     }),
   })
 
-  const [createNetwork, { loading }] = useMutation(CREATE_NETWORK, {
+  const [createNetwork, createNetworkMutation] = useMutation(CREATE_NETWORK, {
     variables: {},
     onCompleted: () => {
       toast.success('Network created')
-      navigate('/networks')
+      navigate('/ui/networks/', { replace: true })
     },
     onError: () => {
       toast.error('Error creating network')
-      navigate('/networks')
+      navigate('/ui/networks', { replace: true })
     },
   })
 
@@ -66,37 +66,41 @@ const NewNetwork = () => {
     })
   }
 
+  const isLoading = createNetworkMutation.loading
+
+  if (isLoading) {
+    return <Spinner />
+  }
+
   return (
     <Container>
       <Text textStyle="title" mb={4}>
         New network
       </Text>
-      {loading ? (
-        <Spinner />
-      ) : (
-        <Box flexDirection="column">
-          <form>
-            <Text my={3}>Name *</Text>
-            {withValidityIndicator(
-              <TextInput name="name" {...formik.getFieldProps('name')} placeholder="wg0" />,
-              formik.errors.name
-            )}
-            <Text my={3}>Address range *</Text>
-            {withValidityIndicator(
-              <TextInput
-                name="ipAddressRange"
-                {...formik.getFieldProps('ipAddressRange')}
-                placeholder="10.0.8.0/24"
-              />,
-              formik.errors.ipAddressRange
-            )}
-            <Button width="100%" borderRadius={3} mt={3} mb={3} onClick={handleSaveButtonClick}>
-              Save
-            </Button>
-          </form>
-          <FormikState {...formik} />
-        </Box>
-      )}
+
+      <Box flexDirection="column">
+        <form>
+          <Text my={3}>Name *</Text>
+          {withValidityIndicator(
+            <TextInput name="name" {...formik.getFieldProps('name')} placeholder="wg0" />,
+            formik.errors.name
+          )}
+          <Text my={3}>Address range *</Text>
+          {withValidityIndicator(
+            <TextInput
+              name="ipAddressRange"
+              {...formik.getFieldProps('ipAddressRange')}
+              placeholder="10.0.8.0/24"
+            />,
+            formik.errors.ipAddressRange
+          )}
+          <Button width="100%" borderRadius={3} mt={3} mb={3} onClick={handleSaveButtonClick}>
+            Save
+          </Button>
+        </form>
+        <FormikState {...formik} />
+      </Box>
+
       <Box justifyContent="center" gridColumn="4 / span 6">
         <Link color="primary" to="../">
           Cancel

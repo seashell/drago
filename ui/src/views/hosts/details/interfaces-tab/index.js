@@ -38,7 +38,7 @@ const HostInterfacesTab = ({ hostId }) => {
   }, [location])
 
   const handleInterfaceSelect = ({ id }) => {
-    navigate(`/interfaces/${id}`, { state: { hostId } })
+    navigate(`/ui/interfaces/${id}`, { state: { hostId } })
   }
 
   const handleInterfaceDelete = ({ id }) => {
@@ -46,7 +46,7 @@ const HostInterfacesTab = ({ hostId }) => {
   }
 
   const handleCreateButtonClicked = () => {
-    navigate(`/interfaces/new`, { state: { hostId } })
+    navigate(`/ui/interfaces/new`, { state: { hostId } })
   }
 
   const handleSearchInputChanged = e => {

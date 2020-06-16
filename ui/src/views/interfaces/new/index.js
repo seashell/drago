@@ -126,7 +126,7 @@ const NewInterfaceView = () => {
     formik.validateForm().then(errors => {
       if (_.isEmpty(errors)) {
         createInterface({ variables: { hostId, ...formik.values } })
-        navigate(`/hosts/${hostId}/interfaces`)
+        navigate(`/ui/hosts/${hostId}/interfaces`)
       } else {
         toast.error('Form has errors')
       }
@@ -134,7 +134,7 @@ const NewInterfaceView = () => {
   }
 
   const handleCancelButtonClick = () => {
-    navigate(`/hosts/${hostId}/interfaces`)
+    navigate(`/ui/hosts/${hostId}/interfaces`)
   }
 
   const isLoading = getNetworksQuery.loading || createInterfaceMutation.loading

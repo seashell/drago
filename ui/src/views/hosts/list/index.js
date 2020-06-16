@@ -47,7 +47,7 @@ const HostsListView = () => {
   }, [location])
 
   const handleHostSelect = id => {
-    navigate(`hosts/${id}`)
+    navigate(`/ui/hosts/${id}`)
   }
 
   const handleHostDelete = (e, id) => {
@@ -57,7 +57,7 @@ const HostsListView = () => {
   }
 
   const handleCreateHostButtonClick = () => {
-    navigate(`hosts/new`)
+    navigate(`/ui/hosts/new`)
   }
 
   const isError = getHostsQuery.error
@@ -67,6 +67,10 @@ const HostsListView = () => {
   const filteredHosts = isLoading
     ? []
     : getHostsQuery.data.result.items.filter(el => el.name.includes(searchFilter))
+
+  if (isLoading) {
+    return <Spinner />
+  }
 
   return (
     <Container>
@@ -86,8 +90,6 @@ const HostsListView = () => {
       </Box>
       {isError ? (
         <ErrorState />
-      ) : isLoading ? (
-        <Spinner />
       ) : isEmpty ? (
         <EmptyState description="Oops! It seems that you don't have any hosts yet registered in this network." />
       ) : (

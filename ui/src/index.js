@@ -13,17 +13,11 @@ import client from './graphql/client'
 import { themes, GlobalStyles } from './styles'
 import * as serviceWorker from './serviceWorker'
 
-import { makeMirageServer } from './mirage/server'
-
 const theme = 'light'
 
 const ModalBackground = styled(BaseModalBackground)`
   z-index: 999;
 `
-
-if (process.env.NODE_ENV === 'development') {
-  makeMirageServer()
-}
 
 ReactDOM.render(
   <ApolloProvider client={client}>

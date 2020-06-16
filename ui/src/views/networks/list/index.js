@@ -58,14 +58,18 @@ const NetworksView = () => {
 
   const isError = getNetworksQuery.error
   const isLoading = getNetworksQuery.loading || deleteNetworkMutation.loading
-  console.log(getNetworksQuery)
   const isEmpty = !isError && !isLoading && getNetworksQuery.data.result.items.length === 0
 
-  const filteredNetworks = isLoading
-    ? []
-    : getNetworksQuery.data.result.items.filter(
-        el => el.name.includes(searchFilter) || el.ipAddressRange.includes(searchFilter)
-      )
+  const filteredNetworks =
+    isError || isLoading
+      ? []
+      : getNetworksQuery.data.result.items.filter(
+          el => el.name.includes(searchFilter) || el.ipAddressRange.includes(searchFilter)
+        )
+
+  if (isLoading) {
+    return <Spinner />
+  }
 
   return (
     <Container>
@@ -85,8 +89,6 @@ const NetworksView = () => {
       </Box>
       {isError ? (
         <ErrorState message="" />
-      ) : isLoading ? (
-        <Spinner />
       ) : isEmpty ? (
         <EmptyState message="Oops! It seems that you don't have any networks yet registered." />
       ) : (

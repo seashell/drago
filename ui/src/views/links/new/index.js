@@ -180,7 +180,7 @@ const NewLinkView = () => {
   const [createLink, createLinkMutation] = useMutation(CREATE_LINK, {
     onCompleted: () => {
       toast.success('Link created')
-      navigate(`/hosts/${hostId}/links`)
+      navigate(`/ui/hosts/${hostId}/links`)
     },
     onError: () => {
       toast.error('Error creating link')
@@ -203,7 +203,7 @@ const NewLinkView = () => {
   }, [location])
 
   const handleCancelButtonClick = () => {
-    navigate(`/hosts/${hostId}/links`)
+    navigate(`/ui/hosts/${hostId}/links`)
   }
 
   const handleSelectedNetworkChanged = network => {

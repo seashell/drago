@@ -42,15 +42,15 @@ const NewHostView = ({ networkId }) => {
     }),
   })
 
-  const [createHost, { loading }] = useMutation(CREATE_HOST, {
+  const [createHost, createHostMutation] = useMutation(CREATE_HOST, {
     variables: { networkId },
     onCompleted: () => {
       toast.success('Host created')
-      navigate('/hosts')
+      navigate('/ui/hosts', { replace: true })
     },
     onError: () => {
       toast.error('Error creating host')
-      navigate('/hosts')
+      navigate('/ui/hosts', { replace: true })
     },
   })
 
@@ -63,14 +63,19 @@ const NewHostView = ({ networkId }) => {
       }
     })
   }
+
+  const isLoading = createHostMutation.loading
+
+  if (isLoading) {
+    return <Spinner />
+  }
+
   return (
     <Container>
       <Text textStyle="title" mb={4}>
         New host
       </Text>
-      {loading ? (
-        <Spinner />
-      ) : (
+      {
         <Box flexDirection="column">
           <form>
             <Text my={3}>Name</Text>
@@ -91,12 +96,12 @@ const NewHostView = ({ networkId }) => {
               Save
             </Button>
           </form>
-          <Link mx="auto" to="../">
+          <Link mx="auto" to="/ui/hosts">
             Cancel
           </Link>
           <FormikState {...formik} />
         </Box>
-      )}
+      }
     </Container>
   )
 }

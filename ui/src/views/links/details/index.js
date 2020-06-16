@@ -129,7 +129,7 @@ const LinkDetailsView = () => {
     variables: { id: urlParams.linkId },
     onCompleted: () => {
       toast.success('Link updated')
-      navigate(`/hosts/${hostId}/links`)
+      navigate(`/ui/hosts/${hostId}/links`)
       getLink()
     },
     onError: () => {
@@ -147,7 +147,7 @@ const LinkDetailsView = () => {
   }, [location])
 
   const handleCancelButtonClick = () => {
-    navigate(`/hosts/${hostId}/links`)
+    navigate(`/ui/hosts/${hostId}/links`)
   }
 
   const handleSaveButtonClick = () => {
