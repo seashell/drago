@@ -1,50 +1,74 @@
 package rest
 
 import (
+	"fmt"
+	"os"
+
+	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+)
+
+const (
+	TokenContextKey     = "client"
+	TokenTypeManagement = "management"
+	TokenTypeClient     = "client"
+	tokenHeader         = "X-Drago-Token"
 )
 
 func (h *Handler) RegisterRoutes(e *echo.Echo) {
 
 	api := e.Group("/api/")
 
-	// If ACL has been boostrapped, protect all routes
-	//api.Use(JWTProtected([]byte("SEASHELLSECRET")))
+	secret := os.Getenv("ROOT_SECRET")
 
-	api.Add("GET", "hosts", h.ListHosts)
-	api.Add("GET", "hosts/:id", h.GetHost)
-	api.Add("POST", "hosts", h.CreateHost)
-	api.Add("PATCH", "hosts/:id", h.UpdateHost)
-	api.Add("DELETE", "hosts/:id", h.DeleteHost)
-	api.Add("GET", "hosts/self/settings", h.GetSelfSettings)
-	api.Add("POST", "hosts/self/state", h.UpdateSelfState)
-	api.Add("POST", "hosts/self/sync", h.SynchronizeSelf)
+	mgmt := api.Group("")
 
-	api.Add("GET", "interfaces", h.ListInterfaces)
-	api.Add("GET", "interfaces/:id", h.GetInterface)
-	api.Add("POST", "interfaces", h.CreateInterface)
-	api.Add("PATCH", "interfaces/:id", h.UpdateInterface)
-	api.Add("DELETE", "interfaces/:id", h.DeleteInterface)
+	mgmt.Add("GET", "hosts", h.ListHosts)
+	mgmt.Add("GET", "hosts/:id", h.GetHost)
+	mgmt.Add("POST", "hosts", h.CreateHost)
+	mgmt.Add("PATCH", "hosts/:id", h.UpdateHost)
+	mgmt.Add("DELETE", "hosts/:id", h.DeleteHost)
 
-	api.Add("GET", "links", h.ListLinks)
-	api.Add("GET", "links/:id", h.GetLink)
-	api.Add("POST", "links", h.CreateLink)
-	api.Add("PATCH", "links/:id", h.UpdateLink)
-	api.Add("DELETE", "links/:id", h.DeleteLink)
+	mgmt.Add("GET", "interfaces", h.ListInterfaces)
+	mgmt.Add("GET", "interfaces/:id", h.GetInterface)
+	mgmt.Add("POST", "interfaces", h.CreateInterface)
+	mgmt.Add("PATCH", "interfaces/:id", h.UpdateInterface)
+	mgmt.Add("DELETE", "interfaces/:id", h.DeleteInterface)
 
-	api.Add("GET", "networks", h.ListNetworks)
-	api.Add("GET", "networks/:id", h.GetNetwork)
-	api.Add("POST", "networks", h.CreateNetwork)
-	api.Add("PATCH", "networks/:id", h.UpdateNetwork)
-	api.Add("DELETE", "networks/:id", h.DeleteNetwork)
+	mgmt.Add("GET", "links", h.ListLinks)
+	mgmt.Add("GET", "links/:id", h.GetLink)
+	mgmt.Add("POST", "links", h.CreateLink)
+	mgmt.Add("PATCH", "links/:id", h.UpdateLink)
+	mgmt.Add("DELETE", "links/:id", h.DeleteLink)
 
-	api.Add("POST", "tokens", h.CreateToken)
-	api.Add("GET", "tokens/self", h.GetSelfToken)
+	mgmt.Add("GET", "networks", h.ListNetworks)
+	mgmt.Add("GET", "networks/:id", h.GetNetwork)
+	mgmt.Add("POST", "networks", h.CreateNetwork)
+	mgmt.Add("PATCH", "networks/:id", h.UpdateNetwork)
+	mgmt.Add("DELETE", "networks/:id", h.DeleteNetwork)
 
-	//api.Add("GET", "acl/tokens", h.ListTokens)
-	//api.Add("GET", "acl/tokens/:id", h.GetAclToken)
-	//api.Add("POST", "acl/tokens", h.CreateAclToken)
-	//api.Add("PATCH", "acl/tokens/:id", h.UpdateAclToken)
-	//api.Add("DELETE", "acl/tokens/:id", h.DeleteAclToken)
-	//api.Add("GET", "acl/tokens/self", h.GetSelfToken)
+	mgmt.Add("POST", "tokens", h.CreateToken)
+	mgmt.Add("GET", "tokens/self", h.GetSelfToken)
+
+	cli := api.Group("")
+	cli.Use(JWTProtected([]byte(secret)))
+
+	cli.Add("GET", "hosts/self/settings", h.GetSelfSettings)
+	cli.Add("POST", "hosts/self/state", h.UpdateSelfState)
+	cli.Add("POST", "hosts/self/sync", h.SynchronizeSelf)
+}
+
+func JWTProtected(secret []byte) echo.MiddlewareFunc {
+	return JWTWithConfig(JWTConfig{
+		SigningKey:    secret,
+		TokenLookup:   "header:X-Drago-Token",
+		SigningMethod: middleware.AlgorithmHS256,
+		ContextKey:    TokenContextKey,
+		AuthScheme:    "",
+		Claims:        jwt.MapClaims{},
+		BeforeFunc: func(c echo.Context) {
+			fmt.Println(c.Request().Header.Get("X-Drago-Token"))
+		},
+	})
 }

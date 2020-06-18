@@ -3,7 +3,6 @@ package rest
 import (
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
 	"github.com/seashell/drago/server/controller"
 )
@@ -29,8 +28,18 @@ func (h *Handler) CreateToken(c echo.Context) error {
 // GetSelfToken :
 func (h *Handler) GetSelfToken(c echo.Context) error {
 
-	token := c.Get(TokenContextKey).(*jwt.Token)
-	//claims := token.Claims.(jwt.StandardClaims)
+	raw := c.Request().Header.Get("X-Drago-Token")
 
-	return c.JSON(http.StatusOK, token)
+	in := &controller.GetSelfTokenInput{
+		Raw: &raw,
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.controller.GetSelfToken(ctx, in)
+	if e := WrapControllerError(err); e != nil {
+		return c.JSON(e.Code, e)
+	}
+
+	return c.JSON(http.StatusOK, res)
 }
