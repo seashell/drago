@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import styled from 'styled-components'
-import { navigate, useLocation, useParams } from '@reach/router'
+import { useNavigate, useLocation, useParams } from '@reach/router'
 import { Portal } from 'react-portal'
 
 import { useQuery } from 'react-apollo'
@@ -42,6 +42,7 @@ const StyledLinkCard = styled(LinkCard)`
 
 const Topology = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const urlParams = useParams()
 
   const [interfaces, setInterfaces] = useState([])
@@ -72,9 +73,13 @@ const Topology = () => {
     getInterfacesQuery.refetch()
   }, [location])
 
-  const handleNodeClick = iface => {
-    if (iface !== null) {
-      navigate(`/interfaces/${iface.id}`)
+  const handleNodeClick = node => {
+    if (node !== null) {
+      if (node.type === 'interface') {
+        navigate(`/ui/hosts/${node.data.hostId}/interfaces`)
+      } else if (node.type === 'host') {
+        navigate(`/ui/hosts/${node.data.id}`)
+      }
     }
   }
 

@@ -26,10 +26,7 @@ const NetworksView = () => {
 
   const location = useLocation()
 
-  const getNetworksQuery = useQuery(GET_NETWORKS, {
-    errorPolicy: 'all',
-    onError: err => console.log(err),
-  })
+  const getNetworksQuery = useQuery(GET_NETWORKS, {})
 
   const [deleteNetwork, deleteNetworkMutation] = useMutation(DELETE_NETWORK, {
     variables: { id: undefined },

@@ -8,7 +8,7 @@ const HostsList = ({ hosts, onHostSelect, onHostDelete }) =>
     <HostCard
       key={n.id}
       id={n.id}
-      label={n.name}
+      name={n.name}
       address={n.ipAddress}
       advertiseAddress={n.advertiseAddress}
       onClick={onHostSelect}

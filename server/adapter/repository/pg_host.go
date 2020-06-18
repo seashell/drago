@@ -112,8 +112,8 @@ func (a *postgresqlHostRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*
 		PageCount:  0,
 	}
 
-	if page.PerPage > maxQueryRows {
-		page.PerPage = maxQueryRows
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
 
 	}
 
@@ -167,8 +167,8 @@ func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 		PageCount:  0,
 	}
 
-	if page.PerPage > maxQueryRows {
-		page.PerPage = maxQueryRows
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
 
 	}
 

@@ -7,8 +7,7 @@ import (
 type BackendType string
 
 const (
-	maxQueryRows int = 50
-
+	MaxQueryRows      int         = 50
 	BackendInMemory   BackendType = "inmem"
 	BackendPostgreSQL BackendType = "postgresql"
 	BackendSQLite     BackendType = "sqlite"

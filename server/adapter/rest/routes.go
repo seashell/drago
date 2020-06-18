@@ -9,15 +9,16 @@ func (h *Handler) RegisterRoutes(e *echo.Echo) {
 	api := e.Group("/api/")
 
 	// If ACL has been boostrapped, protect all routes
-	// api.Use(JWTProtected([]byte{}))
+	//api.Use(JWTProtected([]byte("SEASHELLSECRET")))
 
 	api.Add("GET", "hosts", h.ListHosts)
 	api.Add("GET", "hosts/:id", h.GetHost)
 	api.Add("POST", "hosts", h.CreateHost)
 	api.Add("PATCH", "hosts/:id", h.UpdateHost)
 	api.Add("DELETE", "hosts/:id", h.DeleteHost)
-	//api.Add("GET", "hosts/self/settings", JWTProtected([]byte{})(h.GetSelfSettings))
 	api.Add("GET", "hosts/self/settings", h.GetSelfSettings)
+	api.Add("POST", "hosts/self/state", h.UpdateSelfState)
+	api.Add("POST", "hosts/self/sync", h.SynchronizeSelf)
 
 	api.Add("GET", "interfaces", h.ListInterfaces)
 	api.Add("GET", "interfaces/:id", h.GetInterface)
@@ -37,7 +38,9 @@ func (h *Handler) RegisterRoutes(e *echo.Echo) {
 	api.Add("PATCH", "networks/:id", h.UpdateNetwork)
 	api.Add("DELETE", "networks/:id", h.DeleteNetwork)
 
-	//api.Add("POST", "acl/bootstrap", h.BoostrapAcl)
+	api.Add("POST", "tokens", h.CreateToken)
+	api.Add("GET", "tokens/self", h.GetSelfToken)
+
 	//api.Add("GET", "acl/tokens", h.ListTokens)
 	//api.Add("GET", "acl/tokens/:id", h.GetAclToken)
 	//api.Add("POST", "acl/tokens", h.CreateAclToken)

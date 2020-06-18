@@ -12,7 +12,7 @@ import (
 func (h *Handler) SynchronizeSelf(c echo.Context) error {
 
 	token := c.Get(TokenContextKey).(*jwt.Token)
-	claims := token.Claims.(DragoClaims)
+	claims := token.Claims.(jwt.StandardClaims)
 
 	in := &controller.SynchronizeHostInput{
 		ID: claims.Subject,
@@ -32,7 +32,7 @@ func (h *Handler) SynchronizeSelf(c echo.Context) error {
 func (h *Handler) GetSelfSettings(c echo.Context) error {
 
 	token := c.Get(TokenContextKey).(*jwt.Token)
-	claims := token.Claims.(DragoClaims)
+	claims := token.Claims.(jwt.StandardClaims)
 
 	in := &controller.GetHostSettingsInput{
 		ID: claims.Subject,
@@ -40,7 +40,7 @@ func (h *Handler) GetSelfSettings(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	res, err := h.controller.GetHostSettingsByID(ctx, in)
+	res, err := h.controller.GetHostSettings(ctx, in)
 	if e := WrapControllerError(err); e != nil {
 		return c.JSON(e.Code, e)
 	}
@@ -52,7 +52,7 @@ func (h *Handler) GetSelfSettings(c echo.Context) error {
 func (h *Handler) UpdateSelfState(c echo.Context) error {
 
 	token := c.Get(TokenContextKey).(*jwt.Token)
-	claims := token.Claims.(DragoClaims)
+	claims := token.Claims.(jwt.StandardClaims)
 
 	in := &controller.UpdateHostStateInput{
 		ID: claims.Subject,
@@ -60,10 +60,48 @@ func (h *Handler) UpdateSelfState(c echo.Context) error {
 
 	ctx := c.Request().Context()
 
-	err := h.controller.UpdateHostStateByID(ctx, in)
+	state, err := h.controller.UpdateHostState(ctx, in)
 	if e := WrapControllerError(err); e != nil {
 		return c.JSON(e.Code, e)
 	}
 
-	return c.JSON(http.StatusOK, nil)
+	return c.JSON(http.StatusOK, state)
+}
+
+// GetSettingsByHostID :
+func (h *Handler) GetHostSettings(c echo.Context) error {
+	in := &controller.GetHostSettingsInput{}
+
+	err := c.Bind(in)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.controller.GetHostSettings(ctx, in)
+	if e := WrapControllerError(err); e != nil {
+		return c.JSON(e.Code, e)
+	}
+
+	return c.JSON(http.StatusOK, res)
+}
+
+// UpdateStateByHostID :
+func (h *Handler) UpdateHostState(c echo.Context) error {
+	in := &controller.UpdateHostStateInput{}
+
+	err := c.Bind(in)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
+
+	ctx := c.Request().Context()
+
+	res, err := h.controller.UpdateHostState(ctx, in)
+	if e := WrapControllerError(err); e != nil {
+		return c.JSON(e.Code, e)
+	}
+
+	return c.JSON(http.StatusOK, res)
 }

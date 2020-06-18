@@ -27,5 +27,6 @@ func New(ns application.NetworkService,
 		hs: hs,
 		is: is,
 		ls: ls,
+		ss: ss,
 	}, nil
 }

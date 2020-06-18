@@ -41,7 +41,12 @@ const HostLinksTab = ({ hostId }) => {
   }
 
   const handleLinkDelete = id => {
-    deleteLink({ variables: id })
+    deleteLink({
+      variables: { id },
+      onCompleted: () => {
+        getHostLinksQuery.refetch()
+      },
+    })
   }
 
   const handleSearchInputChanged = e => {

@@ -6,24 +6,20 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-const TokenContextKey = "client"
-const TokenTypeManagement = "management"
-const TokenTypeClient = "client"
-
-type DragoClaims struct {
-	jwt.StandardClaims
-	Type     string   `json:"type"`
-	Policies []string `json:"policies"`
-	Label    string   `json:"label"`
-}
+const (
+	TokenContextKey     = "client"
+	TokenTypeManagement = "management"
+	TokenTypeClient     = "client"
+	tokenHeader         = "X-Drago-Token"
+)
 
 func JWTProtected(secret []byte) echo.MiddlewareFunc {
 	return middleware.JWTWithConfig(middleware.JWTConfig{
-		SigningKey:    []byte("secret"),
-		TokenLookup:   "header:X-Drago-Token",
+		SigningKey:    secret,
+		TokenLookup:   "header:" + tokenHeader,
 		SigningMethod: middleware.AlgorithmHS256,
 		ContextKey:    TokenContextKey,
 		AuthScheme:    "",
-		Claims:        &DragoClaims{},
+		Claims:        &jwt.StandardClaims{},
 	})
 }

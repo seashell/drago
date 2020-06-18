@@ -44,14 +44,14 @@ const Badge = styled.div`
   border-radius: 2px;
 `
 
-const HostCard = ({ id, label, address, advertiseAddress, onClick, onDelete }) => (
+const HostCard = ({ id, name, address, advertiseAddress, onClick, onDelete }) => (
   <Container onClick={() => onClick(id)}>
     <Box alignItems="center" width="240px">
       <IconContainer mr="12px">
         <IconButton ml="auto" icon={<icons.Host />} />
       </IconContainer>
       <Text textStyle="subtitle" fontSize="14px">
-        {label}
+        {name}
       </Text>
       <Text textStyle="detail" fontSize="12px">
         {address}
@@ -64,14 +64,15 @@ const HostCard = ({ id, label, address, advertiseAddress, onClick, onDelete }) =
 
 HostCard.propTypes = {
   id: PropTypes.string.isRequired,
-  label: PropTypes.string.isRequired,
-  address: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired,
+  address: PropTypes.string,
   advertiseAddress: PropTypes.string,
   onClick: PropTypes.func,
   onDelete: PropTypes.func,
 }
 
 HostCard.defaultProps = {
+  address: undefined,
   advertiseAddress: undefined,
   onClick: () => {},
   onDelete: () => {},

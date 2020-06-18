@@ -141,9 +141,8 @@ export const CREATE_LINK = gql`
 `
 
 export const DELETE_LINK = gql`
-  mutation deleteLink($networkId: String!, $id: String!) {
-    deleteLink(networkId: $networkId, id: $id)
-      @rest(method: "DELETE", path: "links/{args.id}?networkId={args.networkId}", type: "Link") {
+  mutation deleteLink($id: Int!) {
+    deleteLink(id: $id) @rest(method: "DELETE", path: "links/{args.id}", type: "Link") {
       id
     }
   }

@@ -1,9 +1,11 @@
-package client
+package agent
 
 import (
 	"bytes"
+	"fmt"
 	"html/template"
 	"os"
+	"time"
 )
 
 const tmpl = `
@@ -35,6 +37,31 @@ PersistentKeepalive = {{ .PersistentKeepalive }}
 {{end}}
 {{end}}
 `
+
+type Config struct {
+	Enabled      bool
+	DataDir      string
+	Servers      []string
+	SyncInterval int
+}
+
+// Client provides a client to the Drago API
+type client struct {
+	config Config
+}
+
+func New(c Config) (*client, error) {
+	return &client{config: c}, nil
+}
+
+func (c *client) Run() {
+	go func() {
+		for {
+			time.Sleep(time.Duration(c.config.SyncInterval) * time.Second)
+			fmt.Println("Running client cycle")
+		}
+	}()
+}
 
 func templateToFile(tmpl string, path string, ctx interface{}) error {
 

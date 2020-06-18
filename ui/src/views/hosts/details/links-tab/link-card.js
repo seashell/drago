@@ -49,38 +49,46 @@ const LinkCard = ({
   persistentKeepalive,
   onClick,
   onDelete,
-}) => (
-  <Container onClick={onClick}>
-    <Box width="240px">
-      <IconContainer mr="12px">
-        <IconButton ml="auto" icon={<icons.Link />} />
-      </IconContainer>
-      <div>
-        <Text textStyle="subtitle" fontSize="14px">
-          From {fromInterface.name} on {fromInterface.host.name}
-        </Text>
-        <Text textStyle="subtitle" fontSize="14px">
-          To {toInterface.name} on {toInterface.host.name}
-        </Text>
-      </div>
-    </Box>
-    <Box flexDirection="column" alignItems="center" width="300px">
-      <Text textStyle="detail">Allowed IPs</Text>
-      <Box width="250px" justifyContent="center">
-        <Text textStyle="detail">
-          {allowedIps.map(el => (
-            <AllowedIPBlock>{el}</AllowedIPBlock>
-          ))}
-        </Text>
+}) => {
+  const handleDeleteButtonClick = e => {
+    e.stopPropagation()
+    e.preventDefault()
+    onDelete()
+  }
+
+  return (
+    <Container onClick={onClick}>
+      <Box width="240px">
+        <IconContainer mr="12px">
+          <IconButton ml="auto" icon={<icons.Link />} />
+        </IconContainer>
+        <div>
+          <Text textStyle="subtitle" fontSize="14px">
+            From {fromInterface.name} on {fromInterface.host.name}
+          </Text>
+          <Text textStyle="subtitle" fontSize="14px">
+            To {toInterface.name} on {toInterface.host.name}
+          </Text>
+        </div>
       </Box>
-    </Box>
-    <Box ml="auto" flexDirection="column" alignItems="center">
-      <Text textStyle="detail">Keepalive</Text>
-      <Text textStyle="detail">{persistentKeepalive}</Text>
-    </Box>
-    <IconButton ml="auto" icon={<icons.Times />} onClick={onDelete} />
-  </Container>
-)
+      <Box flexDirection="column" alignItems="center" width="300px">
+        <Text textStyle="detail">Allowed IPs</Text>
+        <Box width="250px" justifyContent="center">
+          <Text textStyle="detail">
+            {allowedIps.map(el => (
+              <AllowedIPBlock>{el}</AllowedIPBlock>
+            ))}
+          </Text>
+        </Box>
+      </Box>
+      <Box ml="auto" flexDirection="column" alignItems="center">
+        <Text textStyle="detail">Keepalive</Text>
+        <Text textStyle="detail">{persistentKeepalive}</Text>
+      </Box>
+      <IconButton ml="auto" icon={<icons.Times />} onClick={handleDeleteButtonClick} />
+    </Container>
+  )
+}
 
 LinkCard.propTypes = {
   fromInterface: PropTypes.string.isRequired,

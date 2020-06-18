@@ -13,9 +13,49 @@ type Host struct {
 
 // HostSettings :
 type HostSettings struct {
-	ID         *string  `json:"id"`
-	Interfaces []string `json:"interfaces,omitempty"`
-	Peers      []string `json:"peers,omitempty"`
+	Interfaces []*WgInterfaceSettings `json:"interfaces,omitempty"`
+	Peers      []*WgPeerSettings      `json:"peers,omitempty"`
+}
+
+// HostState :
+type HostState struct {
+	Interfaces []*WgInterfaceState `json:"interfaces,omitempty"`
+	Peers      []*WgPeerState      `json:"peers,omitempty"`
+}
+
+// WgInterfaceState :
+type WgInterfaceState struct {
+	Name      *string `json:"name,omitempty"`
+	PublicKey *string `json:"publicKey,omitempty"`
+}
+
+// WgPeerState :
+type WgPeerState struct {
+	LatencyMs     uint64    `json:"latencyMs,omitempty"`
+	LastHandshake time.Time `json:"lastHandshake,omitempty"`
+}
+
+// WgInterfaceSettings :
+type WgInterfaceSettings struct {
+	Name       *string `json:"name,omitempty"`
+	Address    *string `json:"address,omitempty"`
+	ListenPort *string `json:"listenPort,omitempty"`
+	Table      *string `json:"table,omitempty"`
+	DNS        *string `json:"dns,omitempty"`
+	MTU        *string `json:"mtu,omitempty"`
+	PreUp      *string `json:"preUp,omitempty"`
+	PostUp     *string `json:"postUp,omitempty"`
+	PreDown    *string `json:"preDown,omitempty"`
+	PostDown   *string `json:"postDown,omitempty"`
+}
+
+// WgPeerSettings :
+type WgPeerSettings struct {
+	Address             *string  `json:"address,omitempty"`
+	Port                *string  `json:"port,omitempty"`
+	PublicKey           *string  `json:"publicKey,omitempty"`
+	AllowedIPs          []string `json:"allowedIps"`
+	PersistentKeepalive *int     `json:"persistentKeepalive,omitempty"`
 }
 
 // HostRepository :

@@ -105,8 +105,8 @@ func (a *postgresqlNetworkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) (
 		PageCount:  0,
 	}
 
-	if page.PerPage > maxQueryRows {
-		page.PerPage = maxQueryRows
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
 	}
 
 	rows, err := a.db.Queryx("SELECT *, COUNT(*) OVER() AS total_count FROM network ORDER BY created_at DESC LIMIT $1 OFFSET $2", page.PerPage, (page.Page-1)*page.PerPage)

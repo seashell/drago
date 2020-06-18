@@ -116,8 +116,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*
 		PageCount:  0,
 	}
 
-	if page.PerPage > maxQueryRows {
-		page.PerPage = maxQueryRows
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
 	}
 
 	rows, err := a.db.Queryx(
@@ -173,8 +173,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 		PageCount:  0,
 	}
 
-	if page.PerPage > maxQueryRows {
-		page.PerPage = maxQueryRows
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
 	}
 	rows, err := a.db.Queryx(
 		`SELECT l.*, COUNT(*) OVER() AS total_count 
@@ -229,8 +229,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllBySourceHostID(id string, pageI
 		PageCount:  0,
 	}
 
-	if page.PerPage > maxQueryRows {
-		page.PerPage = maxQueryRows
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
 	}
 
 	rows, err := a.db.Queryx(
@@ -287,8 +287,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByTargetHostID(id string, pageI
 		PageCount:  0,
 	}
 
-	if page.PerPage > maxQueryRows {
-		page.PerPage = maxQueryRows
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
 	}
 
 	rows, err := a.db.Queryx(
@@ -345,8 +345,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllBySourceInterfaceID(id string, 
 		PageCount:  0,
 	}
 
-	if page.PerPage > maxQueryRows {
-		page.PerPage = maxQueryRows
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
 	}
 
 	rows, err := a.db.Queryx(
@@ -403,8 +403,8 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByTargetInterfaceID(id string, 
 		PageCount:  0,
 	}
 
-	if page.PerPage > maxQueryRows {
-		page.PerPage = maxQueryRows
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
 	}
 
 	rows, err := a.db.Queryx(
