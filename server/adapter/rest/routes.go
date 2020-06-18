@@ -1,7 +1,6 @@
 package rest
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/dgrijalva/jwt-go"
@@ -18,9 +17,16 @@ const (
 
 func (h *Handler) RegisterRoutes(e *echo.Echo) {
 
-	api := e.Group("/api/")
+	jwtAuth := JWTWithConfig(JWTConfig{
+		SigningKey:    []byte(os.Getenv("ROOT_SECRET")),
+		TokenLookup:   "header:" + tokenHeader,
+		SigningMethod: middleware.AlgorithmHS256,
+		ContextKey:    TokenContextKey,
+		AuthScheme:    "",
+		Claims:        jwt.MapClaims{},
+	})
 
-	secret := os.Getenv("ROOT_SECRET")
+	api := e.Group("/api/")
 
 	mgmt := api.Group("")
 
@@ -51,24 +57,9 @@ func (h *Handler) RegisterRoutes(e *echo.Echo) {
 	mgmt.Add("POST", "tokens", h.CreateToken)
 	mgmt.Add("GET", "tokens/self", h.GetSelfToken)
 
-	cli := api.Group("")
-	cli.Use(JWTProtected([]byte(secret)))
+	cli := api.Group("", jwtAuth)
 
 	cli.Add("GET", "hosts/self/settings", h.GetSelfSettings)
 	cli.Add("POST", "hosts/self/state", h.UpdateSelfState)
 	cli.Add("POST", "hosts/self/sync", h.SynchronizeSelf)
-}
-
-func JWTProtected(secret []byte) echo.MiddlewareFunc {
-	return JWTWithConfig(JWTConfig{
-		SigningKey:    secret,
-		TokenLookup:   "header:X-Drago-Token",
-		SigningMethod: middleware.AlgorithmHS256,
-		ContextKey:    TokenContextKey,
-		AuthScheme:    "",
-		Claims:        jwt.MapClaims{},
-		BeforeFunc: func(c echo.Context) {
-			fmt.Println(c.Request().Header.Get("X-Drago-Token"))
-		},
-	})
 }
