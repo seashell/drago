@@ -72,6 +72,11 @@ func (s *synchronizationService) GetHostSettingsByID(id string) (*domain.HostSet
 
 		for _, link := range links {
 
+			sourceIface, err := s.ifaceRepo.GetByID(*link.FromInterfaceID)
+			if err != nil {
+				return nil, err
+			}
+
 			peerIface, err := s.ifaceRepo.GetByID(*link.ToInterfaceID)
 			if err != nil {
 				return nil, err
@@ -83,6 +88,7 @@ func (s *synchronizationService) GetHostSettingsByID(id string) (*domain.HostSet
 			}
 
 			settings.Peers = append(settings.Peers, &domain.WgPeerSettings{
+				Interface:           *sourceIface.Name,
 				PublicKey:           peerIface.PublicKey,
 				Address:             peerHost.AdvertiseAddress,
 				Port:                peerIface.ListenPort,

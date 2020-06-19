@@ -51,6 +51,7 @@ type WgInterfaceSettings struct {
 
 // WgPeerSettings :
 type WgPeerSettings struct {
+	Interface           string   `json:"interface,omitempty"`
 	Address             *string  `json:"address,omitempty"`
 	Port                *string  `json:"port,omitempty"`
 	PublicKey           *string  `json:"publicKey,omitempty"`
