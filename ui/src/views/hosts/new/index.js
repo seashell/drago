@@ -21,6 +21,7 @@ import toast from '_components/toast'
 
 import { withValidityIndicator } from '_hocs/'
 import FormikState from '_utils/formik-utils'
+import TagsInput from '_components/inputs/tags-input'
 
 const Container = styled(Flex)`
   flex-direction: column;
@@ -32,6 +33,7 @@ const NewHostView = ({ networkId }) => {
   const formik = useFormik({
     initialValues: {
       name: null,
+      labels: [],
       advertiseAddress: null,
     },
     validationSchema: Yup.object().shape({
@@ -83,6 +85,21 @@ const NewHostView = ({ networkId }) => {
             <TextInput name="name" {...formik.getFieldProps('name')} placeholder="host-1" />,
             formik.errors.name
           )}
+
+          <Text my={3}>Labels</Text>
+          {withValidityIndicator(
+            <TagsInput
+              id="labels"
+              name="labels"
+              value={formik.values.labels.map(el => ({ value: el, label: el }))}
+              onChange={values => {
+                formik.setFieldValue('labels', values !== null ? values.map(el => el.value) : [])
+              }}
+              placeholder="Add label and hit Enter"
+            />,
+            formik.errors.labels
+          )}
+
           <Text my={3}>Advertise address</Text>
           {withValidityIndicator(
             <TextInput

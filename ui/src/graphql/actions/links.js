@@ -29,6 +29,7 @@ export const GET_LINKS = gql`
           hostId @export(as: "hostId")
           host @rest(method: "GET", type: "Host", path: "hosts/{exportVariables.hostId}") {
             name
+            labels
           }
         }
         toInterface
@@ -43,6 +44,7 @@ export const GET_LINKS = gql`
           hostId @export(as: "hostId")
           host @rest(method: "GET", type: "Host", path: "hosts/{exportVariables.hostId}") {
             name
+            labels
           }
         }
       }
@@ -70,6 +72,7 @@ export const GET_LINK = gql`
         hostId @export(as: "hostId")
         host @rest(method: "GET", type: "Host", path: "hosts/{exportVariables.hostId}") {
           name
+          labels
         }
       }
       toInterface
@@ -84,6 +87,7 @@ export const GET_LINK = gql`
         hostId @export(as: "hostId")
         host @rest(method: "GET", type: "Host", path: "hosts/{exportVariables.hostId}") {
           name
+          labels
         }
       }
     }

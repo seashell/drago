@@ -32,6 +32,7 @@ export const GET_INTERFACES = gql`
         parentHost @rest(type: "Host", path: "hosts/{exportVariables.hostId}") {
           id
           name
+          labels
           advertiseAddress
         }
       }

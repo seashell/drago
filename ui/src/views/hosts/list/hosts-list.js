@@ -4,15 +4,15 @@ import PropTypes from 'prop-types'
 import HostCard from './host-card'
 
 const HostsList = ({ hosts, onHostSelect, onHostDelete }) =>
-  hosts.map(n => (
+  hosts.map(h => (
     <HostCard
-      key={n.id}
-      id={n.id}
-      name={n.name}
-      address={n.ipAddress}
-      advertiseAddress={n.advertiseAddress}
+      key={h.id}
+      id={h.id}
+      name={h.name}
+      labels={h.labels}
+      advertiseAddress={h.advertiseAddress}
       onClick={onHostSelect}
-      onDelete={e => onHostDelete(e, n.id)}
+      onDelete={e => onHostDelete(e, h.id)}
     />
   ))
 

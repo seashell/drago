@@ -11,6 +11,7 @@ import { GET_HOST, UPDATE_HOST } from '_graphql/actions/hosts'
 
 import toast from '_components/toast'
 import { Dragon as Spinner } from '_components/spinner'
+import TagsInput from '_components/inputs/tags-input'
 import TextInput from '_components/inputs/text-input'
 import Button from '_components/button'
 import Text from '_components/text'
@@ -27,6 +28,7 @@ const HostAttributesTab = () => {
   const formik = useFormik({
     initialValues: {
       name: null,
+      labels: [],
       advertiseAddress: null,
     },
     validationSchema: Yup.object().shape({
@@ -44,6 +46,7 @@ const HostAttributesTab = () => {
       formik.setValues(
         {
           name: data.result.name,
+          labels: data.result.labels || [],
           advertiseAddress: data.result.advertiseAddress,
         },
         true
@@ -95,6 +98,21 @@ const HostAttributesTab = () => {
           <TextInput name="name" {...formik.getFieldProps('name')} placeholder="wg0" />,
           formik.errors.name
         )}
+
+        <Text my={3}>Labels</Text>
+        {withValidityIndicator(
+          <TagsInput
+            id="labels"
+            name="labels"
+            value={formik.values.labels.map(el => ({ value: el, label: el }))}
+            onChange={values => {
+              formik.setFieldValue('labels', values !== null ? values.map(el => el.value) : [])
+            }}
+            placeholder="Add label and hit Enter"
+          />,
+          formik.errors.labels
+        )}
+
         <Text my={3}>Advertise address</Text>
         {withValidityIndicator(
           <TextInput

@@ -6,6 +6,7 @@ import Box from '_components/box'
 import Text from '_components/text'
 import IconButton from '_components/icon-button'
 import { icons } from '_assets/'
+import { space } from 'styled-system'
 
 const Container = styled(Box).attrs({
   display: 'flex',
@@ -42,22 +43,27 @@ const Badge = styled.div`
   background: ${props => props.theme.colors.neutralLighter};
   padding: 4px 8px;
   border-radius: 2px;
+  ${space}
 `
 
-const HostCard = ({ id, name, address, advertiseAddress, onClick, onDelete }) => (
+const HostCard = ({ id, name, labels, advertiseAddress, onClick, onDelete }) => (
   <Container onClick={() => onClick(id)}>
     <Box alignItems="center" width="240px">
       <IconContainer mr="12px">
         <IconButton ml="auto" icon={<icons.Host />} />
       </IconContainer>
-      <Text textStyle="subtitle" fontSize="14px">
-        {name}
-      </Text>
-      <Text textStyle="detail" fontSize="12px">
-        {address}
-      </Text>
+      <div>
+        <Text textStyle="subtitle" fontSize="14px">
+          {name}
+        </Text>
+        <Text textStyle="detail">{advertiseAddress && ` @ ${advertiseAddress}`}</Text>
+      </div>
     </Box>
-    {advertiseAddress && <Badge>{advertiseAddress}</Badge>}
+    <Box>
+      {labels.map(el => (
+        <Badge ml={2}>{el}</Badge>
+      ))}
+    </Box>
     <IconButton icon={<icons.Times />} onClick={onDelete} />
   </Container>
 )
@@ -65,14 +71,14 @@ const HostCard = ({ id, name, address, advertiseAddress, onClick, onDelete }) =>
 HostCard.propTypes = {
   id: PropTypes.string.isRequired,
   name: PropTypes.string.isRequired,
-  address: PropTypes.string,
+  labels: PropTypes.arrayOf(PropTypes.string),
   advertiseAddress: PropTypes.string,
   onClick: PropTypes.func,
   onDelete: PropTypes.func,
 }
 
 HostCard.defaultProps = {
-  address: undefined,
+  labels: [],
   advertiseAddress: undefined,
   onClick: () => {},
   onDelete: () => {},

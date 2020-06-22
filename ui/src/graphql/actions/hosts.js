@@ -5,6 +5,7 @@ export const GET_HOST_WITH_INTERFACES_AND_LINKS = gql`
     result: getHost(id: $id) @rest(path: "hosts/{args.id}", type: "Host") {
       id @export(as: "hostId")
       name
+      labels
       advertiseAddress
       interfaces
         @rest(type: "PaginatedResult", path: "interfaces?hostId={exportVariables.hostId}") {
@@ -45,6 +46,7 @@ export const GET_HOSTS = gql`
       items @type(name: "Host") {
         id
         name
+        labels
         advertiseAddress
       }
     }
@@ -56,28 +58,33 @@ export const GET_HOST = gql`
     result: getHost(id: $id) @rest(path: "hosts/{args.id}", type: "Host") {
       id
       name
+      labels
       advertiseAddress
     }
   }
 `
 
 export const CREATE_HOST = gql`
-  mutation createHost($name: String!, $advertiseAddress: String) {
-    createHost(input: { name: $name, advertiseAddress: $advertiseAddress })
+  mutation createHost($name: String!, $labels: [String!], $advertiseAddress: String) {
+    createHost(input: { name: $name, labels: $labels, advertiseAddress: $advertiseAddress })
       @rest(method: "POST", path: "hosts", type: "Host") {
       id
       name
+      labels
       advertiseAddress
     }
   }
 `
 
 export const UPDATE_HOST = gql`
-  mutation updateHost($id: Int!, $name: String!, $advertiseAddress: String) {
-    updateHost(id: $id, input: { name: $name, advertiseAddress: $advertiseAddress })
-      @rest(method: "PATCH", path: "hosts/{args.id}", type: "Host") {
+  mutation updateHost($id: Int!, $name: String!, $labels: [String!], $advertiseAddress: String) {
+    updateHost(
+      id: $id
+      input: { name: $name, labels: $labels, advertiseAddress: $advertiseAddress }
+    ) @rest(method: "PATCH", path: "hosts/{args.id}", type: "Host") {
       id
       name
+      labels
       advertiseAddress
     }
   }
