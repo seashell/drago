@@ -98,23 +98,28 @@ drago agent --config=<config_file>
 
 ## Development
 
-Build the project:
+### Server
+
+Build the UI:
 ```
 go generate
-go build
 ```
 
 Start the Drago server with `air`:
 
 ```
-./air.sh
+ROOT_SECRET="<my-root-secret>" ./air.sh
 ```
+
+Note that the env variable `ROOT_SECRET` contains the secret used by Drago to sign and check tokens.
+
+### UI
 
 Once Drago server is up and running, start a dev server for the web UI:
 
 ```
 cd ui
-yarn start
+REACT_APP_REST_API_URL="localhost:8080/api/" yarn start
 ```
 
 Both the backend server and the UI server have hot-reloading capabilities.
