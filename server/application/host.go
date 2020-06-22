@@ -45,7 +45,6 @@ func (s *hostService) Update(h *domain.Host) (*domain.Host, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	mergeHostUpdate(host, h)
 
 	id, err := s.repo.Update(host)
@@ -78,6 +77,9 @@ func (s *hostService) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([
 func mergeHostUpdate(current, update *domain.Host) {
 	if update.Name != nil {
 		current.Name = update.Name
+	}
+	if update.Labels != nil {
+		current.Labels = update.Labels
 	}
 	if update.AdvertiseAddress != nil {
 		current.AdvertiseAddress = update.AdvertiseAddress

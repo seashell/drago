@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS host (
     id uuid PRIMARY KEY,
     name varchar(50) NOT NULL,
     advertise_address text,
+    labels text DEFAULT '{}',
     created_at timestamp NOT NULL,
     updated_at timestamp NOT NULL,
     UNIQUE(name)

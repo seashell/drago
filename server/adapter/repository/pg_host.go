@@ -2,6 +2,7 @@ package repository
 
 import (
 	"math"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -29,21 +30,27 @@ func (a *postgresqlHostRepositoryAdapter) GetByID(id string) (*domain.Host, erro
 
 	query := `SELECT h.* FROM host h WHERE h.id=$1 GROUP BY h.id`
 
-	receiver := &sql.Host{}
-	err := a.db.Get(receiver, query, id)
+	receiver := struct {
+		sql.Host
+		StrLabels string `db:"labels"`
+	}{}
+
+	err := a.db.Get(&receiver, query, id)
 	if err != nil {
 		return nil, err
 	}
 
 	res := &domain.Host{}
 
-	errs := model.Copy(res, receiver)
+	errs := model.Copy(res, receiver.Host)
 	if errs != nil {
 		for _, e := range errs {
 			err = multierror.Append(err, e)
 		}
 		return nil, err
 	}
+
+	res.Labels = commaSeparatedStrToSlice(receiver.StrLabels)
 
 	return res, nil
 }
@@ -53,6 +60,8 @@ func (a *postgresqlHostRepositoryAdapter) Create(h *domain.Host) (*string, error
 	if err != nil {
 		return nil, err
 	}
+
+	strLabels := strings.Join(h.Labels[:], ",")
 
 	sguid := guid.String()
 	now := time.Now()
@@ -64,11 +73,12 @@ func (a *postgresqlHostRepositoryAdapter) Create(h *domain.Host) (*string, error
 			id,
 			name,
 			advertise_address,
+			labels,
 			created_at,
 			updated_at
 		) 
-		VALUES ($1, $2, $3, $4, $5) RETURNING id`,
-		sguid, h.Name, h.AdvertiseAddress, now, now).Scan(&id)
+		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+		sguid, h.Name, h.AdvertiseAddress, strLabels, now, now).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
@@ -79,16 +89,19 @@ func (a *postgresqlHostRepositoryAdapter) Create(h *domain.Host) (*string, error
 func (a *postgresqlHostRepositoryAdapter) Update(h *domain.Host) (*string, error) {
 	now := time.Now()
 
+	strLabels := strings.Join(h.Labels[:], ",")
+
 	var id string
 
 	err := a.db.QueryRow(
 		`UPDATE host SET
 			name = $1,
-			advertise_address = $2,
-			updated_at = $3
-			WHERE id = $4
+			labels = $2,
+			advertise_address = $3,
+			updated_at = $4
+			WHERE id = $5
 			RETURNING id`,
-		h.Name, h.AdvertiseAddress, now, h.ID).Scan(&id)
+		h.Name, strLabels, h.AdvertiseAddress, now, h.ID).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +127,6 @@ func (a *postgresqlHostRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*
 
 	if page.PerPage > MaxQueryRows {
 		page.PerPage = MaxQueryRows
-
 	}
 
 	rows, err := a.db.Queryx(
@@ -128,7 +140,8 @@ func (a *postgresqlHostRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*
 
 	receiver := struct {
 		sql.Host
-		TotalCount int `db:"total_count"`
+		StrLabels  string `db:"labels"`
+		TotalCount int    `db:"total_count"`
 	}{}
 
 	hostList := []*domain.Host{}
@@ -148,6 +161,8 @@ func (a *postgresqlHostRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*
 			}
 			return nil, page, err
 		}
+
+		host.Labels = commaSeparatedStrToSlice(receiver.StrLabels)
 
 		hostList = append(hostList, host)
 	}
@@ -169,7 +184,6 @@ func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 
 	if page.PerPage > MaxQueryRows {
 		page.PerPage = MaxQueryRows
-
 	}
 
 	rows, err := a.db.Queryx(
@@ -187,7 +201,8 @@ func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 
 	receiver := struct {
 		sql.Host
-		TotalCount int `db:"total_count"`
+		StrLabels  string `db:"labels"`
+		TotalCount int    `db:"total_count"`
 	}{}
 
 	hostList := []*domain.Host{}
@@ -208,6 +223,7 @@ func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 			return nil, page, err
 		}
 
+		host.Labels = commaSeparatedStrToSlice(receiver.StrLabels)
 		hostList = append(hostList, host)
 	}
 

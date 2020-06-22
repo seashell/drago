@@ -18,15 +18,17 @@ type GetHostInput struct {
 
 // CreateHostInput :
 type CreateHostInput struct {
-	Name             *string `json:"name" validate:"required,min=1,max=50"`
-	AdvertiseAddress *string `json:"advertiseAddress" validate:"omitempty,cidr|hostname"`
+	Name             *string  `json:"name" validate:"required,min=1,max=50"`
+	AdvertiseAddress *string  `json:"advertiseAddress" validate:"omitempty,cidr|hostname"`
+	Labels           []string `json:"labels" validate:"dive,omitempty,alphanum"`
 }
 
 // UpdateHostInput :
 type UpdateHostInput struct {
-	ID               *string `json:"id" validate:"required,uuid4"`
-	Name             *string `json:"name" validate:"omitempty,min=1,max=50"`
-	AdvertiseAddress *string `json:"advertiseAddress" validate:"omitempty,cidr|hostname"`
+	ID               *string  `json:"id" validate:"required,uuid4"`
+	Name             *string  `json:"name" validate:"omitempty,min=1,max=50"`
+	AdvertiseAddress *string  `json:"advertiseAddress" validate:"omitempty,cidr|hostname"`
+	Labels           []string `json:"labels" validate:"dive,omitempty,alphanum"`
 }
 
 // DeleteHostInput :

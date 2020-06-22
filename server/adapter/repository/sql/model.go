@@ -17,6 +17,7 @@ type Network struct {
 type Host struct {
 	ID               *string    `db:"id"`
 	Name             *string    `db:"name"`
+	Labels           []string   `db:"-"`
 	AdvertiseAddress *string    `db:"advertise_address"`
 	CreatedAt        *time.Time `db:"created_at"`
 	UpdatedAt        *time.Time `db:"updated_at"`

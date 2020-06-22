@@ -7,6 +7,7 @@ type Host struct {
 	ID               *string    `json:"id"`
 	Name             *string    `json:"name,omitempty"`
 	AdvertiseAddress *string    `json:"advertiseAddress,omitempty"`
+	Labels           []string   `json:"labels,omitempty"`
 	CreatedAt        *time.Time `json:"createdAt,omitempty"`
 	UpdatedAt        *time.Time `json:"updatedAt,omitempty"`
 }
