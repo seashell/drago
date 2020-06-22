@@ -82,7 +82,7 @@ const NewNetwork = () => {
         <form>
           <Text my={3}>Name *</Text>
           {withValidityIndicator(
-            <TextInput name="name" {...formik.getFieldProps('name')} placeholder="wg0" />,
+            <TextInput name="name" {...formik.getFieldProps('name')} placeholder="a-network" />,
             formik.errors.name
           )}
           <Text my={3}>Address range *</Text>

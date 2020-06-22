@@ -108,7 +108,7 @@ const TokensView = () => {
           </StyledButton>
         </>
       ) : (
-        <ImportantBox my={3} p={3} bg="green">
+        <ImportantBox my={3} p={3} bg="green" color="white">
           <div>
             <Text textStyle="subtitle" mb={2} mr="auto" fontSize="18px">
               Token authenticated!
