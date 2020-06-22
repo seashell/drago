@@ -31,11 +31,29 @@ const IconContainer = styled(Box).attrs({
   borderRadius: '4px',
 })`
   position: relative;
-  button {
-    margin-right: auto;
-  }
   align-items: center;
   justify-content: center;
+`
+
+const KeyContainer = styled(Box).attrs({
+  display: 'flex',
+})`
+  align-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 4px;
+  border-radius: 50%;
+`
+
+const KeyIconContainer = styled(Box).attrs({
+  display: 'flex',
+  height: '20px',
+  width: '20px',
+})`
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  fill: ${props => props.theme.colors.success};
 `
 
 const Badge = styled.div`
@@ -45,7 +63,7 @@ const Badge = styled.div`
   border-radius: 2px;
 `
 
-const InterfaceCard = ({ name, ipAddress, listenPort, numLinks, onClick, onDelete }) => {
+const InterfaceCard = ({ name, ipAddress, listenPort, publicKey, numLinks, onClick, onDelete }) => {
   const handleDeleteButtonClick = e => {
     e.preventDefault()
     e.stopPropagation()
@@ -68,6 +86,13 @@ const InterfaceCard = ({ name, ipAddress, listenPort, numLinks, onClick, onDelet
           </Text>
         </div>
       </Box>
+      {publicKey && (
+        <KeyContainer ml={2}>
+          <KeyIconContainer>
+            <icons.Key />
+          </KeyIconContainer>
+        </KeyContainer>
+      )}
       <Badge>
         <Text textStyle="detail">
           {numLinks} {pluralize('link', numLinks)}
@@ -82,6 +107,7 @@ InterfaceCard.propTypes = {
   name: PropTypes.string,
   ipAddress: PropTypes.string,
   listenPort: PropTypes.string,
+  publicKey: PropTypes.string,
   numLinks: PropTypes.number.isRequired,
   onClick: PropTypes.func,
   onDelete: PropTypes.func,
@@ -91,6 +117,7 @@ InterfaceCard.defaultProps = {
   name: '',
   ipAddress: '',
   listenPort: '',
+  publicKey: '',
   onClick: () => {},
   onDelete: () => {},
 }

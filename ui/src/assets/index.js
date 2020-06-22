@@ -9,6 +9,7 @@ import { ReactComponent as Times } from './icons/times.svg'
 import { ReactComponent as Search } from './icons/search.svg'
 import { ReactComponent as Buoy } from './icons/buoy.svg'
 import { ReactComponent as Bell } from './icons/bell.svg'
+import { ReactComponent as Key } from './icons/key.svg'
 import { ReactComponent as Host } from './icons/host.svg'
 import { ReactComponent as Interface } from './icons/interface.svg'
 import { ReactComponent as Network } from './icons/network.svg'
@@ -36,6 +37,7 @@ const icons = {
   Search,
   Buoy,
   Bell,
+  Key,
   Success,
   Error,
   Warning,

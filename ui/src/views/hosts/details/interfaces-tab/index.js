@@ -84,6 +84,7 @@ const HostInterfacesTab = ({ hostId }) => {
             key={iface.id}
             id={iface.id}
             name={iface.name}
+            publicKey={iface.publicKey}
             ipAddress={iface.ipAddress}
             listenPort={iface.listenPort}
             numLinks={iface.links.count}

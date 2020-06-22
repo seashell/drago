@@ -53,6 +53,17 @@ const IconContainer = styled(Box).attrs({
   justify-content: center;
 `
 
+const KeyIconContainer = styled(Box).attrs({
+  display: 'flex',
+  height: '20px',
+  width: '20px',
+})`
+  position: relative;
+  align-items: center;
+  justify-content: center;
+  fill: ${props => props.theme.colors.success};
+`
+
 const NetworkOption = ({ innerRef, innerProps, ...props }) => (
   <SearchResult innerRef={innerRef} {...innerProps} {...props}>
     <IconContainer height="32px" width="32px" mr="12px">
@@ -171,7 +182,19 @@ const InterfaceDetailsView = () => {
         <IconContainer mr="12px">
           <IconButton ml="auto" size={32} icon={<icons.Interface />} />
         </IconContainer>
-        <Text textStyle="title">{getInterfaceQuery.data.result.name}</Text>
+        <div>
+          <Text textStyle="title">{getInterfaceQuery.data.result.name}</Text>
+          {getInterfaceQuery.data.result.publicKey && (
+            <Box alignItems="center">
+              <KeyIconContainer>
+                <icons.Key />
+              </KeyIconContainer>
+              <Text ml={2} textStyle="detail">
+                {getInterfaceQuery.data.result.publicKey}
+              </Text>
+            </Box>
+          )}
+        </div>
       </Box>
       {isLoading ? (
         <Spinner />
