@@ -89,7 +89,7 @@ func (a *postgresqlInterfaceRepositoryAdapter) Create(i *domain.Interface) (*str
 	return &id, nil
 }
 
-func (a *postgresqlInterfaceRepositoryAdapter) Update(h *domain.Interface) (*string, error) {
+func (a *postgresqlInterfaceRepositoryAdapter) Update(i *domain.Interface) (*string, error) {
 	now := time.Now()
 
 	var id string
@@ -111,8 +111,8 @@ func (a *postgresqlInterfaceRepositoryAdapter) Update(h *domain.Interface) (*str
 			updated_at = $13
 			WHERE id = $14
 			RETURNING id`,
-		h.Name, h.IPAddress, h.ListenPort, h.PublicKey, h.Table, h.DNS,
-		h.MTU, h.PreUp, h.PostUp, h.PreDown, h.PostDown, h.NetworkID, now, h.ID).Scan(&id)
+		i.Name, i.IPAddress, i.ListenPort, i.PublicKey, i.Table, i.DNS,
+		i.MTU, i.PreUp, i.PostUp, i.PreDown, i.PostDown, i.NetworkID, now, i.ID).Scan(&id)
 	if err != nil {
 		return nil, err
 	}

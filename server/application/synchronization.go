@@ -1,7 +1,6 @@
 package application
 
 import (
-	"github.com/davecgh/go-spew/spew"
 	"github.com/seashell/drago/server/adapter/repository"
 	"github.com/seashell/drago/server/domain"
 )
@@ -35,6 +34,8 @@ func (s *synchronizationService) GetHostSettingsByID(id string) (*domain.HostSet
 		Page:    1,
 		PerPage: repository.MaxQueryRows,
 	}
+
+	// Browse through all pages, accumulating interface entries
 	for {
 		ifaces, page, err := s.ifaceRepo.FindAllByHostID(id, pageInfo)
 		if err != nil {
@@ -62,8 +63,10 @@ func (s *synchronizationService) GetHostSettingsByID(id string) (*domain.HostSet
 		pageInfo.Page += 1
 	}
 
+	// Reset the cursor
 	pageInfo.Page = 1
 
+	// Browse through all pages, gathering data from multiple models and accumulating peer entries (TODO: implement a single query to retrieve peer data)
 	for {
 		links, page, err := s.linkRepo.FindAllBySourceHostID(id, pageInfo)
 		if err != nil {
@@ -112,14 +115,14 @@ func (s *synchronizationService) UpdateHostState(id string, state *domain.HostSt
 		PerPage: repository.MaxQueryRows,
 	}
 
+	// Browse through all pages, accumulating entries
 	allHostIfaces := make(map[string]*domain.Interface)
-
 	for {
 		ifaces, page, err := s.ifaceRepo.FindAllByHostID(id, pageInfo)
 		if err != nil {
 			return nil, err
 		}
-		spew.Dump(ifaces)
+
 		for _, iface := range ifaces {
 			allHostIfaces[*iface.Name] = iface
 		}
@@ -129,12 +132,18 @@ func (s *synchronizationService) UpdateHostState(id string, state *domain.HostSt
 		pageInfo.Page += 1
 	}
 
+	// For each interface in the request, update its counterpart in the repository
 	for _, ifaceState := range state.Interfaces {
-		iface := allHostIfaces[*ifaceState.Name]
-		_, err := s.ifaceRepo.Update(&domain.Interface{ID: iface.ID, Name: iface.Name, PublicKey: ifaceState.PublicKey})
-		if err != nil {
-			return nil, err
+		if iface, ok := allHostIfaces[*ifaceState.Name]; ok {
+			_, err := s.ifaceRepo.Update(&domain.Interface{ID: iface.ID, Name: iface.Name, PublicKey: ifaceState.PublicKey})
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			// Ignore non-existing interfaces
+			continue
 		}
+
 	}
 
 	stateOut := &domain.HostState{}

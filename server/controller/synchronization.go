@@ -66,10 +66,6 @@ func (c *Controller) UpdateHostState(ctx context.Context, in *UpdateHostStateInp
 		})
 	}
 
-	// for _, peers := range in.Peers {
-	//	stateIn.Peers = append(stateIn.Peers, &domain.WgPeerState{})
-	// }
-
 	stateOut, err := c.ss.UpdateHostState(in.ID, stateIn)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())

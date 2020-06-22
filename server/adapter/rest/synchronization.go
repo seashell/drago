@@ -17,6 +17,10 @@ func (h *Handler) SynchronizeSelf(c echo.Context) error {
 	in := &controller.SynchronizeHostInput{
 		ID: claims["sub"].(string),
 	}
+	err := c.Bind(in)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
+	}
 
 	ctx := c.Request().Context()
 
@@ -56,6 +60,10 @@ func (h *Handler) UpdateSelfState(c echo.Context) error {
 
 	in := &controller.UpdateHostStateInput{
 		ID: claims["sub"].(string),
+	}
+	err := c.Bind(in)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err)
 	}
 
 	ctx := c.Request().Context()

@@ -1,9 +1,6 @@
 package application
 
 import (
-	"fmt"
-
-	"github.com/davecgh/go-spew/spew"
 	"github.com/seashell/drago/server/domain"
 )
 
@@ -46,9 +43,6 @@ func (s *linkService) Create(l *domain.Link) (*domain.Link, error) {
 
 // Update :
 func (s *linkService) Update(l *domain.Link) (*domain.Link, error) {
-	fmt.Println("==== LINK TO UPDATE ====")
-	spew.Dump(l)
-
 	link, err := s.repo.GetByID(*l.ID)
 	if err != nil {
 		return nil, err

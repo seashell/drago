@@ -5,7 +5,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
@@ -85,12 +84,8 @@ func (c *Controller) GetSelfToken(ctx context.Context, in *GetSelfTokenInput) (*
 		return []byte(secret), nil
 	})
 	if err != nil {
-		spew.Dump(err)
 		return nil, err
 	}
-
-	spew.Dump()
-
 	token := &domain.Token{
 		ID:        claims["id"].(string),
 		Raw:       *in.Raw,

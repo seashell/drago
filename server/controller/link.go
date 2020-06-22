@@ -2,9 +2,7 @@ package controller
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/seashell/drago/server/controller/pagination"
@@ -101,8 +99,6 @@ func (c *Controller) UpdateLink(ctx context.Context, in *UpdateLinkInput) (*doma
 		}
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
-	fmt.Println("==== controller link ====")
-	spew.Dump(l)
 	res, err := c.ls.Update(l)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())
