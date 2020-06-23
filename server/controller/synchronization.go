@@ -4,16 +4,21 @@ import (
 	"context"
 	"time"
 
-	"gopkg.in/jeevatkm/go-model.v1"
-
-	"github.com/hashicorp/go-multierror"
 	"github.com/pkg/errors"
 	"github.com/seashell/drago/server/domain"
 )
 
 // SynchronizeHostInput :
 type SynchronizeHostInput struct {
-	ID string `validate:"required,uuid4"`
+	ID         string `validate:"required,uuid4"`
+	Interfaces []*struct {
+		Name      *string `json:"name" validate:"required"`
+		PublicKey *string `json:"publicKey" validate:"required"`
+	} `json:"interfaces"`
+	Peers []*struct {
+		LatencyMs     uint64    `json:"latencyMs,omitempty"`
+		LastHandshake time.Time `json:"lastHandshake,omitempty"`
+	} `json:"peers"`
 }
 
 // GetHostSettingsInput :
@@ -80,17 +85,19 @@ func (c *Controller) SynchronizeHost(ctx context.Context, in *SynchronizeHostInp
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
-	state := &domain.HostState{}
-
-	errs := model.Copy(state, in)
-	if errs != nil {
-		for _, e := range errs {
-			err = multierror.Append(err, e)
-		}
-		return nil, errors.Wrap(ErrInternal, err.Error())
+	stateIn := &domain.HostState{
+		Interfaces: []*domain.WgInterfaceState{},
+		Peers:      []*domain.WgPeerState{},
 	}
 
-	settings, err := c.ss.SynchronizeHost(in.ID, state)
+	for _, iface := range in.Interfaces {
+		stateIn.Interfaces = append(stateIn.Interfaces, &domain.WgInterfaceState{
+			Name:      iface.Name,
+			PublicKey: iface.PublicKey,
+		})
+	}
+
+	settings, err := c.ss.SynchronizeHost(in.ID, stateIn)
 	if err != nil {
 		return nil, errors.Wrap(ErrInternal, err.Error())
 	}

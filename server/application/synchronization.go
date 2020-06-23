@@ -1,6 +1,7 @@
 package application
 
 import (
+	"github.com/davecgh/go-spew/spew"
 	"github.com/seashell/drago/server/adapter/repository"
 	"github.com/seashell/drago/server/domain"
 )
@@ -134,13 +135,21 @@ func (s *synchronizationService) UpdateHostState(id string, state *domain.HostSt
 
 	// For each interface in the request, update its counterpart in the repository
 	for _, ifaceState := range state.Interfaces {
+
 		if iface, ok := allHostIfaces[*ifaceState.Name]; ok {
-			_, err := s.ifaceRepo.Update(&domain.Interface{ID: iface.ID, Name: iface.Name, PublicKey: ifaceState.PublicKey})
+
+			// Create a domain object containing the fields to update
+			ifaceUpdate := &domain.Interface{ID: iface.ID, PublicKey: ifaceState.PublicKey}
+
+			// Merge the update into the entity in the repsitory
+			mergeInterfaceUpdate(iface, ifaceUpdate)
+
+			_, err := s.ifaceRepo.Update(iface)
 			if err != nil {
 				return nil, err
 			}
 		} else {
-			// Ignore non-existing interfaces
+			// Ignore non-existing interfaces (TODO: make sure this is desired behavior)
 			continue
 		}
 
@@ -152,6 +161,8 @@ func (s *synchronizationService) UpdateHostState(id string, state *domain.HostSt
 }
 
 func (s *synchronizationService) SynchronizeHost(id string, state *domain.HostState) (*domain.HostSettings, error) {
+
+	spew.Dump(state)
 
 	state, err := s.UpdateHostState(id, state)
 	if err != nil {
