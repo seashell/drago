@@ -100,10 +100,6 @@ export const UPDATE_INTERFACE = gql`
       }
     ) @rest(method: "PATCH", path: "interfaces/{args.id}", type: "Interface") {
       id
-      name
-      networkId
-      ipAddress
-      listenPort
     }
   }
 `
