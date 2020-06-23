@@ -143,10 +143,12 @@ sudo ./drago --config="./dist/client.yml"
 ## Roadmap
 - [ ] Website
 - [ ] Code coverage
-- [ ] Backend API for issuing volatile tokens
+- [x] Backend API for issuing volatile tokens
 - [ ] Integration with Hashicorp Vault
 - [ ] Integration with userspace WireGuard implementations such as `cloudflare/boringtun`
 - [ ] Integration with firewall tools for more sophisticated networking rules
+- [ ] Auto-join and auto-meshing modes
+- [ ] Automatic IP assignment and discovery
 
 ## License
 Drago is released under the Apache 2.0 license. See LICENSE.txt
