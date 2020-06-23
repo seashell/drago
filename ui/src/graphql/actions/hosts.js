@@ -83,9 +83,6 @@ export const UPDATE_HOST = gql`
       input: { name: $name, labels: $labels, advertiseAddress: $advertiseAddress }
     ) @rest(method: "PATCH", path: "hosts/{args.id}", type: "Host") {
       id
-      name
-      labels
-      advertiseAddress
     }
   }
 `

@@ -112,10 +112,6 @@ export const UPDATE_LINK = gql`
       }
     ) @rest(method: "PATCH", path: "links/{args.id}", type: "Link") {
       id
-      fromInterfaceId
-      toInterfaceId
-      allowedIps
-      persistentKeepalive
     }
   }
 `
