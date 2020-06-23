@@ -1,7 +1,6 @@
 package application
 
 import (
-	"github.com/davecgh/go-spew/spew"
 	"github.com/seashell/drago/server/adapter/repository"
 	"github.com/seashell/drago/server/domain"
 )
@@ -161,8 +160,6 @@ func (s *synchronizationService) UpdateHostState(id string, state *domain.HostSt
 }
 
 func (s *synchronizationService) SynchronizeHost(id string, state *domain.HostState) (*domain.HostSettings, error) {
-
-	spew.Dump(state)
 
 	state, err := s.UpdateHostState(id, state)
 	if err != nil {
