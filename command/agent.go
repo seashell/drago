@@ -12,6 +12,7 @@ import (
 	env "github.com/joeshaw/envdecode"
 	"github.com/seashell/cobra"
 	"github.com/seashell/drago/agent"
+	"github.com/seashell/drago/client"
 	"github.com/seashell/drago/server"
 	"github.com/seashell/drago/server/adapter/repository"
 	"github.com/seashell/drago/server/infrastructure/storage"
@@ -44,6 +45,9 @@ func NewAgentCmd() *cobra.Command {
 
 			err := env.Decode(&config)
 
+
+			si,_ := time.ParseDuration(config.Client.SyncInterval)
+
 			agconfig := agent.Config{
 				UI:      config.UI,
 				DataDir: config.DataDir,
@@ -60,6 +64,13 @@ func NewAgentCmd() *cobra.Command {
 						PostgreSQLPassword: config.Server.Storage.PostgreSQLPassword,
 						PostgreSQLSSLMode:  config.Server.Storage.PostgreSQLSSLMode,
 					},
+				},
+				Client: client.Config{
+					Enabled: config.Client.Enabled,
+					Servers: config.Client.Servers,
+					DataDir: config.Client.DataDir,
+					Token: config.Client.Token,
+					SyncInterval: si,
 				},
 			}
 

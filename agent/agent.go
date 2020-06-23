@@ -3,6 +3,7 @@ package agent
 import (
 	"fmt"
 
+	"github.com/seashell/drago/client"
 	"github.com/seashell/drago/server"
 	"github.com/seashell/drago/version"
 )
@@ -17,6 +18,7 @@ type Config struct {
 	UI      bool
 	DataDir string
 	Server  server.Config
+	Client client.Config
 }
 
 type Agent interface {
@@ -41,5 +43,14 @@ func (a *agent) Run() {
 			panic(err)
 		}
 		s.Run()
+	}
+
+	if a.config.Client.Enabled {
+		fmt.Println("Initializing agent (client)")
+		c, err := client.New(a.config.Client)
+		if err != nil {
+			panic(err)
+		}
+		c.Run()
 	}
 }
