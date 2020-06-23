@@ -83,6 +83,11 @@ func (c *Client) Apply(ifacesConfigs []IfaceConfig) (error) {
 			}
 		}
 
+		
+		if err := netlink.LinkSetUp(c.ifaces[iface.Name].link); err != nil {
+			fmt.Println("failed to set link up:", err)
+			return err
+		}
 		//wireguard
 		if err := c.wgCtrl.ConfigureDevice(iface.Name, *iface.Wireguard); err != nil {
 			if os.IsNotExist(err) {
