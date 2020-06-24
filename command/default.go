@@ -6,11 +6,11 @@ var DevConfig = DragoConfig{
 
 var DefaultConfig = DragoConfig{
 	UI: false,
-	DataDir: "/tmp/drago",
+	DataDir: "/tmp",
 	BindAddr: "0.0.0.0",
 	Server: &ServerStanza{
 		Enabled: false,
-		DataDir: "",
+		DataDir: "/tmp",
 		Storage: &StorageStanza{
 			Type:               "",
 			Path:               "",
@@ -25,7 +25,7 @@ var DefaultConfig = DragoConfig{
 	Client: &ClientStanza{
 		Enabled: false,
 		Servers: nil,
-		DataDir: "",
+		DataDir: "/tmp",
 		Token: "",
 		SyncInterval: "5s",
 	},
