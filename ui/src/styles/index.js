@@ -2,6 +2,10 @@ import reset from 'styled-reset'
 import { variant } from 'styled-system'
 import { createGlobalStyle } from 'styled-components'
 
+import 'typeface-roboto' // eslint-disable-line
+import 'typeface-raleway' // eslint-disable-line
+import 'typeface-lato' // eslint-disable-line
+
 import lightTheme from './themes/light'
 
 const GlobalStyles = createGlobalStyle`
@@ -9,11 +13,9 @@ const GlobalStyles = createGlobalStyle`
         
     :root {
         height: 100%;
-        font-family: Lato;
+        font-family: Lato !important;
         text-rendering: optimizeLegibility;
         outline: none;
-
-        @import url('https://fonts.googleapis.com/css?family=Lato|Raleway|Montserrat|Roboto&display=swap');
     }
 
     body {

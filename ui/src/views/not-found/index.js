@@ -1,16 +1,39 @@
 import React from 'react'
 import styled from 'styled-components'
 
-const Container = styled.div`
-  display: flex;
-  justify-content: center;
+import Box from '_components/box'
+import Text from '_components/text'
+import { illustrations } from '_assets/'
+import Flex from '_components/flex'
+
+const StyledBox = styled(Box).attrs({
+  border: '',
+  height: 'auto',
+})`
+  svg {
+    height: 300px;
+    width: auto;
+  }
+  padding: 20px;
+  flex-direction: column;
   align-items: center;
-  grid-column: span 12;
+  justify-content: center;
 `
 
+const Container = styled(Flex)`
+  flex-direction: column;
+`
 const NotFound = () => (
   <Container>
-    <p>404 Not found</p>
+    <StyledBox>
+      <illustrations.NotFound />
+      <Text textStyle="subtitle" mt={4}>
+        Page not found
+      </Text>
+      <Text textStyle="description" my={3}>
+        Oops! It seems that the page you are trying to access does not exist or has been moved.
+      </Text>
+    </StyledBox>
   </Container>
 )
 

@@ -46,7 +46,7 @@ const borders = {
   medium: `2px solid`,
   thick: `3px solid`,
   weird: `4px solid ${colors.primary}`,
-  discrete: `2px solid ${colors.neutralLighter}`,
+  discrete: `1px solid ${colors.neutralLighter}`,
 }
 
 const breakpoints = ['200px', '52em', '64em']
@@ -133,7 +133,7 @@ export default {
       fontSize: 16,
       fontFamily: 'sans-serif',
       fontWeight: '400',
-      lineHeight: '16px',
+      lineHeight: '22px',
       color: colors.neutralDark,
     },
     bodyText: {

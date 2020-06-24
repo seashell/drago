@@ -7,6 +7,8 @@ import { Link } from '@reach/router'
 const StyledLink = styled(Link)`
   display: inline;
 
+  font-family: Lato !important;
+  
   :link {
     text-decoration: none;
     cursor: pointer;

@@ -2,11 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { grid, space, color } from 'styled-system'
 
-import Link from '_components/link'
-
 const Container = styled.div`
-  height: 36px;
-
   background: white;
   border-top: 1px solid #f1f1f1;
 
@@ -19,11 +15,14 @@ const Container = styled.div`
   }
   ${space}
   ${grid}
+
+  z-index: 99;
 `
 
-const StyledLink = styled(Link)`
+const StyledLink = styled.a`
   font-family: Lato;
   font-size: 14px;
+  text-decoration: none;
   &:hover {
     color: ${props => props.theme.colors.primary};
   }
@@ -36,13 +35,13 @@ StyledLink.defaultProps = {
 
 const Footer = props => (
   <Container {...props}>
-    <StyledLink to="/">Support</StyledLink>
-    <StyledLink to="/">Docs</StyledLink>
+    <StyledLink href="https://www.github.com/seashell/drago/issues">Support</StyledLink>
+    <StyledLink href="https://www.github.com/seashell/drago">Docs</StyledLink>
   </Container>
 )
 
 Footer.defaultProps = {
-  padding: 2,
+  padding: 0,
 }
 
 export default Footer

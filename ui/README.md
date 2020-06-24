@@ -1,19 +1,8 @@
-# Seashell UI
+# Drago UI
 
-This project is intended as a basic boileplate for any React-based frontend application.
-
-The UI provided as a template is heavily based on DigitalOcean's dashboard, and the project makes use of the following libraries and practices:
-- `styled-components` for CSS-in-JS;
-- `styled-system` for adding props to components and global styling;
-- `keycloak-js` / `react-keycloak` for authenticating and protecting views;
-- `apollo-client` / `react-apollo` / `@apollo/react-hooks` for interacting with GraphQL APIs and caching data with minimal boilerplate code;
-- `@reach/router` for routing;
-
-Differently from most React projects out there, we do not rely on the redux pattern for managing the application's global state. Instead, we use Apollo's local in-memory cache to store any application-wide variables, which allows us to deal with local and remote data in the exact same way.
+A responsive web UI for the Drago server.
 
 The project was bootstraped with [Create React App](https://github.com/facebook/create-react-app), and NOT ejected. We preferred to use the very convenient `react-app-rewired` and `customize-cra` modules to allow for arbitrary overwrites of the Webpack and Babel settings.
-
-A mobile-friendly version of the UI is still a work-in-progress, and we welcome any contributions :)
 
 ## Directory structure
 

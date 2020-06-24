@@ -1,44 +1,88 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import ReactTags from 'react-tag-autocomplete'
+import { components } from 'react-select'
+import CreatableSelect from 'react-select/creatable'
 
-const StyledReactTags = styled(ReactTags)`
-  .is-focused {
+const MultiValueLabel = ({ data, ...props }) => (
+  <components.MultiValueLabel {...props}>{data.label}</components.MultiValueLabel>
+)
+
+const StyledSelect = styled(CreatableSelect).attrs({
+  classNamePrefix: 'select',
+  style: {
+    control: base => ({
+      ...base,
+      border: 0,
+      boxShadow: 'none',
+    }),
+  },
+})`
+  border: 1px solid ${props => props.theme.colors.neutralLighter};
+  height: 48px;
+  width: 100%;
+
+  .select__menu {
+    display: none;
   }
-  .react-tags__selected {
+
+  .select__control {
+    border: none;
+
+    height: 100%;
+    .select__value-container {
+      padding-left: ${props => (props.hasIcon ? '32px' : '8px')};
+      .select__placeholder {
+      }
+    }
+    :hover {
+      border: none;
+    }
   }
-  .react-tags__selected-tag {
+
+  .select__menu {
+    z-index: 2;
   }
-  .react-tags__selected-tag-name {
+
+  .select__options {
+    display: hidden;
   }
-  .react-tags__search {
+
+  .select__control--is-focused {
+    box-shadow: none;
+    border: none;
   }
-  .react-tags__search-input {
+
+  .select__control--is-focused.select__control--menu-is-open {
+    box-shadow: none;
+    border: 1px solid ${props => props.theme.colors.primary};
+    :hover {
+      border: 1px solid ${props => props.theme.colors.primary};
+    }
   }
-  .react-tags__suggestions {
-  }
-  .suggestionActive {
-  }
-  .is-disabled {
-    opacity: 0.3;
+
+  .select__multi-value__remove {
+    cursor: pointer;
+    color: ${props => props.theme.colors.primary};
+    :hover {
+      color: ${props => props.theme.colors.primary};
+      background: ${props => props.theme.colors.neutral};
+    }
   }
 `
 
-const TagsInput = ({ tags }) => <ReactTags isDisabled tags={tags} suggestions={[]} />
+const TagsInput = ({ ...props }) => (
+  <StyledSelect
+    {...props}
+    isMulti
+    components={{
+      MultiValueLabel,
+      DropdownIndicator: null,
+    }}
+  />
+)
 
-TagsInput.propTypes = {
-  tags: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string,
-      text: PropTypes.string,
-    })
-  ),
-}
-
-TagsInput.defaultProps = {
-  tags: [],
-}
+TagsInput.defaultProps = {}
 
 export default TagsInput

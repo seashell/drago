@@ -1,41 +1,93 @@
+/* eslint-disable react/prop-types */
 import React from 'react'
-import PropTypes from 'prop-types'
+import styled from 'styled-components'
 
-import { Container, StyledSelect } from './styled'
+import Select from 'react-select'
+import { layout, space } from 'styled-system'
 
-const SelectInput = props => {
-  const { options, value, title, placeholder, onChange } = props
+const OptionContainer = styled.div`
+  display: flex;
+  cursor: pointer;
+  height: 40px;
+  padding: 8px;
+  align-items: center;
+  :hover {
+    background: #eee;
+  }
+`
 
-  return (
-    <Container {...props}>
-      <StyledSelect
-        value={value}
-        placeholder={placeholder}
-        onChange={onChange}
-        options={options}
-        searchable
-      />
-    </Container>
-  )
-}
+const DefaultOptionComponent = ({ innerRef, innerProps, ...props }) => (
+  <OptionContainer innerRef={innerRef} {...innerProps} {...props}>
+    {props.data.label}
+  </OptionContainer>
+)
 
-SelectInput.propTypes = {
-  options: PropTypes.arrayOf(
-    PropTypes.shape({
-      value: PropTypes.string,
-      label: PropTypes.string,
-    })
-  ).isRequired,
-  title: PropTypes.string,
-  value: PropTypes.string.isRequired,
-  placeholder: PropTypes.string,
-  onChange: PropTypes.func,
-}
+const DefaultSingleValueComponent = ({ innerRef, innerProps, ...props }) => (
+  <div innerRef={innerRef} {...innerProps} {...props}>
+    {props.data.label}
+  </div>
+)
+
+const StyledSelect = styled(Select).attrs({
+  classNamePrefix: 'select',
+  style: {
+    control: base => ({
+      ...base,
+      border: 0,
+      boxShadow: 'none',
+    }),
+  },
+})`
+  border: 1px solid ${props => props.theme.colors.neutralLighter};
+  height: 48px;
+  width: 100%;
+  ${layout}
+  ${space}
+
+  .select__control {
+    border: none;
+
+    height: 100%;
+    .select__value-container {
+      padding-left: 12px;
+      .select__placeholder {
+      }
+    }
+    :hover {
+      border: none;
+    }
+  }
+
+  .select__menu {
+    z-index: 2;
+  }
+
+  .select__control--is-focused {
+    box-shadow: none;
+    border: none;
+  }
+
+  .select__control--is-focused.select__control--menu-is-open {
+    box-shadow: none;
+    border-radius: 2px;
+    border: 1px solid ${props => props.theme.colors.primary};
+    :hover {
+      border: 1px solid ${props => props.theme.colors.primary};
+    }
+  }
+`
+
+const SelectInput = ({ optionComponent, singleValueComponent, ...props }) => (
+  <StyledSelect
+    {...props}
+    components={{ Option: optionComponent, SingleValue: singleValueComponent }}
+  />
+)
 
 SelectInput.defaultProps = {
-  title: undefined,
-  placeholder: 'Select an option..',
-  onChange: undefined,
+  optionComponent: DefaultOptionComponent,
+  singleValueComponent: DefaultSingleValueComponent,
+  options: [],
 }
 
 export default SelectInput

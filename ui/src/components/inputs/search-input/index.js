@@ -1,4 +1,3 @@
-/* eslint-disable react/prop-types */
 import React from 'react'
 import styled from 'styled-components'
 import { layout, space, border, color } from 'styled-system'
@@ -8,51 +7,53 @@ import { icons } from '_assets/'
 const StyledIcon = styled(icons.Search).attrs({
   width: 22,
 })`
-  padding: 8px;
   fill: ${({ theme: { colors } }) => colors.neutralDark};
-`
-
-const StyledInput = styled.input.attrs({
-  type: 'text',
-})`
-  width: 100%;
-  height: 100%;
-
-  font-size: 15px;
-
-  background: none;
-  border: none;
-
-  padding: 0;
-
-  color: ${props => props.theme.colors.neutralDarker};
-
-  ::placeholder {
-    color: ${props => props.theme.colors.neutralDarker};
-  }
+  margin: auto;
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 99;
 `
 
 const Container = styled.div`
-  display: flex;
-  flex-direction: row-reverse;
-  align-items: center;
-  height: 100%;
-  width: 60%;
+  position: relative;
+  height: 40px;
   ${layout}
   ${space}
   ${border}
   ${color}
-
-  ${StyledInput}:focus + ${StyledIcon}{
-    fill: ${({ theme: { colors } }) => colors.primary};
-  }
 `
 
-const SearchInput = ({ ...props }) => (
+const StyledInput = styled.input`
+  box-sizing: border-box;
+  padding-left: 32px;
+  border: 1px solid ${props => props.theme.colors.neutralLighter};
+  border-radius: 2px;
+  font-size: 14px;
+  width: 100%;
+  height: 100%;
+  :focus {
+    border: 1px solid ${props => props.theme.colors.primary};
+  }
+  :disabled {
+    background: inherit;
+    opacity: 0.5;
+    border: none;
+  }
+  :invalid {
+    border: 1px solid ${props => props.theme.colors.danger};
+  }
+  ${space}
+  ${layout}
+`
+
+// eslint-disable-next-line react/prop-types
+const SearchInput = ({ placeholder, onChange, ...props }) => (
   <Container {...props}>
-    <StyledInput ref={props.innerRef} {...props} />
     <StyledIcon />
+    <StyledInput onChange={onChange} placeholder={placeholder} />
   </Container>
 )
 
-export default React.forwardRef((props, ref) => <SearchInput innerRef={ref} {...props} />)
+export default SearchInput
