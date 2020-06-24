@@ -59,11 +59,7 @@ const HostCard = ({ id, name, labels, advertiseAddress, onClick, onDelete }) => 
         <Text textStyle="detail">{advertiseAddress && ` @ ${advertiseAddress}`}</Text>
       </div>
     </Box>
-    <Box>
-      {labels.map(el => (
-        <Badge ml={2}>{el}</Badge>
-      ))}
-    </Box>
+    <Box>{labels !== null && labels.map(el => <Badge ml={2}>{el}</Badge>)}</Box>
     <IconButton icon={<icons.Times />} onClick={onDelete} />
   </Container>
 )

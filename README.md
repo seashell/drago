@@ -148,7 +148,8 @@ sudo ./drago --config="./dist/client.yml"
 - [ ] Integration with userspace WireGuard implementations such as `cloudflare/boringtun`
 - [ ] Integration with firewall tools for more sophisticated networking rules
 - [ ] Auto-join and auto-meshing modes
-- [ ] Automatic IP assignment and discovery
+- [ ] Automatic IP assignment
+- [ ] Automatic discovery 
 
 ## License
 Drago is released under the Apache 2.0 license. See LICENSE.txt
