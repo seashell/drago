@@ -3,8 +3,8 @@ package agent
 import (
 	"fmt"
 
-	"github.com/seashell/drago/agent/client"
-	"github.com/seashell/drago/agent/server"
+	"github.com/seashell/drago/client"
+	"github.com/seashell/drago/server"
 	"github.com/seashell/drago/version"
 )
 
@@ -14,37 +14,28 @@ func init() {
 	AgentVersion = version.GetVersion().VersionNumber()
 }
 
+type Config struct {
+	UI      bool
+	DataDir string
+	Server  server.Config
+	Client client.Config
+}
+
 type Agent interface {
 	Run()
 }
 
 type agent struct {
-	config AgentConfig
+	config Config
 }
 
-type AgentConfig struct {
-	DataDir string              `mapstructure:"dataDir"`
-	Server  server.ServerConfig `mapstructure:"server"`
-	Client  client.ClientConfig `mapstructure:"client"`
-}
-
-func NewAgent(c AgentConfig) (*agent, error) {
+func New(c Config) (*agent, error) {
 	return &agent{
 		config: c,
 	}, nil
 }
 
 func (a *agent) Run() {
-
-	if a.config.Client.Enabled {
-		fmt.Println("Initializing agent (client)")
-		client, err := client.New(a.config.Client)
-		if err != nil {
-			panic(err)
-		}
-		client.Run()
-	}
-
 	if a.config.Server.Enabled {
 		fmt.Println("Initializing agent (server)")
 		s, err := server.New(a.config.Server)
@@ -52,5 +43,14 @@ func (a *agent) Run() {
 			panic(err)
 		}
 		s.Run()
+	}
+
+	if a.config.Client.Enabled {
+		fmt.Println("Initializing agent (client)")
+		c, err := client.New(a.config.Client)
+		if err != nil {
+			panic(err)
+		}
+		c.Run()
 	}
 }

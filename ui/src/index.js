@@ -9,8 +9,9 @@ import { ToastContainer } from '_components/toast'
 
 import Router from './router'
 import client from './graphql/client'
-import * as serviceWorker from './serviceWorker'
+
 import { themes, GlobalStyles } from './styles'
+import * as serviceWorker from './serviceWorker'
 
 const theme = 'light'
 

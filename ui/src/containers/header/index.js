@@ -2,9 +2,7 @@ import React from 'react'
 import styled from 'styled-components'
 import { grid, space, color, shadow, border } from 'styled-system'
 
-import Button from '_components/button'
 import Brand from '_containers/side-nav/brand'
-import { navigate } from '@reach/router'
 import Flex from '_components/flex'
 import Link from '_components/link'
 
@@ -21,7 +19,7 @@ export const Container = styled.div`
   right:0;
   left: 0;
 
-  z-index: 99;
+  z-index: 199;
 
   ${border}
   ${shadow}
@@ -40,7 +38,7 @@ const StyledLink = styled(Link)`
   margin: auto;
   padding-right: 18px;
   :hover {
-    color: ${({ theme }) => theme.colors.primary};
+    color: ${({ theme }) => theme.colors.neutralDarker};
   }
 `
 

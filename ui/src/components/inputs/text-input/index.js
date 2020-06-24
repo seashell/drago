@@ -19,6 +19,9 @@ const TextInput = styled.input`
     opacity: 0.5;
     border: none;
   }
+  :invalid {
+    border: 1px solid ${props => props.theme.colors.danger};
+  }
   ${space}
   ${layout}
 `

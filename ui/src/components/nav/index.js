@@ -11,10 +11,10 @@ export const Nav = styled(Box).attrs({
 
 export const HorizontalNavLink = styled(Link).attrs(({ theme }) => ({
   py: 3,
-  mx: 3,
+  px: 2,
   color: 'neutral',
   fontSize: '14px',
-  fontWeight: '600',
+  fontWeight: '500',
   marginBottom: '-2px',
   activeStyle: {
     color: theme.colors.primaryDark,

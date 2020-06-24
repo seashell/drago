@@ -46,7 +46,7 @@ IconButton.propTypes = {
 IconButton.defaultProps = {
   icon: undefined,
   color: 'primary',
-  size: '24px',
+  size: '20px',
 }
 
 export default IconButton
