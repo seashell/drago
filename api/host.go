@@ -3,32 +3,39 @@ package api
 //TODO refactor names
 
 type Settings struct {
-	Interfaces []Interfaces 	`json:"interfaces"`
+	Interfaces []Interface 	`json:"interfaces"`
 	Peers []Peer 				`json:"peers"`
 }
 
-type Interfaces struct {
-	Name string					`json:"name"`
-	ListenPort string 			`json:"listenPort"`
-	Address string 				`json:"address"`
+type Interface struct {
+	Name 		string `json:"name"`
+	ListenPort 	string `json:"listenPort"`
+	Address 	string `json:"address"`
+	Table      	string `json:"table"`
+	DNS        	string `json:"dns"`
+	MTU        	string `json:"mtu"`
+	PreUp      	string `json:"preUp"`
+	PostUp     	string `json:"postUp"`
+	PreDown    	string `json:"preDown"`
+	PostDown   	string `json:"postDown"`
 }
 
 type Peer struct {
 	Interface string 			`json:"interface"`
 	Address string				`json:"address"`
-	Port string 					`json:"port"`
+	Port string 				`json:"port"`
 	PublicKey string 			`json:"publicKey"`
 	AllowedIps []string 		`json:"allowedIps"`
 	PersistentKeepalive int		`json:"persistentKeepalive"`
 }
 
-type Interface struct {
+type InterfaceState struct {
 	Name string
 	PublicKey string
 }
 
 type State struct {
-	Interfaces []Interface
+	Interfaces []InterfaceState
 }
 
 // Hosts is used to query the host-related endpoints.

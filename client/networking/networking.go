@@ -54,41 +54,24 @@ func (c *Client) GetWGPublicKey() (string) {
 
 func (c *Client) Apply(ifacesConfigs []IfaceConfig) (error) {
 	for _, iface := range ifacesConfigs {
-
-		if c.ifaces[iface.Name] == nil { //if this is a new interface, register it
+		//Bring Iface downif it exists
+		l, _ := netlink.LinkByName(iface.Name)
+		if l != nil {
+			if err := c.bringIfaceDown(l); err != nil {
+				return err
+			}
+			c.ifaces[iface.Name] = nil //clear iface
+		}
+		
+		//TODO: Preup hook		
+		//register interface
+		if c.ifaces[iface.Name] == nil {
 			if err := c.registerIface(iface.Name); err != nil {
 				return err
 			}
 		}
-
-		if c.ifaces[iface.Name].config == nil {
-			if err := netlink.AddrReplace(c.ifaces[iface.Name].link, iface.Address); err != nil {
-				fmt.Println("failed to add address:", err)
-				return err
-			}	
-		} else if ! iface.Address.Equal(*c.ifaces[iface.Name].config.Address) { //if different than the new one, add address and delete previous
-			if err := netlink.AddrAdd(c.ifaces[iface.Name].link, iface.Address); err != nil {
-				fmt.Println("failed to change adress:", err)
-				return err
-			}
-		}		
-
-		addresses,_ := netlink.AddrList(c.ifaces[iface.Name].link, 0) //get current iface address	
-		for _,addr := range addresses {
-			if ! addr.Equal(*iface.Address) { //if different than the new one, add address and delete previous
-				if err := netlink.AddrDel(c.ifaces[iface.Name].link, &addr); err != nil {
-					fmt.Println("failed to delete address:", err)
-					return err
-				}
-			}
-		}
-
 		
-		if err := netlink.LinkSetUp(c.ifaces[iface.Name].link); err != nil {
-			fmt.Println("failed to set link up:", err)
-			return err
-		}
-		//wireguard
+		//Configure wireguard
 		if err := c.wgCtrl.ConfigureDevice(iface.Name, *iface.Wireguard); err != nil {
 			if os.IsNotExist(err) {
 				fmt.Println("failed to configure wireguard device: ", err)
@@ -98,10 +81,45 @@ func (c *Client) Apply(ifacesConfigs []IfaceConfig) (error) {
 				return err
 			}
 		}
+		
+		//Add address 
+		if err := netlink.AddrAdd(c.ifaces[iface.Name].link, iface.Address); err != nil {
+			fmt.Println("failed to add address:", err)
+			return err
+		}	
+		
+		//TODO: Set MTU
+
+		//bring interface Up
+		if err := netlink.LinkSetUp(c.ifaces[iface.Name].link); err != nil {
+			fmt.Println("failed to set link up:", err)
+			return err
+		}
+
+		//TODO: Set DNS
+		//TODO: set ip routes
+		//TODO: Postup hook
 	
 		c.ifaces[iface.Name].config = &iface
 	}
-	// TODO: remove dangling ifaces
+	
+	//Delete dangling interfaces
+	for existingIfaceName,existingIface := range c.ifaces {
+		dangling := true
+		for _,targetIface := range ifacesConfigs {
+			if targetIface.Name == existingIfaceName {
+				dangling = false
+			}
+		}
+		if dangling {
+			if err := c.bringIfaceDown(existingIface.link); err != nil {
+				fmt.Println("failed to delete interface")
+				return err
+			}
+			delete(c.ifaces, existingIfaceName)
+		}
+	}
+
 	return nil
 }
 
@@ -139,6 +157,21 @@ func (c *Client) linkIface(name string) (*Iface, error) {
 
 }
 
+func (c *Client) bringIfaceDown(l netlink.Link) (error) {
+
+		//TODO: PreDown hook
+		//delete interface
+		//TODO: unset DNS
+		//TODO: remove firewall
+		//TODO: clean ip routes
+		err := netlink.LinkDel(l)
+		if err != nil  {
+			//in case it fails because interface already exists, we just link it by name
+			fmt.Println("Warning: failed to delte link device: ", err)
+		}
+		//TODO: PostDown hook
+	return nil
+}
 
 func ToNetlinkAddr (addr string) (netlink.Addr, error) {
 	//parse IP address into netlink.Addr format

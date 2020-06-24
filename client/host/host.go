@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"io/ioutil"
 	"encoding/json"
+	"reflect"
 
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 	"github.com/seashell/drago/client/networking"
@@ -41,7 +42,6 @@ type Client struct {
 	hostSettingsFilePath string
 }
 
-
 func ReadLocalSettings(path string) (*api.Settings, error) {
 	f, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -54,7 +54,6 @@ func ReadLocalSettings(path string) (*api.Settings, error) {
 	}
 	return &s,nil
 }
-
 
 func New(c *Config) (*Client, error) {
 
@@ -79,6 +78,22 @@ func New(c *Config) (*Client, error) {
 	}, nil
 }
 
+
+func ParseIP(s string) (string, string, error) {
+	ip, port, err := net.SplitHostPort(s)
+	if err == nil {
+		return ip, port, nil
+	}
+
+	ip2 := net.ParseIP(s)
+	if ip2 == nil {
+		return "","", errors.New("invalid IP")
+	}
+
+	return ip2.String(), "",nil
+}
+
+
 func (c *Client) SetAPIClient(a *api.Client) {
 	c.apiClient = a
 }
@@ -88,7 +103,7 @@ func (c *Client) parseLocalState() (*api.State, error) {
 	var state api.State
 	if c.hostSettings != nil {
 		for _, iface := range c.hostSettings.Interfaces {
-			state.Interfaces = append(state.Interfaces, api.Interface{
+			state.Interfaces = append(state.Interfaces, api.InterfaceState{
 				Name: iface.Name,
 				PublicKey: c.netClient.GetWGPublicKey(),
 			})
@@ -115,47 +130,8 @@ func (c *Client) persistRemoteSettings(rs *api.Settings) (error) {
 	return nil
 }
 
-func (c *Client) Start() {
-
-	fmt.Println("syncing state with remote every ",c.config.SyncInterval)
-	go func() {
-		for {
-			//Update local state from system, 
-			ls,err := c.parseLocalState()
-			if err != nil {
-				fmt.Println("warning, failed to parse local state from file: ", err)
-			}
-			//and sync with remote
-			rs,err := c.apiClient.Hosts().PostSelfSync(ls)
-			if err != nil {
-				fmt.Println("warning, failed to sync host with remote: ", err)
-			}
-
-			if rs != nil {// if remote state is not empty
-				// persist new settings
-				err := c.persistRemoteSettings(rs)
-				if err != nil {
-					fmt.Println("warning, failed to persist remote settigns locally: ", err)
-				}
-
-				// parse new settings
-				ns,err := c.parseRemoteSettings(rs)
-				if err != nil {
-					fmt.Println("warning, failed to persist remote settigns locally: ", err)
-				}
-
-				// and apply new settings
-				c.netClient.Apply(ns)
-				if err != nil {
-					fmt.Println("warning, failed to apply changes to host: ", err)
-				}
-			}
-			time.Sleep(c.config.SyncInterval)
-		}
-	}()
-}
-
 func (c *Client) parseRemoteSettings(rs *api.Settings) ([]networking.IfaceConfig, error) {
+	//TODO handle extra wireguard settings (dns, pre/post up ...)
 	var ns []networking.IfaceConfig
 	for _, iface := range rs.Interfaces { //iterate interfaces		
 
@@ -242,16 +218,47 @@ func (c *Client) parseRemoteSettings(rs *api.Settings) ([]networking.IfaceConfig
 	return ns,nil
 }
 
-func ParseIP(s string) (string, string, error) {
-	ip, port, err := net.SplitHostPort(s)
-	if err == nil {
-		return ip, port, nil
-	}
 
-	ip2 := net.ParseIP(s)
-	if ip2 == nil {
-		return "","", errors.New("invalid IP")
-	}
+func (c *Client) Start() {
 
-	return ip2.String(), "",nil
+	fmt.Println("Syncing with remote every",c.config.SyncInterval)
+	go func() {
+		for {
+			//Update local state from system, 
+			ls,err := c.parseLocalState()
+			if err != nil {
+				fmt.Println("warning, failed to parse local state from file: ", err)
+			}
+			//and sync with remote
+			rs,err := c.apiClient.Hosts().PostSelfSync(ls)
+			if err != nil {
+				fmt.Println("warning, failed to sync with remote: ", err)
+			}
+
+			if rs != nil {// if remote state is not empty
+				if ! reflect.DeepEqual(rs,c.hostSettings) {//if settings changed
+					fmt.Println("Starting host settings update...")
+					// persist new settings
+					err := c.persistRemoteSettings(rs)
+					if err != nil {
+						fmt.Println("warning, failed to persist remote settigns locally: ", err)
+					} else {
+						// parse new settings into appropriate type
+						ns,err := c.parseRemoteSettings(rs)
+						if err != nil {
+							fmt.Println("warning, failed to persist remote settigns locally: ", err)
+						} else {
+							// and apply them to the networking interfaces
+							c.netClient.Apply(ns)
+							if err != nil {
+								fmt.Println("warning, failed to apply changes to host: ", err)
+							}
+							fmt.Println("Update done")
+						}
+					}					
+				}	
+			}
+			time.Sleep(c.config.SyncInterval)
+		}
+	}()
 }
