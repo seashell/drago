@@ -6,7 +6,7 @@ GIT_DIRTY := $(if $(shell git status --porcelain),+CHANGES)
 
 GO_LDFLAGS ?= -X=github.com/seashell/drago/version.GitCommit=$(GIT_COMMIT)$(GIT_DIRTY)
 
-CGO_ENABLED ?= 1
+CGO_ENABLED ?= 0
 
 # User defined flags
 STATIC := $(or $(STATIC),$(S)) ## If set to 1, build statically linked binary
