@@ -254,7 +254,11 @@ const NewLinkView = () => {
     !isLoading && getTargetHostsQuery.data ? getTargetHostsQuery.data.result.items : []
 
   const targetInterfaceOptions =
-    !isLoading && getTargetInterfacesQuery.data ? getTargetInterfacesQuery.data.result.items : []
+    !isLoading && getTargetInterfacesQuery.data
+      ? getTargetInterfacesQuery.data.result.items.filter(
+          el => el.id !== formik.values.fromInterfaceId
+        )
+      : []
 
   return (
     <Container>
@@ -273,7 +277,11 @@ const NewLinkView = () => {
               value={
                 sourceInterfaceOptions.find(el => el.id === formik.values.fromInterfaceId) || null
               }
-              onChange={value => formik.setFieldValue('fromInterfaceId', value.id)}
+              onChange={value => {
+                setSelectedNetworkId(null)
+                setSelectedHostId(null)
+                formik.setFieldValue('fromInterfaceId', value !== null ? value.id : value)
+              }}
               placeholder="Source interface"
               options={sourceInterfaceOptions}
               optionComponent={InterfaceOption}
