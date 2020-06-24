@@ -31,7 +31,7 @@ Drago is a flexible configuration manager for WireGuard networks which is design
 - Slick management dashboard
 - Automatic IP assignment (coming soon)
 
-## Use case
+## Use cases
 - Secure home automation, SSH access, etc
 - Establish secure VPNs for your company
 - Manage access to sensitive services deployed to private hosts
