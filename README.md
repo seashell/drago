@@ -141,7 +141,7 @@ sudo ./drago --config="./dist/client.yml"
 
 
 ## Roadmap
-- [ ] Website
+- [x] Website
 - [ ] Code coverage
 - [x] Backend API for issuing volatile tokens
 - [ ] Integration with Hashicorp Vault
