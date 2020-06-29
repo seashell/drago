@@ -23,7 +23,7 @@
 /Godeps/
 
 # End of https://www.gitignore.io/api/go
-
+/build/
 /ui/build/*
 #/ui/statik/*
 /ui/node_modules/*
