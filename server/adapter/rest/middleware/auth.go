@@ -1,4 +1,4 @@
-package rest
+package middleware
 
 import (
 	"fmt"
@@ -8,7 +8,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	middleware "github.com/labstack/echo/v4/middleware"
 )
 
 type (
@@ -86,17 +86,17 @@ const (
 
 // Errors
 var (
-	ErrJWTMissing = echo.NewHTTPError(http.StatusBadRequest, "missing or malformed jwt")
+	ErrJWTMissing = echo.NewHTTPError(http.StatusBadRequest, "Missing or malformed JWT")
 )
 
 var (
 	// DefaultJWTConfig is the default JWT auth middleware config.
 	DefaultJWTConfig = JWTConfig{
 		Skipper:       middleware.DefaultSkipper,
-		SigningMethod: AlgorithmHS256,
-		ContextKey:    "user",
-		TokenLookup:   "header:" + echo.HeaderAuthorization,
-		AuthScheme:    "Bearer",
+		SigningMethod: DefaultSigningMethod,
+		ContextKey:    DefaultTokenContextKey,
+		TokenLookup:   DefaultTokenLookup,
+		AuthScheme:    DefaultAuthScheme,
 		Claims:        jwt.MapClaims{},
 	}
 )
@@ -151,7 +151,6 @@ func JWTWithConfig(config JWTConfig) echo.MiddlewareFunc {
 			}
 			return nil, fmt.Errorf("unexpected jwt key id=%v", t.Header["kid"])
 		}
-
 		return config.SigningKey, nil
 	}
 
@@ -213,7 +212,7 @@ func JWTWithConfig(config JWTConfig) echo.MiddlewareFunc {
 			}
 			return &echo.HTTPError{
 				Code:     http.StatusUnauthorized,
-				Message:  "invalid or expired jwt",
+				Message:  "Invalid or expired JWT",
 				Internal: err,
 			}
 		}

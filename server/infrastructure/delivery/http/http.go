@@ -18,10 +18,9 @@ type ServerConfig struct {
 
 // HTTPServer
 type Server struct {
-	config  *ServerConfig
-	handler Handler
-	echo    *echo.Echo
-	ch      chan struct{}
+	config *ServerConfig
+	echo   *echo.Echo
+	ch     chan struct{}
 }
 
 func NewHTTPServer(c *ServerConfig) (*Server, error) {
@@ -49,7 +48,7 @@ func NewHTTPServer(c *ServerConfig) (*Server, error) {
 	return server, nil
 }
 
-func (s *Server) AddHandler(handler Handler) {
+func (s *Server) RegisterHandler(handler Handler) {
 	handler.RegisterRoutes(s.echo)
 }
 

@@ -16,6 +16,12 @@ type GetHostInput struct {
 	ID string `validate:"required,uuid4"`
 }
 
+// CreateHostWithIDInput :
+type CreateHostWithIDInput struct {
+	ID   *string `json:"id" validate:"required,uuid4"`
+	Name *string `json:"name" validate:"omitempty,min=1,max=50"`
+}
+
 // CreateHostInput :
 type CreateHostInput struct {
 	Name             *string  `json:"name" validate:"required,min=1,max=50"`

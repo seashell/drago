@@ -7,6 +7,11 @@ import (
 	"github.com/seashell/drago/server/controller"
 )
 
+// GetToken :
+func (h *Handler) GetToken(c echo.Context) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
+}
+
 // CreateToken :
 func (h *Handler) CreateToken(c echo.Context) error {
 	in := &controller.CreateTokenInput{}
@@ -23,6 +28,21 @@ func (h *Handler) CreateToken(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, res)
+}
+
+// ListTokens :
+func (h *Handler) ListTokens(c echo.Context) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
+}
+
+// UpdateToken :
+func (h *Handler) UpdateToken(c echo.Context) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
+}
+
+// DeleteToken :
+func (h *Handler) DeleteToken(c echo.Context) error {
+	return echo.NewHTTPError(http.StatusNotImplemented, "Not implemented")
 }
 
 // GetSelfToken :

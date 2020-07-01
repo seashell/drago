@@ -1,30 +1,12 @@
 package rest
 
 import (
-	"os"
-
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-)
-
-const (
-	TokenContextKey     = "client"
-	TokenTypeManagement = "management"
-	TokenTypeClient     = "client"
-	tokenHeader         = "X-Drago-Token"
 )
 
 func (h *Handler) RegisterRoutes(e *echo.Echo) {
 
-	jwtAuth := JWTWithConfig(JWTConfig{
-		SigningKey:    []byte(os.Getenv("ROOT_SECRET")),
-		TokenLookup:   "header:" + tokenHeader,
-		SigningMethod: middleware.AlgorithmHS256,
-		ContextKey:    TokenContextKey,
-		AuthScheme:    "",
-		Claims:        jwt.MapClaims{},
-	})
+	e.Add("GET", "/healthcheck", h.Healthcheck)
 
 	api := e.Group("/api/")
 
@@ -57,7 +39,7 @@ func (h *Handler) RegisterRoutes(e *echo.Echo) {
 	mgmt.Add("POST", "tokens", h.CreateToken)
 	mgmt.Add("GET", "tokens/self", h.GetSelfToken)
 
-	cli := api.Group("", jwtAuth)
+	cli := api.Group("", h.middleware.VerifyAuth, h.middleware.AdmitHost)
 
 	cli.Add("GET", "hosts/self/settings", h.GetSelfSettings)
 	cli.Add("POST", "hosts/self/state", h.UpdateSelfState)
