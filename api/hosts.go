@@ -1,10 +1,12 @@
 package api
 
+// HostSettings :
 type HostSettings struct {
 	NetworkInterfaces []NetworkInterface `json:"interfaces"`
 	WireguardPeers    []WireguardPeer    `json:"peers"`
 }
 
+// NetworkInterface :
 type NetworkInterface struct {
 	Name       *string `json:"name"`
 	ListenPort *string `json:"listenPort"`
@@ -18,6 +20,7 @@ type NetworkInterface struct {
 	PostDown   *string `json:"postDown"`
 }
 
+// WireguardPeer :
 type WireguardPeer struct {
 	Interface           *string  `json:"interface"`
 	Address             *string  `json:"address"`
@@ -27,11 +30,13 @@ type WireguardPeer struct {
 	PersistentKeepalive *int     `json:"persistentKeepalive"`
 }
 
+// NetworkInterfaceState :
 type NetworkInterfaceState struct {
 	Name        string `json:"name"`
 	WgPublicKey string `json:"publicKey"`
 }
 
+// HostState :
 type HostState struct {
 	NetworkInterfaces []NetworkInterfaceState `json:"interfaces"`
 }
@@ -74,7 +79,3 @@ func (h Hosts) PostSelfSync(hs *HostState) (*HostSettings, error) {
 	}
 	return &r, nil
 }
-
-//cli.Add("GET", "hosts/self/settings", h.GetSelfSettings)
-//cli.Add("POST", "hosts/self/state", h.UpdateSelfState)
-//cli.Add("POST", "hosts/self/sync", h.SynchronizeSelf)

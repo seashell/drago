@@ -8,17 +8,20 @@ import (
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
+// Settings :
 type Settings struct {
 	Name      *string
 	Address   *netlink.Addr
 	Wireguard *wgtypes.Config
 }
 
+// NetworkInterface :
 type NetworkInterface struct {
 	Settings *Settings
 	Link     *netlink.Link
 }
 
+// NetworkInterfaceCtrl :
 type NetworkInterfaceCtrl struct {
 	NetworkInterfaces map[string]*NetworkInterface
 
@@ -26,6 +29,7 @@ type NetworkInterfaceCtrl struct {
 	wgPrivateKey *wgtypes.Key
 }
 
+// NewCtrl :
 func NewCtrl() (*NetworkInterfaceCtrl, error) {
 
 	wg, err := wgctrl.New()
@@ -45,6 +49,7 @@ func NewCtrl() (*NetworkInterfaceCtrl, error) {
 	}, nil
 }
 
+// Update :
 func (n *NetworkInterfaceCtrl) Update(ts []Settings) error {
 	if err := n.resetWgNetworkInterfaces(); err != nil {
 		return err
@@ -72,6 +77,7 @@ func (n *NetworkInterfaceCtrl) resetWgNetworkInterfaces() error {
 	return nil
 }
 
+// ConfigureNetworkInterface :
 func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
 	// register new interface
 	lattr := netlink.NewLinkAttrs()
@@ -124,6 +130,7 @@ func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
 	return nil
 }
 
+// DeleteNetworkInterface :
 func (n *NetworkInterfaceCtrl) DeleteNetworkInterface(name string) error {
 	lattr := netlink.NewLinkAttrs()
 	lattr.Name = name
@@ -145,6 +152,7 @@ func (n *NetworkInterfaceCtrl) DeleteNetworkInterface(name string) error {
 	return nil
 }
 
+// GetWgPrivateKey :
 func (n *NetworkInterfaceCtrl) GetWgPrivateKey() *wgtypes.Key {
 	return n.wgPrivateKey
 }

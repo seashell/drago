@@ -18,6 +18,7 @@ const (
 	DefaultPreprendPath string = "/api"
 )
 
+// Config : API Client configuration
 type Config struct {
 	Address string
 	Token   string
@@ -60,6 +61,7 @@ func (c Client) newRequest(method, path string, body io.Reader) (*http.Request, 
 	return req, nil
 }
 
+// Get :
 func (c Client) Get(endpoint string, out interface{}) error {
 	req, err := c.newRequest("GET", endpoint, nil)
 	if err != nil {
@@ -79,6 +81,7 @@ func (c Client) Get(endpoint string, out interface{}) error {
 	return nil
 }
 
+// Post :
 func (c Client) Post(endpoint string, in, out interface{}) error {
 
 	body, err := encodeBody(in)
