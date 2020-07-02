@@ -26,11 +26,11 @@ type ServerStanza struct {
 }
 
 type ClientStanza struct {
-	Enabled bool     `hcl:"enabled,optional" env:"CLIENT"`
-	Servers []string `hcl:"servers,optional"`
-	DataDir string   `hcl:"data_dir,optional"`
-	Token string	 `hcl:"token,optional" env:"TOKEN"`
-	SyncInterval string `hcl:"sync_interval,optional"`
+	Enabled      bool     `hcl:"enabled,optional" env:"CLIENT"`
+	Servers      []string `hcl:"servers,optional"`
+	DataDir      string   `hcl:"data_dir,optional"`
+	Token        string   `hcl:"token,optional" env:"TOKEN"`
+	SyncInterval string   `hcl:"sync_interval,optional"`
 }
 
 type VaultStanza struct {

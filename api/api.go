@@ -2,9 +2,9 @@ package api
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"io"
-	"encoding/json"
 	"net/http"
 	"net/url"
 
@@ -12,18 +12,21 @@ import (
 )
 
 const (
-	DefaultScheme      	string = "http"
-	DefaultPreprendPath	string = "/api"
+	// Default protocol for communicating with the the Drago server
+	DefaultScheme string = "http"
+	// Prefix applied to all paths
+	DefaultPreprendPath string = "/api"
 )
 
+// Config : API Client configuration
 type Config struct {
 	Address string
-	Token string
+	Token   string
 }
 
 // Client provides a client to the Drago API
 type Client struct {
-	config Config
+	config     Config
 	httpClient *http.Client
 }
 
@@ -41,15 +44,15 @@ func NewClient(c *Config) (*Client, error) {
 func (c Client) newRequest(method, path string, body io.Reader) (*http.Request, error) {
 	u := url.URL{
 		Scheme: DefaultScheme,
-		Host: c.config.Address,
-		Path: DefaultPreprendPath+path,
+		Host:   c.config.Address,
+		Path:   DefaultPreprendPath + path,
 	}
 
 	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
-	
+
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
@@ -58,7 +61,8 @@ func (c Client) newRequest(method, path string, body io.Reader) (*http.Request, 
 	return req, nil
 }
 
-func (c Client) Get(endpoint string, out interface{}) (error) {
+// Get :
+func (c Client) Get(endpoint string, out interface{}) error {
 	req, err := c.newRequest("GET", endpoint, nil)
 	if err != nil {
 		return err
@@ -77,7 +81,8 @@ func (c Client) Get(endpoint string, out interface{}) (error) {
 	return nil
 }
 
-func (c Client) Post(endpoint string, in, out interface{}) (error) {
+// Post :
+func (c Client) Post(endpoint string, in, out interface{}) error {
 
 	body, err := encodeBody(in)
 	if err != nil {
@@ -103,22 +108,21 @@ func (c Client) Post(endpoint string, in, out interface{}) (error) {
 }
 
 // encodeBody is used to encode a JSON body
-func encodeBody (obj interface{}) (io.Reader, error) {
-		if reader, ok := obj.(io.Reader); ok {
-			return reader, nil
-		}
-	
-		buf := bytes.NewBuffer(nil)
-		enc := json.NewEncoder(buf)
-		if err := enc.Encode(obj); err != nil {
-			return nil, err
-		}
-		return buf, nil
+func encodeBody(obj interface{}) (io.Reader, error) {
+	if reader, ok := obj.(io.Reader); ok {
+		return reader, nil
 	}
 
+	buf := bytes.NewBuffer(nil)
+	enc := json.NewEncoder(buf)
+	if err := enc.Encode(obj); err != nil {
+		return nil, err
+	}
+	return buf, nil
+}
 
 // decodeBody is used to JSON decode a body
-func decodeBody(resp *http.Response, out interface{}) (error) {
+func decodeBody(resp *http.Response, out interface{}) error {
 	switch resp.ContentLength {
 	case 0:
 		if out == nil {

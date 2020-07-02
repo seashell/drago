@@ -18,9 +18,9 @@ var (
 func NewRootCmd() *cobra.Command {
 
 	cmd := &cobra.Command{
-		Use:   "drago",
-		Short: "A flexible configuration manager for Wireguard networks",
-		Long:  `Usage: drago [--version] [--help] [--autocomplete-(un)install] <command> [args]`,
+		Use:     "drago",
+		Short:   "A flexible configuration manager for Wireguard networks",
+		Long:    `Usage: drago [--version] [--help] [--autocomplete-(un)install] <command> [args]`,
 		Version: version.GetVersion().VersionNumber(),
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
 			config := LoadConfigFromFile(configFile)

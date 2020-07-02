@@ -7,6 +7,7 @@ import (
 	"github.com/seashell/drago/server/domain"
 )
 
+// NewNetworkRepositoryAdapter :
 func NewNetworkRepositoryAdapter(backend Backend) (domain.NetworkRepository, error) {
 	switch backend.Type() {
 	case BackendPostgreSQL:

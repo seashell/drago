@@ -23,6 +23,7 @@ func NewSynchronizationService(hostRepo domain.HostRepository, ifaceRepo domain.
 	return &synchronizationService{hostRepo, ifaceRepo, linkRepo}, nil
 }
 
+// GetHostSettingsByID :
 func (s *synchronizationService) GetHostSettingsByID(id string) (*domain.HostSettings, error) {
 
 	settings := &domain.HostSettings{
@@ -108,6 +109,7 @@ func (s *synchronizationService) GetHostSettingsByID(id string) (*domain.HostSet
 	return settings, nil
 }
 
+// UpdateHostState :
 func (s *synchronizationService) UpdateHostState(id string, state *domain.HostState) (*domain.HostState, error) {
 
 	pageInfo := domain.PageInfo{
@@ -159,6 +161,7 @@ func (s *synchronizationService) UpdateHostState(id string, state *domain.HostSt
 	return stateOut, nil
 }
 
+// SynchronizeHost :
 func (s *synchronizationService) SynchronizeHost(id string, state *domain.HostState) (*domain.HostSettings, error) {
 
 	state, err := s.UpdateHostState(id, state)

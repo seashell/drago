@@ -2,10 +2,13 @@ package server
 
 import (
 	"fmt"
+	"os"
 	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/seashell/drago/server/adapter/repository"
 	"github.com/seashell/drago/server/adapter/rest"
+	"github.com/seashell/drago/server/adapter/rest/middleware"
 	"github.com/seashell/drago/server/adapter/spa"
 	"github.com/seashell/drago/server/application"
 	"github.com/seashell/drago/server/controller"
@@ -19,12 +22,18 @@ type server struct {
 	httpServer *http.Server
 }
 
+// Config : Drago server configuration
 type Config struct {
 	Enabled bool
 	DataDir string
 	Storage storage.Config
 }
 
+func init() {
+	os.Setenv("TZ", "UTC")
+}
+
+// New : Create a new Drago server
 func New(c Config) (*server, error) {
 
 	// Create storage backend
@@ -95,15 +104,32 @@ func New(c Config) (*server, error) {
 		panic("Error creating link service")
 	}
 
+	ts, err := application.NewTokenService(hostRepo)
+	if err != nil {
+		panic("Error creating token service")
+	}
+
+	as, err := application.NewAdmissionService(hostRepo)
+	if err != nil {
+		panic("Error creating admission service")
+	}
+
 	// Create API controller
-	ctrl, err := controller.New(ns, hs, is, ls, ss)
+	ctrl, err := controller.New(ns, hs, is, ls, ss, ts)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating controller")
 	}
 
 	// Create REST handler
-	apiHandler, err := rest.NewHandler(ctrl)
+	apiHandler, err := rest.NewHandler(ctrl, rest.Middleware{
+		VerifyAuth: middleware.JWTWithConfig(middleware.JWTConfig{
+			SigningKey: []byte(os.Getenv("ROOT_SECRET")),
+			Claims:     jwt.MapClaims{},
+		}),
+		AdmitHost: middleware.AdmissionMiddleware(as),
+	})
+
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating API handler")
@@ -123,8 +149,8 @@ func New(c Config) (*server, error) {
 		panic("Error creating API server")
 	}
 
-	httpServer.AddHandler(apiHandler)
-	httpServer.AddHandler(spaHandler)
+	httpServer.RegisterHandler(apiHandler)
+	httpServer.RegisterHandler(spaHandler)
 
 	return &server{
 		config:     c,
@@ -132,6 +158,7 @@ func New(c Config) (*server, error) {
 	}, nil
 }
 
+// Run : Start Drago server
 func (s *server) Run() {
 	s.httpServer.Start()
 }

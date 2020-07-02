@@ -25,6 +25,7 @@ func NewPostgreSQLInterfaceRepositoryAdapter(backend Backend) (domain.InterfaceR
 	return nil, errors.New("Error creating PostgreSQL backend adapter for interface repository")
 }
 
+// GetByID :
 func (a *postgresqlInterfaceRepositoryAdapter) GetByID(id string) (*domain.Interface, error) {
 	sqlOut := &sql.Interface{}
 	err := a.db.Get(sqlOut,
@@ -49,6 +50,7 @@ func (a *postgresqlInterfaceRepositoryAdapter) GetByID(id string) (*domain.Inter
 	return res, nil
 }
 
+// Create :
 func (a *postgresqlInterfaceRepositoryAdapter) Create(i *domain.Interface) (*string, error) {
 	guid, err := uuid.NewRandom()
 	if err != nil {
@@ -89,6 +91,7 @@ func (a *postgresqlInterfaceRepositoryAdapter) Create(i *domain.Interface) (*str
 	return &id, nil
 }
 
+// Update :
 func (a *postgresqlInterfaceRepositoryAdapter) Update(i *domain.Interface) (*string, error) {
 	now := time.Now()
 
@@ -120,6 +123,7 @@ func (a *postgresqlInterfaceRepositoryAdapter) Update(i *domain.Interface) (*str
 	return &id, nil
 }
 
+// DeleteByID :
 func (a *postgresqlInterfaceRepositoryAdapter) DeleteByID(id string) (*string, error) {
 	_, err := a.db.Exec(`DELETE FROM interface WHERE id = $1`, id)
 	if err != nil {
@@ -128,6 +132,7 @@ func (a *postgresqlInterfaceRepositoryAdapter) DeleteByID(id string) (*string, e
 	return &id, nil
 }
 
+// FindAll :
 func (a *postgresqlInterfaceRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*domain.Interface, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,
@@ -184,6 +189,7 @@ func (a *postgresqlInterfaceRepositoryAdapter) FindAll(pageInfo domain.PageInfo)
 	return ifaceList, page, nil
 }
 
+// FindAllByNetworkID :
 func (a *postgresqlInterfaceRepositoryAdapter) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Interface, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,
@@ -241,6 +247,7 @@ func (a *postgresqlInterfaceRepositoryAdapter) FindAllByNetworkID(id string, pag
 	return ifaceList, page, nil
 }
 
+// FindAllByHostID :
 func (a *postgresqlInterfaceRepositoryAdapter) FindAllByHostID(id string, pageInfo domain.PageInfo) ([]*domain.Interface, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,

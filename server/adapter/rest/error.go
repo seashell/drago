@@ -9,6 +9,7 @@ import (
 	"github.com/seashell/drago/server/controller"
 )
 
+// APIError :
 type APIError struct {
 	Err       error     `json:"-"`
 	Code      int       `json:"-"`
@@ -18,10 +19,12 @@ type APIError struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
+// Error :
 func (e APIError) Error() string {
 	return fmt.Sprintf("%s", e.Err)
 }
 
+// WrapControllerError :
 func WrapControllerError(e error) *APIError {
 
 	if e == nil {

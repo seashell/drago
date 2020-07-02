@@ -1,11 +1,11 @@
 package state
 
-
 import (
+	"encoding/json"
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"io/ioutil"
-	"encoding/json"
+
 	"github.com/seashell/drago/api"
 )
 
@@ -13,11 +13,11 @@ const (
 	dbFileName = "state.json"
 )
 
-type FileDB struct {
-	fileName	string
+type fileDB struct {
+	fileName string
 }
 
-
+// NewFileDB :
 func NewFileDB(stateDir string) (StateDB, error) {
 	fn := filepath.Join(stateDir, dbFileName)
 
@@ -35,33 +35,36 @@ func NewFileDB(stateDir string) (StateDB, error) {
 		}
 	}
 
-	return &FileDB{
+	return &fileDB{
 		fileName: fn,
 	}, nil
 
 }
 
-func (f *FileDB) Name() string {
+// Name :
+func (f *fileDB) Name() string {
 	return "filedb"
 }
 
-func (f *FileDB) GetHostSettings() (*api.HostSettings, error) {
-	
+// GetHostSettings :
+func (f *fileDB) GetHostSettings() (*api.HostSettings, error) {
+
 	fc, err := ioutil.ReadFile(f.fileName)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	hs := api.HostSettings{}
 	err = json.Unmarshal([]byte(fc), &hs)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	return &hs,nil
+	return &hs, nil
 }
 
-func (f *FileDB) PutHostSettings(hs *api.HostSettings) (error) {
-	
+// PutHostSettings :
+func (f *fileDB) PutHostSettings(hs *api.HostSettings) error {
+
 	fc, err := json.MarshalIndent(hs, "", " ")
 	if err != nil {
 		return err

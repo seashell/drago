@@ -20,6 +20,7 @@ func NewHandler(fs http.FileSystem) (*Handler, error) {
 	}, nil
 }
 
+// RegisterRoutes :
 func (h *Handler) RegisterRoutes(e *echo.Echo) {
 
 	ui := e.Group("/ui/")

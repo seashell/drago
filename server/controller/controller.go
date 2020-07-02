@@ -13,6 +13,7 @@ type Controller struct {
 	is application.InterfaceService
 	ls application.LinkService
 	ss application.SynchronizationService
+	ts application.TokenService
 }
 
 // New :
@@ -20,7 +21,8 @@ func New(ns application.NetworkService,
 	hs application.HostService,
 	is application.InterfaceService,
 	ls application.LinkService,
-	ss application.SynchronizationService) (*Controller, error) {
+	ss application.SynchronizationService,
+	ts application.TokenService) (*Controller, error) {
 	return &Controller{
 		v:  validator.New(),
 		ns: ns,
@@ -28,5 +30,6 @@ func New(ns application.NetworkService,
 		is: is,
 		ls: ls,
 		ss: ss,
+		ts: ts,
 	}, nil
 }

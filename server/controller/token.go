@@ -2,19 +2,33 @@ package controller
 
 import (
 	"context"
-	"os"
-	"time"
 
-	"github.com/dgrijalva/jwt-go"
-	"github.com/google/uuid"
 	"github.com/pkg/errors"
+	"github.com/seashell/drago/server/controller/pagination"
 	"github.com/seashell/drago/server/domain"
 )
 
+// GetTokenInput :
+type GetTokenInput struct {
+	ID *string `json:"type" validate:"required,uuid4"`
+}
+
 // CreateTokenInput :
 type CreateTokenInput struct {
-	Type    *string `json:"type" validate:"required,oneof='client' 'management'"`
-	Subject *string `json:"subject" validate:"required"`
+	Type    *string  `json:"type" validate:"required,oneof='client' 'management'"`
+	Subject *string  `json:"subject" validate:"required"`
+	Labels  []string `json:"labels" validate:"dive,omitempty,min=1,max=64"`
+}
+
+// DeleteTokenInput :
+type DeleteTokenInput struct {
+	ID string `validate:"required,uuid4"`
+}
+
+// ListTokensInput :
+type ListTokensInput struct {
+	pagination.Input
+	NetworkIDFilter string `query:"networkId" validate:"omitempty,uuid4"`
 }
 
 // GetSelfTokenInput :
@@ -28,40 +42,23 @@ func (c *Controller) CreateToken(ctx context.Context, in *CreateTokenInput) (*do
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
-	uid, err := uuid.NewRandom()
+
+	if in.Labels == nil {
+		in.Labels = []string{}
+	}
+
+	t := &domain.Token{
+		Type:    *in.Type,
+		Subject: *in.Subject,
+		Labels:  in.Labels,
+	}
+
+	res, err := c.ts.Create(t)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	now := time.Now().Unix()
-
-	token := &domain.Token{
-		ID:        uid.String(),
-		Type:      *in.Type,
-		Subject:   *in.Subject,
-		IssuedAt:  now,
-		ExpiresAt: now + 315360000,
-		NotBefore: now,
-	}
-
-	secret := os.Getenv("ROOT_SECRET")
-
-	tokenString, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"id":   token.ID,
-		"type": token.Type,
-		"sub":  *in.Subject,
-		"iat":  token.IssuedAt,
-		"exp":  token.ExpiresAt,
-		"nbf":  token.NotBefore,
-	}).SignedString([]byte(secret))
-
-	if err != nil {
-		return nil, err
-	}
-
-	token.Raw = tokenString
-
-	return token, nil
+	return res, nil
 }
 
 // GetSelfToken :
@@ -72,29 +69,14 @@ func (c *Controller) GetSelfToken(ctx context.Context, in *GetSelfTokenInput) (*
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
 	}
 
-	claims := jwt.MapClaims{}
-
-	secret := os.Getenv("ROOT_SECRET")
-
-	parser := jwt.Parser{
-		SkipClaimsValidation: true,
+	t := &domain.Token{
+		Raw: *in.Raw,
 	}
 
-	_, err = parser.ParseWithClaims(*in.Raw, &claims, func(token *jwt.Token) (interface{}, error) {
-		return []byte(secret), nil
-	})
+	res, err := c.ts.Decode(t)
 	if err != nil {
-		return nil, err
-	}
-	token := &domain.Token{
-		ID:        claims["id"].(string),
-		Raw:       *in.Raw,
-		Type:      claims["type"].(string),
-		Subject:   claims["sub"].(string),
-		IssuedAt:  int64(claims["iat"].(float64)),
-		ExpiresAt: int64(claims["exp"].(float64)),
-		NotBefore: int64(claims["nbf"].(float64)),
+		return nil, errors.Wrap(ErrInternal, err.Error())
 	}
 
-	return token, nil
+	return res, nil
 }
