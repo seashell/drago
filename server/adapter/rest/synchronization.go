@@ -3,20 +3,20 @@ package rest
 import (
 	"net/http"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo/v4"
+	"github.com/seashell/drago/server/adapter/rest/middleware"
 	"github.com/seashell/drago/server/controller"
 )
 
 // SynchronizeSelf :
 func (h *Handler) SynchronizeSelf(c echo.Context) error {
 
-	token := c.Get(TokenContextKey).(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
+	hostID := c.Get(middleware.HostIDContextKey).(string)
 
 	in := &controller.SynchronizeHostInput{
-		ID: claims["sub"].(string),
+		ID: hostID,
 	}
+
 	err := c.Bind(in)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, err)
@@ -35,11 +35,10 @@ func (h *Handler) SynchronizeSelf(c echo.Context) error {
 // GetSelfSettings :
 func (h *Handler) GetSelfSettings(c echo.Context) error {
 
-	token := c.Get(TokenContextKey).(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
+	hostID := c.Get(middleware.HostIDContextKey).(string)
 
 	in := &controller.GetHostSettingsInput{
-		ID: claims["sub"].(string),
+		ID: hostID,
 	}
 
 	ctx := c.Request().Context()
@@ -55,11 +54,10 @@ func (h *Handler) GetSelfSettings(c echo.Context) error {
 // UpdateSelfState :
 func (h *Handler) UpdateSelfState(c echo.Context) error {
 
-	token := c.Get(TokenContextKey).(*jwt.Token)
-	claims := token.Claims.(jwt.MapClaims)
+	hostID := c.Get(middleware.HostIDContextKey).(string)
 
 	in := &controller.UpdateHostStateInput{
-		ID: claims["sub"].(string),
+		ID: hostID,
 	}
 	err := c.Bind(in)
 	if err != nil {

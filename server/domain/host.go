@@ -64,8 +64,10 @@ type WgPeerSettings struct {
 type HostRepository interface {
 	GetByID(id string) (*Host, error)
 	Create(h *Host) (*string, error)
+	CreateWithID(h *Host) (*string, error)
 	Update(h *Host) (*string, error)
 	DeleteByID(id string) (*string, error)
 	FindAll(pageInfo PageInfo) ([]*Host, *Page, error)
 	FindAllByNetworkID(id string, pageInfo PageInfo) ([]*Host, *Page, error)
+	ExistsByID(id string) (bool, error)
 }

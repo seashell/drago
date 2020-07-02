@@ -26,6 +26,19 @@ func NewPostgreSQLHostRepositoryAdapter(backend Backend) (domain.HostRepository,
 	return nil, errors.New("Error creating PostgreSQL backend adapter for host repository")
 }
 
+func (a *postgresqlHostRepositoryAdapter) ExistsByID(id string) (bool, error) {
+	sql := `SELECT EXISTS (SELECT 1 FROM host h WHERE h.id = $1) AS "exists"`
+
+	res := false
+
+	err := a.db.QueryRow(sql, id).Scan(&res)
+	if err != nil {
+		return false, err
+	}
+
+	return res, nil
+}
+
 func (a *postgresqlHostRepositoryAdapter) GetByID(id string) (*domain.Host, error) {
 
 	query := `SELECT h.* FROM host h WHERE h.id=$1 GROUP BY h.id`
@@ -69,6 +82,41 @@ func (a *postgresqlHostRepositoryAdapter) Create(h *domain.Host) (*string, error
 	var id string
 
 	err = a.db.QueryRow(
+		`INSERT INTO host (
+			id,
+			name,
+			advertise_address,
+			labels,
+			created_at,
+			updated_at
+		) 
+		VALUES ($1, $2, $3, $4, $5, $6) RETURNING id`,
+		sguid, h.Name, h.AdvertiseAddress, strLabels, now, now).Scan(&id)
+	if err != nil {
+		return nil, err
+	}
+
+	return &id, nil
+}
+
+func (a *postgresqlHostRepositoryAdapter) CreateWithID(h *domain.Host) (*string, error) {
+
+	strLabels := strings.Join(h.Labels[:], ",")
+
+	sguid := h.ID
+	now := time.Now()
+
+	if sguid == nil {
+		return nil, errors.New("host id is nil")
+	}
+
+	if _, err := uuid.Parse(*sguid); err != nil {
+		return nil, err
+	}
+
+	var id string
+
+	err := a.db.QueryRow(
 		`INSERT INTO host (
 			id,
 			name,
