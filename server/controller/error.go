@@ -3,9 +3,14 @@ package controller
 import "github.com/pkg/errors"
 
 var (
-	ErrInvalidInput   = errors.New("Invalid input")
-	ErrInternal       = errors.New("Internal error")
+	// Invalid input error
+	ErrInvalidInput = errors.New("Invalid input")
+	// Internal error
+	ErrInternal = errors.New("Internal error")
+	// Not implemented error
 	ErrNotImplemented = errors.New("Not implemented")
-	ErrUnauthorized   = errors.New("Not authorized")
-	ErrNotFound       = errors.New("Resource not found")
+	// Unauthorized error
+	ErrUnauthorized = errors.New("Not authorized")
+	// Not found error
+	ErrNotFound = errors.New("Resource not found")
 )

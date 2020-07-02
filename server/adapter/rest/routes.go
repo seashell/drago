@@ -4,6 +4,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
+// RegisterRoutes :
 func (h *Handler) RegisterRoutes(e *echo.Echo) {
 
 	e.Add("GET", "/healthcheck", h.Healthcheck)

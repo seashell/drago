@@ -6,7 +6,9 @@ import (
 )
 
 const (
-	PaginationPageQueryKey    = "page"
+	// Key used for the Page query param
+	PaginationPageQueryKey = "page"
+	// Key used for the PerPage query param
 	PaginationPerPageQueryKey = "per_page"
 )
 
@@ -16,6 +18,7 @@ type Handler struct {
 	middleware Middleware
 }
 
+// Middleware :
 type Middleware struct {
 	VerifyAuth echo.MiddlewareFunc
 	AdmitHost  echo.MiddlewareFunc

@@ -13,9 +13,12 @@ import (
 	"net/http"
 
 	"github.com/rakyll/statik/fs"
+
+	// Import the UI bundle
 	_ "github.com/seashell/drago/ui/statik"
 )
 
+// Bundle containing pre-built SPA
 var Bundle http.FileSystem
 
 func init() {

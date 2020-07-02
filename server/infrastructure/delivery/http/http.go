@@ -8,21 +8,24 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
+// Handler :
 type Handler interface {
 	RegisterRoutes(e *echo.Echo)
 }
 
+// ServerConfig :
 type ServerConfig struct {
 	BindAddress string `mapstructure:"bind_address"`
 }
 
-// HTTPServer
+// HTTPServer :
 type Server struct {
 	config *ServerConfig
 	echo   *echo.Echo
 	ch     chan struct{}
 }
 
+// NewHTTPServer :
 func NewHTTPServer(c *ServerConfig) (*Server, error) {
 
 	e := echo.New()
@@ -48,10 +51,12 @@ func NewHTTPServer(c *ServerConfig) (*Server, error) {
 	return server, nil
 }
 
+// RegisterHandler :
 func (s *Server) RegisterHandler(handler Handler) {
 	handler.RegisterRoutes(s.echo)
 }
 
+// Start :
 func (s *Server) Start() {
 	go func() {
 		defer close(s.ch)
@@ -63,6 +68,7 @@ func (s *Server) Start() {
 	}()
 }
 
+// Shutdown :
 func (s *Server) Shutdown() {
 	if s != nil {
 		s.echo.Close()

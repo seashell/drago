@@ -19,6 +19,7 @@ func NewAdmissionService(hs domain.HostRepository) (AdmissionService, error) {
 	return &admissionService{hs}, nil
 }
 
+// GetHostOrCreate :
 func (s *admissionService) GetHostOrCreate(h *domain.Host) (*domain.Host, error) {
 	exists, err := s.hr.ExistsByID(*h.ID)
 	if err != nil {

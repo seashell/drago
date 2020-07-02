@@ -1,9 +1,12 @@
 package logger
 
+// Fields : Log fields
 type Fields map[string]interface{}
 
+// Level : Log level
 type Level uint32
 
+// Logger : Logger interface
 type Logger interface {
 	Debugf(format string, args ...interface{})
 	Infof(format string, args ...interface{})

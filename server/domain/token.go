@@ -7,10 +7,13 @@ import (
 )
 
 const (
-	TokenTypeClient     = "client"
+	// Client token type
+	TokenTypeClient = "client"
+	// Management token type
 	TokenTypeManagement = "management"
 )
 
+// Token :
 type Token struct {
 	ID        string   `json:"id"`
 	Type      string   `json:"type"`
@@ -22,6 +25,8 @@ type Token struct {
 	NotBefore int64    `json:"notBefore"`
 }
 
+// Decode : Use `secret` to decode the string stored in the token.Raw field,
+// populating the struct according to the token claims, and returning an error in case the token cannot be parse.
 func (t *Token) Decode(secret string) error {
 
 	claims := jwt.MapClaims{}

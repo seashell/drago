@@ -26,6 +26,7 @@ func NewPostgreSQLNetworkRepositoryAdapter(backend Backend) (domain.NetworkRepos
 	return nil, errors.New("Error creating PostgreSQL backend adapter for network repository")
 }
 
+// GetByID :
 func (a *postgresqlNetworkRepositoryAdapter) GetByID(id string) (*domain.Network, error) {
 	sn := &sql.Network{}
 
@@ -47,6 +48,7 @@ func (a *postgresqlNetworkRepositoryAdapter) GetByID(id string) (*domain.Network
 	return dn, nil
 }
 
+// Create :
 func (a *postgresqlNetworkRepositoryAdapter) Create(n *domain.Network) (*string, error) {
 	guid, err := uuid.NewRandom()
 	if err != nil {
@@ -69,6 +71,7 @@ func (a *postgresqlNetworkRepositoryAdapter) Create(n *domain.Network) (*string,
 	return &id, nil
 }
 
+// Update :
 func (a *postgresqlNetworkRepositoryAdapter) Update(n *domain.Network) (*string, error) {
 	now := time.Now()
 
@@ -89,6 +92,7 @@ func (a *postgresqlNetworkRepositoryAdapter) Update(n *domain.Network) (*string,
 	return &id, nil
 }
 
+// DeleteByID :
 func (a *postgresqlNetworkRepositoryAdapter) DeleteByID(id string) (*string, error) {
 	_, err := a.db.Exec("DELETE FROM network WHERE id = $1", id)
 	if err != nil {
@@ -97,6 +101,7 @@ func (a *postgresqlNetworkRepositoryAdapter) DeleteByID(id string) (*string, err
 	return &id, nil
 }
 
+// FindAll :
 func (a *postgresqlNetworkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*domain.Network, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,

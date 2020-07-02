@@ -30,10 +30,12 @@ func NewTokenService(hs domain.HostRepository) (TokenService, error) {
 	return &tokenService{hs}, nil
 }
 
+// GetByID :
 func (s *tokenService) GetByID(id string) (*domain.Token, error) {
 	return nil, errors.New("Not implemented")
 }
 
+// Create :
 func (s *tokenService) Create(t *domain.Token) (*domain.Token, error) {
 
 	if t.Type == "client" {
@@ -86,18 +88,22 @@ func (s *tokenService) Create(t *domain.Token) (*domain.Token, error) {
 	return t, nil
 }
 
+// Update :
 func (s *tokenService) Update(t *domain.Token) (*domain.Token, error) {
 	return nil, errors.New("Not implemented")
 }
 
+// DeleteByID :
 func (s *tokenService) DeleteByID(id string) (*domain.Token, error) {
 	return nil, errors.New("Not implemented")
 }
 
+// FindAll :
 func (s *tokenService) FindAll(pageInfo domain.PageInfo) ([]*domain.Token, *domain.Page, error) {
 	return nil, nil, errors.New("Not implemented")
 }
 
+// Decode :
 func (s *tokenService) Decode(t *domain.Token) (*domain.Token, error) {
 	secret := os.Getenv("ROOT_SECRET")
 

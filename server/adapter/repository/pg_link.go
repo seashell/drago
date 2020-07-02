@@ -53,6 +53,7 @@ func (a *postgresqlLinkRepositoryAdapter) GetByID(id string) (*domain.Link, erro
 	return res, nil
 }
 
+// Create :
 func (a *postgresqlLinkRepositoryAdapter) Create(l *domain.Link) (*string, error) {
 	guid, err := uuid.NewRandom()
 	if err != nil {
@@ -78,6 +79,7 @@ func (a *postgresqlLinkRepositoryAdapter) Create(l *domain.Link) (*string, error
 	return &id, nil
 }
 
+// Update :
 func (a *postgresqlLinkRepositoryAdapter) Update(l *domain.Link) (*string, error) {
 	now := time.Now()
 
@@ -100,6 +102,7 @@ func (a *postgresqlLinkRepositoryAdapter) Update(l *domain.Link) (*string, error
 	return &id, nil
 }
 
+// DeleteByID :
 func (a *postgresqlLinkRepositoryAdapter) DeleteByID(id string) (*string, error) {
 	_, err := a.db.Exec("DELETE FROM link WHERE id = $1", id)
 	if err != nil {
@@ -108,6 +111,7 @@ func (a *postgresqlLinkRepositoryAdapter) DeleteByID(id string) (*string, error)
 	return &id, nil
 }
 
+// FindAll :
 func (a *postgresqlLinkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,
@@ -165,6 +169,7 @@ func (a *postgresqlLinkRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*
 	return linkList, page, nil
 }
 
+// FindAllByNetworkID :
 func (a *postgresqlLinkRepositoryAdapter) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,
@@ -221,6 +226,7 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 	return linkList, page, nil
 }
 
+// FindAllBySourceHostID :
 func (a *postgresqlLinkRepositoryAdapter) FindAllBySourceHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,
@@ -279,6 +285,7 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllBySourceHostID(id string, pageI
 	return linkList, page, nil
 }
 
+// FindAllByTargetHostID :
 func (a *postgresqlLinkRepositoryAdapter) FindAllByTargetHostID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,
@@ -337,6 +344,7 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllByTargetHostID(id string, pageI
 	return linkList, page, nil
 }
 
+// FindAllBySourceInterfaceID :
 func (a *postgresqlLinkRepositoryAdapter) FindAllBySourceInterfaceID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,
@@ -395,6 +403,7 @@ func (a *postgresqlLinkRepositoryAdapter) FindAllBySourceInterfaceID(id string, 
 	return linkList, page, nil
 }
 
+// FindAllByTargetInterfaceID :
 func (a *postgresqlLinkRepositoryAdapter) FindAllByTargetInterfaceID(id string, pageInfo domain.PageInfo) ([]*domain.Link, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,

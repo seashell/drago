@@ -22,6 +22,7 @@ type server struct {
 	httpServer *http.Server
 }
 
+// Config : Drago server configuration
 type Config struct {
 	Enabled bool
 	DataDir string
@@ -32,6 +33,7 @@ func init() {
 	os.Setenv("TZ", "UTC")
 }
 
+// New : Create a new Drago server
 func New(c Config) (*server, error) {
 
 	// Create storage backend
@@ -156,6 +158,7 @@ func New(c Config) (*server, error) {
 	}, nil
 }
 
+// Run : Start Drago server
 func (s *server) Run() {
 	s.httpServer.Start()
 }

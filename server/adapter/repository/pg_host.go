@@ -39,6 +39,7 @@ func (a *postgresqlHostRepositoryAdapter) ExistsByID(id string) (bool, error) {
 	return res, nil
 }
 
+// GetByID :
 func (a *postgresqlHostRepositoryAdapter) GetByID(id string) (*domain.Host, error) {
 
 	query := `SELECT h.* FROM host h WHERE h.id=$1 GROUP BY h.id`
@@ -68,6 +69,7 @@ func (a *postgresqlHostRepositoryAdapter) GetByID(id string) (*domain.Host, erro
 	return res, nil
 }
 
+// Create :
 func (a *postgresqlHostRepositoryAdapter) Create(h *domain.Host) (*string, error) {
 	guid, err := uuid.NewRandom()
 	if err != nil {
@@ -99,6 +101,7 @@ func (a *postgresqlHostRepositoryAdapter) Create(h *domain.Host) (*string, error
 	return &id, nil
 }
 
+// CreateWithID :
 func (a *postgresqlHostRepositoryAdapter) CreateWithID(h *domain.Host) (*string, error) {
 
 	strLabels := strings.Join(h.Labels[:], ",")
@@ -134,6 +137,7 @@ func (a *postgresqlHostRepositoryAdapter) CreateWithID(h *domain.Host) (*string,
 	return &id, nil
 }
 
+// Update :
 func (a *postgresqlHostRepositoryAdapter) Update(h *domain.Host) (*string, error) {
 	now := time.Now()
 
@@ -157,6 +161,7 @@ func (a *postgresqlHostRepositoryAdapter) Update(h *domain.Host) (*string, error
 	return &id, nil
 }
 
+// DeleteByID :
 func (a *postgresqlHostRepositoryAdapter) DeleteByID(id string) (*string, error) {
 	_, err := a.db.Exec("DELETE FROM host WHERE id = $1", id)
 	if err != nil {
@@ -165,6 +170,7 @@ func (a *postgresqlHostRepositoryAdapter) DeleteByID(id string) (*string, error)
 	return &id, nil
 }
 
+// FindAll :
 func (a *postgresqlHostRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,
@@ -222,6 +228,7 @@ func (a *postgresqlHostRepositoryAdapter) FindAll(pageInfo domain.PageInfo) ([]*
 	return hostList, page, nil
 }
 
+// FindAllByNetworkID :
 func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {
 	page := &domain.Page{
 		Page:       pageInfo.Page,
