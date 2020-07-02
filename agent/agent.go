@@ -18,7 +18,7 @@ type Config struct {
 	UI      bool
 	DataDir string
 	Server  server.Config
-	Client client.Config
+	Client  client.Config
 }
 
 type Agent interface {

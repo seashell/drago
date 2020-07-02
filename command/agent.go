@@ -45,8 +45,7 @@ func NewAgentCmd() *cobra.Command {
 
 			err := env.Decode(&config)
 
-
-			si,_ := time.ParseDuration(config.Client.SyncInterval)
+			si, _ := time.ParseDuration(config.Client.SyncInterval)
 
 			agconfig := agent.Config{
 				UI:      config.UI,
@@ -66,10 +65,10 @@ func NewAgentCmd() *cobra.Command {
 					},
 				},
 				Client: client.Config{
-					Enabled: config.Client.Enabled,
-					Servers: config.Client.Servers,
-					DataDir: config.Client.DataDir,
-					Token: config.Client.Token,
+					Enabled:      config.Client.Enabled,
+					Servers:      config.Client.Servers,
+					DataDir:      config.Client.DataDir,
+					Token:        config.Client.Token,
 					SyncInterval: si,
 				},
 			}

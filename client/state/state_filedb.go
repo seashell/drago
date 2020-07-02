@@ -1,12 +1,11 @@
 package state
 
-
 import (
-	"os"
-	"path/filepath"
-	"io/ioutil"
 	"encoding/json"
 	"github.com/seashell/drago/api"
+	"io/ioutil"
+	"os"
+	"path/filepath"
 )
 
 const (
@@ -14,9 +13,8 @@ const (
 )
 
 type FileDB struct {
-	fileName	string
+	fileName string
 }
-
 
 func NewFileDB(stateDir string) (StateDB, error) {
 	fn := filepath.Join(stateDir, dbFileName)
@@ -46,22 +44,22 @@ func (f *FileDB) Name() string {
 }
 
 func (f *FileDB) GetHostSettings() (*api.HostSettings, error) {
-	
+
 	fc, err := ioutil.ReadFile(f.fileName)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	hs := api.HostSettings{}
 	err = json.Unmarshal([]byte(fc), &hs)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 
-	return &hs,nil
+	return &hs, nil
 }
 
-func (f *FileDB) PutHostSettings(hs *api.HostSettings) (error) {
-	
+func (f *FileDB) PutHostSettings(hs *api.HostSettings) error {
+
 	fc, err := json.MarshalIndent(hs, "", " ")
 	if err != nil {
 		return err

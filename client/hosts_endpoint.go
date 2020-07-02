@@ -13,9 +13,9 @@ func NewHostsEndpoint(c *Client) *Hosts {
 }
 
 func (h *Hosts) Sync(cs *api.HostState) (*api.HostSettings, error) {
-	ts,err := h.c.apiClient.Hosts().PostSelfSync(cs)
+	ts, err := h.c.apiClient.Hosts().PostSelfSync(cs)
 	if err != nil {
-		return nil,err
+		return nil, err
 	}
 	return ts, nil
 }
