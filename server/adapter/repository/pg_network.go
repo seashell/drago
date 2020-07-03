@@ -84,7 +84,7 @@ func (a *postgresqlNetworkRepositoryAdapter) Update(n *domain.Network) (*string,
 			"updated_at = $3 "+
 			"WHERE id = $4 "+
 			"RETURNING id",
-		*n.Name, *n.IPAddressRange, now, *n.ID).Scan(id)
+		*n.Name, *n.IPAddressRange, now, *n.ID).Scan(&id)
 	if err != nil {
 		return nil, err
 	}
