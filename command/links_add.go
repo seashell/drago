@@ -58,7 +58,7 @@ func NewLinksAddCmd() *cobra.Command {
 	cmd.Flags().StringVar(&fromInterfaceID, "source-interface-id", "", "Link source interface ID")
 	cmd.Flags().StringVar(&toInterfaceID, "target-interface-id", "", "Link target interface ID")
 	allowedIPs = cmd.Flags().StringSlice("allowed-ip", nil, "Link allowed IPs")
-	cmd.Flags().IntVar(&persistentKeepalive, "persistante-keepalive", 0, "Link persistante keepalive settings")
+	cmd.Flags().IntVar(&persistentKeepalive, "persistent-keepalive", 0, "Link persistent keepalive")
 
 	// required flags
 	cmd.MarkFlagRequired("source-interface-id")
