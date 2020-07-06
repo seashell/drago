@@ -78,7 +78,7 @@ func (n *NetworkInterfaceCtrl) resetWgNetworkInterfaces() error {
 	for _, ni := range niList {
 		if ni.Type() == "wireguard" {
 			//match device alias with prefix provided by n.namePrefix 
-			matched, err := regexp.MatchString(n.namePrefix+`*`, ni.Attrs().Name)
+			matched, err := regexp.MatchString(n.namePrefix+`.*`, ni.Attrs().Name)
 			if err != nil {
 				fmt.Println("Warning: failed to match interface name: ", err)
 			}
