@@ -9,6 +9,7 @@ import (
 	"net/url"
 
 	cleanhttp "github.com/hashicorp/go-cleanhttp"
+	"github.com/google/go-querystring/query"
 )
 
 const (
@@ -41,7 +42,7 @@ func NewClient(c *Config) (*Client, error) {
 	return client, nil
 }
 
-func (c Client) newRequest(method, path string, body io.Reader) (*http.Request, error) {
+func (c Client) newRequest(method, path string, body io.Reader, queries interface{}) (*http.Request, error) {
 	u := url.URL{
 		Scheme: DefaultScheme,
 		Host:   c.config.Address,
@@ -56,14 +57,25 @@ func (c Client) newRequest(method, path string, body io.Reader) (*http.Request, 
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
 	}
+
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("X-Drago-Token", c.config.Token)
+	
+	//set queries
+	if queries != nil {
+		v, err := query.Values(queries)
+		if err != nil {
+			return nil, err
+		}
+		req.URL.RawQuery = v.Encode()
+	}
+	
 	return req, nil
 }
 
 // Get :
-func (c Client) Get(endpoint string, out interface{}) error {
-	req, err := c.newRequest("GET", endpoint, nil)
+func (c Client) Get(endpoint string, out interface{}, queries interface{}) error {
+	req, err := c.newRequest("GET", endpoint, nil, queries)
 	if err != nil {
 		return err
 	}
@@ -74,6 +86,8 @@ func (c Client) Get(endpoint string, out interface{}) error {
 	}
 	defer resp.Body.Close()
 
+	
+
 	if err := decodeBody(resp, out); err != nil {
 		return err
 	}
@@ -82,14 +96,14 @@ func (c Client) Get(endpoint string, out interface{}) error {
 }
 
 // Post :
-func (c Client) Post(endpoint string, in, out interface{}) error {
+func (c Client) Post(endpoint string, in, out interface{}, queries interface{}) error {
 
 	body, err := encodeBody(in)
 	if err != nil {
 		return err
 	}
 
-	req, err := c.newRequest("POST", endpoint, body)
+	req, err := c.newRequest("POST", endpoint, body, queries)
 	if err != nil {
 		return err
 	}

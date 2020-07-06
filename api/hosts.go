@@ -1,79 +1,50 @@
 package api
 
-// HostSettings :
-type HostSettings struct {
-	NetworkInterfaces []NetworkInterface `json:"interfaces"`
-	WireguardPeers    []WireguardPeer    `json:"peers"`
+// HostInput :
+type HostInput struct {
+	Name			string 		`json:"name"`
+	Labels			[]string 	`json:"labels,omitempty"`
+	AdvertiseAddress	string 	`json:"advertiseAddress,omitempty"`
 }
 
-// NetworkInterface :
-type NetworkInterface struct {
-	Name       *string `json:"name"`
-	ListenPort *string `json:"listenPort"`
-	Address    *string `json:"address"`
-	Table      *string `json:"table"`
-	DNS        *string `json:"dns"`
-	MTU        *string `json:"mtu"`
-	PreUp      *string `json:"preUp"`
-	PostUp     *string `json:"postUp"`
-	PreDown    *string `json:"preDown"`
-	PostDown   *string `json:"postDown"`
+// Host :
+type Host struct {	
+	ID					string 		`json:"id,omitempty"`
+	Name				string 		`json:"name,omitempty"`
+	Labels				[]string 	`json:"labels,omitempty"`
+	AdvertiseAddress	string 		`json:"advertiseAddress,omitempty"`
+	//...
 }
 
-// WireguardPeer :
-type WireguardPeer struct {
-	Interface           *string  `json:"interface"`
-	Address             *string  `json:"address"`
-	Port                *string  `json:"port"`
-	PublicKey           *string  `json:"publicKey"`
-	AllowedIps          []string `json:"allowedIps"`
-	PersistentKeepalive *int     `json:"persistentKeepalive"`
+// HostsList :
+type HostsList struct {
+	Items []*Host `json:"items"`
 }
 
-// NetworkInterfaceState :
-type NetworkInterfaceState struct {
-	Name        string `json:"name"`
-	WgPublicKey string `json:"publicKey"`
-}
-
-// HostState :
-type HostState struct {
-	NetworkInterfaces []NetworkInterfaceState `json:"interfaces"`
-}
-
-// Hosts is used to query the host-related endpoints.
+// Hosts is used to query the network-related endpoints.
 type Hosts struct {
 	client *Client
 }
 
-// Settings returns a handle on the settings endpoints.
+// Hosts returns a handle on the networks endpoints.
 func (c *Client) Hosts() *Hosts {
 	return &Hosts{client: c}
 }
 
-// Fetch self settings
-func (h Hosts) GetSelfSettings() (*HostSettings, error) {
-	var r HostSettings
-	err := h.client.Get("/hosts/self/settings", &r)
+// ListHosts :
+func (h *Hosts) ListHosts() (*HostsList,error) {
+	var r HostsList
+	err := h.client.Get("/hosts", &r, nil)
 	if err != nil {
 		return nil, err
 	}
 	return &r, nil
 }
 
-// Fetch self settings
-func (h Hosts) PostSelfState(hs *HostState) error {
-	err := h.client.Post("/hosts/self/state", hs, nil)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-// sync self
-func (h Hosts) PostSelfSync(hs *HostState) (*HostSettings, error) {
-	var r HostSettings
-	err := h.client.Post("/hosts/self/sync", hs, &r)
+// CreateHost :
+func (h *Hosts) CreateHost(nh *HostInput) (*Host,error) {
+	var r Host
+	err := h.client.Post("/hosts", nh, &r, nil)
 	if err != nil {
 		return nil, err
 	}

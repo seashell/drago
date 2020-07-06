@@ -84,7 +84,7 @@ func (c *Client) Run() {
 				})
 			}
 			// Submit current network interfaces state and get target remote settings
-			ts, err := NewHostsEndpoint(c).Sync(&api.HostState{NetworkInterfaces: niState})
+			ts, err := NewSynchronizationEndpoint(c).SynchronizeSelf(&api.HostState{NetworkInterfaces: niState})
 			if err != nil {
 				fmt.Println("warning, failed to sync with remote servers: ", err)
 			} else if ts != nil {
