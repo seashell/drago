@@ -42,7 +42,7 @@ func New(c Config) (*Client, error) {
 		return nil, err
 	}
 
-	n, err := nic.NewCtrl()
+	n, err := nic.NewCtrl("dg-")
 	if err != nil {
 		return nil, err
 	}
@@ -79,7 +79,7 @@ func (c *Client) Run() {
 			niState := []api.NetworkInterfaceState{}
 			for _, iface := range c.niCtrl.NetworkInterfaces {
 				niState = append(niState, api.NetworkInterfaceState{
-					Name:        *iface.Settings.Name,
+					Name:        *iface.Settings.Alias,
 					WgPublicKey: iface.Settings.Wireguard.PrivateKey.PublicKey().String(),
 				})
 			}
@@ -194,8 +194,8 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 		if err != nil {
 			fmt.Println("failed to parse IP address:", err)
 		}
-		ts = append(ts, nic.Settings{
-			Name:      ni.Name,
+		ts = append(ts, nic.Settings{ 
+			Alias:	   ni.Name,
 			Address:   addr,
 			Wireguard: wgConfig,
 		})
