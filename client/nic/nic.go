@@ -62,7 +62,7 @@ func (n *NetworkInterfaceCtrl) Update(ts []Settings) error {
 	}
 
 	for _, s := range ts {
-		b := make([]byte, 6) //equals 12 charachters
+		b := make([]byte, 5) //equals 10 charachters
 		rand.Read(b) 
 		r := hex.EncodeToString(b)
 		s.Name = n.namePrefix+r
