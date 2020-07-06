@@ -25,11 +25,12 @@ type Client struct {
 }
 
 type Config struct {
-	Enabled      bool
-	Servers      []string
-	Token        string
-	DataDir      string
-	SyncInterval time.Duration
+	Enabled      		bool
+	Servers      		[]string
+	Token        		string
+	DataDir      		string
+	InterfacesPrefix	string
+	SyncInterval 		time.Duration
 }
 
 func New(c Config) (*Client, error) {
@@ -42,7 +43,7 @@ func New(c Config) (*Client, error) {
 		return nil, err
 	}
 
-	n, err := nic.NewCtrl("dg-")
+	n, err := nic.NewCtrl(c.InterfacesPrefix)
 	if err != nil {
 		return nil, err
 	}
