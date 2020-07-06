@@ -26,7 +26,7 @@ type CreateHostWithIDInput struct {
 type CreateHostInput struct {
 	Name             *string  `json:"name" validate:"required,min=1,max=50"`
 	AdvertiseAddress *string  `json:"advertiseAddress" validate:"omitempty,ip_addr|fqdn"`
-	Labels           []string `json:"labels" validate:"dive,omitempty,alphanum"`
+	Labels           []string `json:"labels" validate:"dive,omitempty,dashedalphanum"`
 }
 
 // UpdateHostInput :
@@ -34,7 +34,7 @@ type UpdateHostInput struct {
 	ID               *string  `json:"id" validate:"required,uuid4"`
 	Name             *string  `json:"name" validate:"omitempty,min=1,max=50"`
 	AdvertiseAddress *string  `json:"advertiseAddress" validate:"omitempty,ip_addr|fqdn"`
-	Labels           []string `json:"labels" validate:"dive,omitempty,alphanum"`
+	Labels           []string `json:"labels" validate:"dive,omitempty,dashedalphanum"`
 }
 
 // DeleteHostInput :
