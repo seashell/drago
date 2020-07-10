@@ -13,6 +13,7 @@ require (
 	github.com/go-test/deep v1.0.6 // indirect
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/google/go-cmp v0.5.0 // indirect
+  github.com/google/go-querystring v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-cleanhttp v0.5.1
 	github.com/hashicorp/go-multierror v1.1.0
