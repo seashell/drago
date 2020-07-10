@@ -38,7 +38,8 @@ CREATE TABLE IF NOT EXISTS interface (
     post_down text,
     created_at timestamp NOT NULL,
     updated_at timestamp NOT NULL,
-    UNIQUE(host_id, name)
+    UNIQUE(host_id, name),
+    UNIQUE(network_id, ip_address)
 );
 
 CREATE TABLE IF NOT EXISTS link (

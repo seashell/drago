@@ -12,7 +12,9 @@ import (
 	"github.com/seashell/drago/server/adapter/spa"
 	"github.com/seashell/drago/server/application"
 	"github.com/seashell/drago/server/controller"
+	"github.com/seashell/drago/server/domain"
 	"github.com/seashell/drago/server/infrastructure/delivery/http"
+	"github.com/seashell/drago/server/infrastructure/logger"
 	"github.com/seashell/drago/server/infrastructure/storage"
 	"github.com/seashell/drago/ui"
 )
@@ -35,6 +37,14 @@ func init() {
 
 // New : Create a new Drago server
 func New(c Config) (*server, error) {
+
+	logger, err := logger.New(logger.Configuration{
+		Level: logger.Debug,
+	})
+	if err != nil {
+		fmt.Println(err)
+		panic("Error creating logger")
+	}
 
 	// Create storage backend
 	var backend repository.Backend
@@ -72,6 +82,13 @@ func New(c Config) (*server, error) {
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating link repository")
+	}
+
+	// Create domain services
+	_, err = domain.NewIPAddressLeaseService(ifaceRepo, networkRepo, logger)
+	if err != nil {
+		fmt.Println(err)
+		panic("Error creating IP address lease service")
 	}
 
 	// Create application services
