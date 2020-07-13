@@ -85,14 +85,14 @@ func New(c Config) (*server, error) {
 	}
 
 	// Create domain services
-	_, err = domain.NewIPAddressLeaseService(ifaceRepo, networkRepo, logger)
+	leaseService, err := domain.NewIPAddressLeaseService(ifaceRepo, networkRepo, logger)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating IP address lease service")
 	}
 
 	// Create application services
-	ns, err := application.NewNetworkService(networkRepo)
+	ns, err := application.NewNetworkService(networkRepo, leaseService)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating network service")
@@ -104,7 +104,7 @@ func New(c Config) (*server, error) {
 		panic("Error creating host service")
 	}
 
-	is, err := application.NewInterfaceService(ifaceRepo, networkRepo)
+	is, err := application.NewInterfaceService(ifaceRepo, networkRepo, leaseService)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating interface service")
