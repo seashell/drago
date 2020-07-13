@@ -213,27 +213,27 @@ func (s *networkIPAddressLeaseService) PopIPAddress(i *Interface) error {
 }
 
 func (s *networkIPAddressLeaseService) PutNetwork(n *Network) error {
-	s.networks.Lock()
-
+	s.networks.Lock()	
 	if _, ok := s.networks.pool[*n.ID]; ok {
-		s.networks.Unlock()
+		s.networks.Unlock()		
 
 		return errors.New("Network already exists.")
-	}
-
-	_, net, err := net.ParseCIDR(*n.IPAddressRange)
+	}	
+	
+	_, network, err := net.ParseCIDR(*n.IPAddressRange)
 	if err != nil {
-		s.networks.Unlock()
+		s.networks.Unlock()	
 
 		return err
-	}
-
+	}	
+	
 	s.networks.pool[*n.ID] = &networkIPAddressPool{
-		network: net,
-	}
-
-	s.networks.Unlock()
-
+		network:  network,
+		assigned: make(map[uint32]*net.IP),
+	}	
+	
+	s.networks.Unlock()	
+	
 	return nil
 }
 
