@@ -88,7 +88,8 @@ func (c Client) doRequest(req *http.Request, out interface{}) (error){
 	if ok := res.StatusCode >= 200 && res.StatusCode < 300; !ok {
 		resBody, _ := ioutil.ReadAll(res.Body)
 		res.Body.Close()
-		return fmt.Errorf("%v: %v", res.Status, string(resBody))
+
+		return fmt.Errorf("{\"status\": \"%v\", \"body\": %v}", res.Status, string(resBody))
 	}
 
 	if err := decodeBody(res, out); err != nil {
