@@ -32,7 +32,7 @@ func NewHostsListCmd() *cobra.Command {
 
 			hl,err := a.Hosts().ListHosts()
 			if err != nil {
-				fmt.Println("failed to list hosts: ",err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 

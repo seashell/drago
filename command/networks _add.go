@@ -41,7 +41,7 @@ func NewNetworksAddCmd() *cobra.Command {
 
 			nn,err := a.Networks().CreateNetwork(ni); 
 			if err != nil {
-				fmt.Println("failed to add network: ", err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 			

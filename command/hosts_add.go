@@ -43,7 +43,7 @@ func NewHostsAddCmd() *cobra.Command {
 
 			nn,err := a.Hosts().CreateHost(ni); 
 			if err != nil {
-				fmt.Println("failed to add host: ", err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 

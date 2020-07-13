@@ -32,7 +32,7 @@ func NewNetworksListCmd() *cobra.Command {
 
 			nl,err := a.Networks().ListNetworks()
 			if err != nil {
-				fmt.Println("failed to list networks: ",err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 

@@ -45,7 +45,7 @@ func NewLinksAddCmd() *cobra.Command {
 
 			nn,err := a.Links().CreateLink(ni); 
 			if err != nil {
-				fmt.Println("failed to add link: ", err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 

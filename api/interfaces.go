@@ -5,7 +5,7 @@ type InterfaceInput struct {
 	Name       	string	`json:"name"`
 	HostID     	string 	`json:"hostId"`
 	NetworkID  	string 	`json:"networkId"`
-	IPAddress  	string 	`json:"ipAddress"`
+	IPAddress  	string 	`json:"ipAddress,omitempty"`
 	ListenPort 	string 	`json:"listenPort,omitempty"`
 	//...
 }
