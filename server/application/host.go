@@ -11,6 +11,7 @@ type HostService interface {
 	Update(h *domain.Host) (*domain.Host, error)
 	DeleteByID(id string) (*domain.Host, error)
 	FindAll(pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error)
+	FindAllByLabels(labels []string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error)
 	FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error)
 }
 
@@ -72,6 +73,11 @@ func (s *hostService) FindAll(pageInfo domain.PageInfo) ([]*domain.Host, *domain
 // FindAllByNetworkID :
 func (s *hostService) FindAllByNetworkID(id string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {
 	return s.repo.FindAllByNetworkID(id, pageInfo)
+}
+
+// FindAllByLabels :
+func (s *hostService) FindAllByLabels(labels []string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {
+	return s.repo.FindAllByLabels(labels, pageInfo)
 }
 
 func mergeHostUpdate(current, update *domain.Host) {

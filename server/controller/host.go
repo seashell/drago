@@ -45,7 +45,8 @@ type DeleteHostInput struct {
 // ListHostsInput :
 type ListHostsInput struct {
 	pagination.Input
-	NetworkIDFilter string `query:"networkId" validate:"omitempty,uuid4"`
+	LabelFilters    []string `query:"label" validate:"omitempty"`
+	NetworkIDFilter string   `query:"networkId" validate:"omitempty,uuid4"`
 }
 
 // GetHost :
@@ -130,7 +131,6 @@ func (c *Controller) DeleteHost(ctx context.Context, in *DeleteHostInput) (*doma
 
 // ListHosts :
 func (c *Controller) ListHosts(ctx context.Context, in *ListHostsInput) (*pagination.Page, error) {
-
 	err := c.v.Struct(in)
 	if err != nil {
 		return nil, errors.Wrap(ErrInvalidInput, err.Error())
@@ -151,6 +151,11 @@ func (c *Controller) ListHosts(ctx context.Context, in *ListHostsInput) (*pagina
 
 	if in.NetworkIDFilter != "" {
 		h, p, err = c.hs.FindAllByNetworkID(in.NetworkIDFilter, *pageInfo)
+		if err != nil {
+			return nil, errors.Wrap(ErrInternal, err.Error())
+		}
+	} else if len(in.LabelFilters) > 0 {
+		h, p, err = c.hs.FindAllByLabels(in.LabelFilters, *pageInfo)
 		if err != nil {
 			return nil, errors.Wrap(ErrInternal, err.Error())
 		}
