@@ -157,11 +157,11 @@ func (s *networkIPAddressLeaseService) PutIPAddress(i *Interface) error {
 		return errors.New("Network not found.")
 	}
 
-	address := net.ParseIP(*i.IPAddress)
-	if address == nil || address.To4() == nil {
+	address, _, err := net.ParseCIDR(*i.IPAddress)
+	if err != nil {
 		s.networks.Unlock()
 
-		return errors.New("Invalid IPv4 address.")
+		return err
 	}
 
 	ai := binary.BigEndian.Uint32(address.To4())
@@ -190,11 +190,11 @@ func (s *networkIPAddressLeaseService) PopIPAddress(i *Interface) error {
 		return errors.New("Network not found.")
 	}
 
-	address := net.ParseIP(*i.IPAddress)
-	if address == nil || address.To4() == nil {
+	address, _, err := net.ParseCIDR(*i.IPAddress)
+	if err != nil {
 		s.networks.Unlock()
 
-		return errors.New("Invalid IPv4 address.")
+		return err
 	}
 
 	ai := binary.BigEndian.Uint32(address.To4())
