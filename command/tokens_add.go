@@ -42,7 +42,7 @@ func NewTokensAddCmd() *cobra.Command {
 
 			nn,err := a.Tokens().CreateToken(ni); 
 			if err != nil {
-				fmt.Println("failed to add token: ", err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 			

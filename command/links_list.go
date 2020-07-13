@@ -43,7 +43,7 @@ func NewLinksListCmd() *cobra.Command {
 
 			hl,err := a.Links().ListLinks(f)
 			if err != nil {
-				fmt.Println("failed to list links: ",err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 

@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/agext/levenshtein v1.2.3 // indirect
 	github.com/cockroachdb/apd v1.1.0 // indirect
+	github.com/cosmtrek/air v1.12.1 // indirect
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/dimiro1/banner v1.0.0
 	github.com/go-playground/validator v9.31.0+incompatible

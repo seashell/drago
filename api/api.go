@@ -1,10 +1,12 @@
 package api
 
 import (
+	"fmt"
 	"bytes"
 	"encoding/json"
 	"errors"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -42,6 +44,8 @@ func NewClient(c *Config) (*Client, error) {
 	return client, nil
 }
 
+
+// newRequest :
 func (c Client) newRequest(method, path string, body io.Reader, queries interface{}) (*http.Request, error) {
 	u := url.URL{
 		Scheme: DefaultScheme,
@@ -73,53 +77,27 @@ func (c Client) newRequest(method, path string, body io.Reader, queries interfac
 	return req, nil
 }
 
-// Get :
-func (c Client) Get(endpoint string, out interface{}, queries interface{}) error {
-	req, err := c.newRequest("GET", endpoint, nil, queries)
+// doRequest :
+func (c Client) doRequest(req *http.Request, out interface{}) (error){
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close()
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return err
+	if ok := res.StatusCode >= 200 && res.StatusCode < 300; !ok {
+		resBody, _ := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+		return fmt.Errorf("%v: %v", res.Status, string(resBody))
 	}
-	defer resp.Body.Close()
 
-	
-
-	if err := decodeBody(resp, out); err != nil {
+	if err := decodeBody(res, out); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// Post :
-func (c Client) Post(endpoint string, in, out interface{}, queries interface{}) error {
-
-	body, err := encodeBody(in)
-	if err != nil {
-		return err
-	}
-
-	req, err := c.newRequest("POST", endpoint, body, queries)
-	if err != nil {
-		return err
-	}
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if err := decodeBody(resp, out); err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // encodeBody is used to encode a JSON body
 func encodeBody(obj interface{}) (io.Reader, error) {
@@ -147,4 +125,30 @@ func decodeBody(resp *http.Response, out interface{}) error {
 		dec := json.NewDecoder(resp.Body)
 		return dec.Decode(out)
 	}
+}
+
+// Get :
+func (c Client) Get(endpoint string, out interface{}, queries interface{}) error {
+	req, err := c.newRequest("GET", endpoint, nil, queries)
+	if err != nil {
+		return err
+	}
+
+	return c.doRequest(req, out)
+}
+
+// Post :
+func (c Client) Post(endpoint string, in, out interface{}, queries interface{}) error {
+
+	body, err := encodeBody(in)
+	if err != nil {
+		return err
+	}
+
+	req, err := c.newRequest("POST", endpoint, body, queries)
+	if err != nil {
+		return err
+	}
+
+	return c.doRequest(req, out)
 }
