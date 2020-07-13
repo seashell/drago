@@ -3,7 +3,9 @@ package domain
 import (
 	"encoding/binary"
 	"errors"
+	"fmt"
 	"net"
+	"strconv"
 	"sync"
 	"time"
 
@@ -73,6 +75,10 @@ func NewIPAddressLeaseService(
 
 					service.log.Errorf("Reconciliation error at %v: %v\n", now.Round(0), err)
 				}
+
+				now = time.Now()
+
+				service.log.Debugf("Finishing reconciliation at %v\n", now.Round(0))
 			}
 		}()
 
@@ -86,6 +92,10 @@ func NewIPAddressLeaseService(
 
 			service.log.Errorf("Reconciliation error at %v: %v\n", now.Round(0), err)
 		}
+
+		now = time.Now()
+
+		service.log.Debugf("Finishing reconciliation at %v\n", now.Round(0))
 	})
 
 	return &service, nil
@@ -104,7 +114,7 @@ func (s *networkIPAddressLeaseService) Lease(i *Interface) (*Interface, error) {
 
 	start, finish := getUint32NetworkMarginalIPAddresses(*p.network)
 
-	var address string
+	var index uint32
 
 	for i := start; i <= finish; i++ {
 		if _, ok := p.assigned[i]; ok {
@@ -122,11 +132,12 @@ func (s *networkIPAddressLeaseService) Lease(i *Interface) (*Interface, error) {
 		binary.BigEndian.PutUint32(ip, i)
 
 		p.assigned[i] = &ip
-		address = p.assigned[i].String()
+		index = i
 
 		break
 	}
 
+	address := getCIDRString(*p.assigned[index], *p.network)
 	i.IPAddress = &address
 
 	s.networks.Unlock()
@@ -146,14 +157,14 @@ func (s *networkIPAddressLeaseService) PutIPAddress(i *Interface) error {
 		return errors.New("Network not found.")
 	}
 
-	address := net.ParseIP(*i.IPAddress)
-	if address == nil || address.To4() == nil {
+	address, _, err := net.ParseCIDR(*i.IPAddress)
+	if err != nil {
 		s.networks.Unlock()
 
-		return errors.New("Invalid IPv4 address.")
+		return err
 	}
 
-	ai := binary.BigEndian.Uint32(address)
+	ai := binary.BigEndian.Uint32(address.To4())
 
 	if _, ok := p.assigned[ai]; ok {
 		s.networks.Unlock()
@@ -179,14 +190,14 @@ func (s *networkIPAddressLeaseService) PopIPAddress(i *Interface) error {
 		return errors.New("Network not found.")
 	}
 
-	address := net.ParseIP(*i.IPAddress)
-	if address == nil || address.To4() == nil {
+	address, _, err := net.ParseCIDR(*i.IPAddress)
+	if err != nil {
 		s.networks.Unlock()
 
-		return errors.New("Invalid IPv4 address.")
+		return err
 	}
 
-	ai := binary.BigEndian.Uint32(address)
+	ai := binary.BigEndian.Uint32(address.To4())
 
 	if _, ok := p.assigned[ai]; !ok {
 		s.networks.Unlock()
@@ -290,8 +301,14 @@ func (s *networkIPAddressLeaseService) reconcile() error {
 		}
 
 		for j := range is {
-			ip := net.ParseIP(*is[j].IPAddress)
-			ipUint32 := binary.BigEndian.Uint32(ip)
+			ip, _, err := net.ParseCIDR(*is[j].IPAddress)
+			if err != nil {
+				s.networks.Unlock()
+
+				return err
+			}
+
+			ipUint32 := binary.BigEndian.Uint32(ip.To4())
 
 			s.networks.pool[*ns[i].ID].assigned[ipUint32] = &ip
 		}
@@ -307,8 +324,14 @@ func (s *networkIPAddressLeaseService) reconcile() error {
 			}
 
 			for j := range is {
-				ip := net.ParseIP(*is[j].IPAddress)
-				ipUint32 := binary.BigEndian.Uint32(ip)
+				ip, _, err := net.ParseCIDR(*is[j].IPAddress)
+				if err != nil {
+					s.networks.Unlock()
+
+					return err
+				}
+
+				ipUint32 := binary.BigEndian.Uint32(ip.To4())
 
 				s.networks.pool[*ns[i].ID].assigned[ipUint32] = &ip
 			}
@@ -322,8 +345,14 @@ func (s *networkIPAddressLeaseService) reconcile() error {
 
 func getUint32NetworkMarginalIPAddresses(nip net.IPNet) (uint32, uint32) {
 	mask := binary.BigEndian.Uint32(nip.Mask)
-	start := binary.BigEndian.Uint32(nip.IP)
+	start := binary.BigEndian.Uint32(nip.IP.To4())
 	finish := (start & mask) | (mask ^ 0xffffffff)
 
 	return start, finish
+}
+
+func getCIDRString(ip net.IP, n net.IPNet) string {
+	ipStr := ip.String()
+	size, _ := n.Mask.Size()
+	return fmt.Sprintf(ipStr + "/" + strconv.Itoa(size))
 }

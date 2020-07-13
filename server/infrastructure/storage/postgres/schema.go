@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS interface (
     id uuid PRIMARY KEY,
     name varchar(32) NOT NULL,
     host_id uuid NOT NULL REFERENCES host ON DELETE CASCADE,
-    network_id uuid REFERENCES network ON DELETE SET NULL,
+    network_id uuid NOT NULL REFERENCES network ON DELETE CASCADE,
     ip_address text,
     listen_port varchar(5),
     public_key text,

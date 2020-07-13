@@ -91,13 +91,8 @@ export const UPDATE_INTERFACE = gql`
     $listenPort: Int!
   ) {
     updateInterface(
-      input: {
-        id: $id
-        name: $name
-        networkId: $networkId
-        ipAddress: $ipAddress
-        listenPort: $listenPort
-      }
+      id: $id
+      input: { name: $name, networkId: $networkId, ipAddress: $ipAddress, listenPort: $listenPort }
     ) @rest(method: "PATCH", path: "interfaces/{args.id}", type: "Interface") {
       id
     }

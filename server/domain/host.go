@@ -69,5 +69,6 @@ type HostRepository interface {
 	DeleteByID(id string) (*string, error)
 	FindAll(pageInfo PageInfo) ([]*Host, *Page, error)
 	FindAllByNetworkID(id string, pageInfo PageInfo) ([]*Host, *Page, error)
+	FindAllByLabels(labels []string, pageInfo PageInfo) ([]*Host, *Page, error)
 	ExistsByID(id string) (bool, error)
 }

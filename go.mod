@@ -10,10 +10,10 @@ require (
 	github.com/go-playground/validator v9.31.0+incompatible
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/go-sql-driver/mysql v1.5.0 // indirect
-	github.com/go-test/deep v1.0.6 // indirect
+	github.com/go-test/deep v1.0.7 // indirect
 	github.com/gofrs/uuid v3.3.0+incompatible // indirect
 	github.com/google/go-cmp v0.5.0 // indirect
-  github.com/google/go-querystring v1.0.0
+	github.com/google/go-querystring v1.0.0
 	github.com/google/uuid v1.1.1
 	github.com/hashicorp/go-cleanhttp v0.5.1
 	github.com/hashicorp/go-multierror v1.1.0
@@ -38,6 +38,8 @@ require (
 	github.com/seashell/cobra v1.0.1
 	github.com/sergi/go-diff v1.1.0 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
+	github.com/shurcooL/go v0.0.0-20200502201357-93f07166e636 // indirect
+	github.com/shurcooL/go-goon v0.0.0-20170922171312-37c2f522c041
 	github.com/sirupsen/logrus v1.6.0
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.6.1 // indirect
