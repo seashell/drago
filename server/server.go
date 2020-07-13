@@ -12,7 +12,9 @@ import (
 	"github.com/seashell/drago/server/adapter/spa"
 	"github.com/seashell/drago/server/application"
 	"github.com/seashell/drago/server/controller"
+	"github.com/seashell/drago/server/domain"
 	"github.com/seashell/drago/server/infrastructure/delivery/http"
+	"github.com/seashell/drago/server/infrastructure/logger"
 	"github.com/seashell/drago/server/infrastructure/storage"
 	"github.com/seashell/drago/ui"
 )
@@ -35,6 +37,14 @@ func init() {
 
 // New : Create a new Drago server
 func New(c Config) (*server, error) {
+
+	logger, err := logger.New(logger.Configuration{
+		Level: logger.Debug,
+	})
+	if err != nil {
+		fmt.Println(err)
+		panic("Error creating logger")
+	}
 
 	// Create storage backend
 	var backend repository.Backend
@@ -74,8 +84,15 @@ func New(c Config) (*server, error) {
 		panic("Error creating link repository")
 	}
 
+	// Create domain services
+	leaseService, err := domain.NewIPAddressLeaseService(ifaceRepo, networkRepo, logger)
+	if err != nil {
+		fmt.Println(err)
+		panic("Error creating IP address lease service")
+	}
+
 	// Create application services
-	ns, err := application.NewNetworkService(networkRepo)
+	ns, err := application.NewNetworkService(networkRepo, leaseService)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating network service")
@@ -87,7 +104,7 @@ func New(c Config) (*server, error) {
 		panic("Error creating host service")
 	}
 
-	is, err := application.NewInterfaceService(ifaceRepo, networkRepo)
+	is, err := application.NewInterfaceService(ifaceRepo, networkRepo, leaseService)
 	if err != nil {
 		fmt.Println(err)
 		panic("Error creating interface service")

@@ -7,6 +7,11 @@ import (
 	"github.com/seashell/drago/version"
 )
 
+const (
+	drago_addr_env	string	=	"DRAGO_ADDR"
+	drago_token_env	string	=	"DRAGO_TOKEN"
+)
+
 // Used for context
 type ctxKeyType string
 
@@ -23,17 +28,23 @@ func NewRootCmd() *cobra.Command {
 		Long:    `Usage: drago [--version] [--help] [--autocomplete-(un)install] <command> [args]`,
 		Version: version.GetVersion().VersionNumber(),
 		PersistentPreRun: func(cmd *cobra.Command, args []string) {
-			config := LoadConfigFromFile(configFile)
-			ctx := context.WithValue(cmd.Context(), ctxKeyType("config"), config)
-			cmd.SetContext(ctx)
+			if configFile != "" {
+				config := LoadConfigFromFile(configFile)
+				ctx := context.WithValue(cmd.Context(), ctxKeyType("config"), config)
+				cmd.SetContext(ctx)
+			}
 		},
 	}
 
 	cmd.SetVersionTemplate("Drago {{.Version}}")
 
-	cmd.PersistentFlags().StringVarP(&configFile, "config", "", "/etc/drago.d", "config file (default is /etc/drago.d)")
+	cmd.PersistentFlags().StringVarP(&configFile, "config", "", "", "config file path")
 
 	cmd.AddCommand(NewAgentCmd())
-
+	cmd.AddCommand(NewNetworksCmd())
+	cmd.AddCommand(NewHostsCmd())
+	cmd.AddCommand(NewInterfacesCmd())
+	cmd.AddCommand(NewLinksCmd())
+	cmd.AddCommand(NewTokensCmd())
 	return cmd
 }

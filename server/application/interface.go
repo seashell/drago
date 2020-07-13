@@ -2,6 +2,7 @@ package application
 
 import (
 	"github.com/seashell/drago/server/domain"
+	"github.com/shurcooL/go-goon"
 )
 
 // InterfaceService :
@@ -16,13 +17,14 @@ type InterfaceService interface {
 }
 
 type interfaceService struct {
-	ifaceRepo   domain.InterfaceRepository
-	networkRepo domain.NetworkRepository
+	ifaceRepo    domain.InterfaceRepository
+	networkRepo  domain.NetworkRepository
+	leaseService domain.NetworkIPAddressLeaseService
 }
 
 // NewInterfaceService :
-func NewInterfaceService(ir domain.InterfaceRepository, nr domain.NetworkRepository) (InterfaceService, error) {
-	return &interfaceService{ir, nr}, nil
+func NewInterfaceService(ir domain.InterfaceRepository, nr domain.NetworkRepository, ls domain.NetworkIPAddressLeaseService) (InterfaceService, error) {
+	return &interfaceService{ir, nr, ls}, nil
 }
 
 // GetByID :
@@ -45,6 +47,22 @@ func (s *interfaceService) Create(i *domain.Interface) (*domain.Interface, error
 			}
 		}
 	}
+
+	// If the new interface does not contain an IP address, lease one.
+	// Otherwise, put its address within the list of leased IPs.
+	var err error
+	if i.IPAddress == nil {
+		i, err = s.leaseService.Lease(i)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if err := s.leaseService.PutIPAddress(i); err != nil {
+			return nil, err
+		}
+	}
+
+	goon.Dump(i)
 
 	id, err := s.ifaceRepo.Create(i)
 	if err != nil {
@@ -75,7 +93,29 @@ func (s *interfaceService) Update(i *domain.Interface) (*domain.Interface, error
 		return nil, err
 	}
 
+	// If the interface has an IP address, and it is going to be updated,
+	// release the old value for leasing.
+	if iface.IPAddress != nil && iface.IPAddress != i.IPAddress {
+		err := s.leaseService.PopIPAddress(iface)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	mergeInterfaceUpdate(iface, i)
+
+	// If the updated interface does not contain an IP address, lease one.
+	// Otherwise, put its address within the list of taken IPs.
+	if i.IPAddress == nil {
+		i, err = s.leaseService.Lease(i)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		if err := s.leaseService.PutIPAddress(i); err != nil {
+			return nil, err
+		}
+	}
 
 	id, err := s.ifaceRepo.Update(iface)
 	if err != nil {

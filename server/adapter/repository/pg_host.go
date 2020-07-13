@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"fmt"
 	"math"
 	"strings"
 	"time"
@@ -11,6 +12,7 @@ import (
 	"github.com/pkg/errors"
 	"github.com/seashell/drago/server/adapter/repository/sql"
 	"github.com/seashell/drago/server/domain"
+	"github.com/shurcooL/go-goon"
 	"gopkg.in/jeevatkm/go-model.v1"
 )
 
@@ -250,6 +252,73 @@ func (a *postgresqlHostRepositoryAdapter) FindAllByNetworkID(id string, pageInfo
 		GROUP BY h.id 
 		ORDER BY created_at DESC LIMIT $2 OFFSET $3`,
 		id, page.PerPage, (page.Page-1)*page.PerPage)
+	if err != nil {
+		return nil, page, err
+	}
+
+	receiver := struct {
+		sql.Host
+		StrLabels  string `db:"labels"`
+		TotalCount int    `db:"total_count"`
+	}{}
+
+	hostList := []*domain.Host{}
+
+	for rows.Next() {
+		err = rows.StructScan(&receiver)
+		if err != nil {
+			return nil, page, err
+		}
+
+		host := &domain.Host{}
+
+		errs := model.Copy(host, receiver.Host)
+		if errs != nil {
+			for _, e := range errs {
+				err = multierror.Append(err, e)
+			}
+			return nil, page, err
+		}
+
+		host.Labels = commaSeparatedStrToSlice(receiver.StrLabels)
+		hostList = append(hostList, host)
+	}
+
+	page.TotalCount = receiver.TotalCount
+	if page.TotalCount > 0 {
+		page.PageCount = int(math.Ceil(float64(page.TotalCount) / float64(page.PerPage)))
+	}
+	return hostList, page, nil
+}
+
+// FindAllByLabels :
+func (a *postgresqlHostRepositoryAdapter) FindAllByLabels(labels []string, pageInfo domain.PageInfo) ([]*domain.Host, *domain.Page, error) {
+	page := &domain.Page{
+		Page:       pageInfo.Page,
+		PerPage:    pageInfo.PerPage,
+		TotalCount: 0,
+		PageCount:  0,
+	}
+
+	if page.PerPage > MaxQueryRows {
+		page.PerPage = MaxQueryRows
+	}
+
+	for i, _ := range labels {
+		labels[i] = "'" + labels[i] + "'"
+	}
+
+	slabels := strings.Join(labels, ",")
+
+	query := fmt.Sprintf(`SELECT h.*, COUNT(*) OVER() AS total_count 
+							FROM host h
+							WHERE string_to_array(h.labels,',') @> array[%s]
+							GROUP BY h.id
+							ORDER BY created_at DESC LIMIT $1 OFFSET $2`, slabels)
+
+	goon.Dump(query)
+
+	rows, err := a.db.Queryx(query, page.PerPage, (page.Page-1)*page.PerPage)
 	if err != nil {
 		return nil, page, err
 	}

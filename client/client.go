@@ -25,11 +25,12 @@ type Client struct {
 }
 
 type Config struct {
-	Enabled      bool
-	Servers      []string
-	Token        string
-	DataDir      string
-	SyncInterval time.Duration
+	Enabled      		bool
+	Servers      		[]string
+	Token        		string
+	DataDir      		string
+	InterfacesPrefix	string
+	SyncInterval 		time.Duration
 }
 
 func New(c Config) (*Client, error) {
@@ -42,7 +43,7 @@ func New(c Config) (*Client, error) {
 		return nil, err
 	}
 
-	n, err := nic.NewCtrl()
+	n, err := nic.NewCtrl(c.InterfacesPrefix)
 	if err != nil {
 		return nil, err
 	}
@@ -79,12 +80,12 @@ func (c *Client) Run() {
 			niState := []api.NetworkInterfaceState{}
 			for _, iface := range c.niCtrl.NetworkInterfaces {
 				niState = append(niState, api.NetworkInterfaceState{
-					Name:        *iface.Settings.Name,
+					Name:        *iface.Settings.Alias,
 					WgPublicKey: iface.Settings.Wireguard.PrivateKey.PublicKey().String(),
 				})
 			}
 			// Submit current network interfaces state and get target remote settings
-			ts, err := NewHostsEndpoint(c).Sync(&api.HostState{NetworkInterfaces: niState})
+			ts, err := NewSynchronizationEndpoint(c).SynchronizeSelf(&api.HostState{NetworkInterfaces: niState})
 			if err != nil {
 				fmt.Println("warning, failed to sync with remote servers: ", err)
 			} else if ts != nil {
@@ -194,8 +195,8 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 		if err != nil {
 			fmt.Println("failed to parse IP address:", err)
 		}
-		ts = append(ts, nic.Settings{
-			Name:      ni.Name,
+		ts = append(ts, nic.Settings{ 
+			Alias:	   ni.Name,
 			Address:   addr,
 			Wireguard: wgConfig,
 		})

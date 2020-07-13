@@ -15,11 +15,12 @@ type NetworkService interface {
 
 type networkService struct {
 	nr domain.NetworkRepository
+	ls domain.NetworkIPAddressLeaseService
 }
 
 // NewNetworkService :
-func NewNetworkService(nr domain.NetworkRepository) (NetworkService, error) {
-	return &networkService{nr}, nil
+func NewNetworkService(nr domain.NetworkRepository, ls domain.NetworkIPAddressLeaseService) (NetworkService, error) {
+	return &networkService{nr, ls}, nil
 }
 
 // GetByID :
@@ -33,6 +34,13 @@ func (ns *networkService) Create(n *domain.Network) (*domain.Network, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	n.ID = id
+	err = ns.ls.PutNetwork(n)
+	if err != nil {
+		return nil, err
+	}
+
 	return &domain.Network{ID: id}, nil
 }
 
@@ -49,6 +57,7 @@ func (ns *networkService) Update(n *domain.Network) (*domain.Network, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	return &domain.Network{ID: id}, nil
 }
 
@@ -58,7 +67,11 @@ func (ns *networkService) DeleteByID(id string) (*domain.Network, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &domain.Network{ID: _id}, nil
+
+	res := &domain.Network{ID: _id}
+	ns.ls.PopNetwork(res)
+
+	return res, nil
 }
 
 // FindAllByNetworkID :
