@@ -37,7 +37,7 @@ func NewInterfacesAddCmd() *cobra.Command {
 				os.Exit(1)
 			}
 
-			ni := &api.InterfaceInput{
+			ii := &api.InterfaceInput{
 				Name: 		name,
 				HostID:		hostID,
 				NetworkID:	networkID,
@@ -45,13 +45,13 @@ func NewInterfacesAddCmd() *cobra.Command {
 				ListenPort: listenPort,
 			}
 
-			nn,err := a.Interfaces().CreateInterface(ni); 
+			ni,err := a.Interfaces().CreateInterface(ii); 
 			if err != nil {
-				fmt.Println("failed to add interface: ", err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 
-			dump,_ := json.MarshalIndent(nn, "", "    ")
+			dump,_ := json.MarshalIndent(ni, "", "    ")
 			fmt.Println(string(dump))
 		},
 	}
@@ -61,11 +61,10 @@ func NewInterfacesAddCmd() *cobra.Command {
 	cmd.Flags().StringVar(&ipAddress, "ip-address", "", "Interface IP address in CIDR notation")
 	cmd.Flags().StringVar(&listenPort, "listen-port", "", "Interface listen port")
 	cmd.Flags().StringVar(&hostID, "host-id", "", "Interface target host ID")
-	cmd.Flags().StringVar(&networkID, "network-id", "", "Interface target ntwork ID")
+	cmd.Flags().StringVar(&networkID, "network-id", "", "Interface target network ID")
 
 	// required flags
 	cmd.MarkFlagRequired("name")
-	cmd.MarkFlagRequired("ip-address")
 	cmd.MarkFlagRequired("host-id")
 	cmd.MarkFlagRequired("network-id")
 

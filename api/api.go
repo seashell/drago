@@ -1,10 +1,13 @@
 package api
 
 import (
+	"fmt"
 	"bytes"
 	"encoding/json"
 	"errors"
+	"strings"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 
@@ -13,8 +16,10 @@ import (
 )
 
 const (
-	// Default protocol for communicating with the the Drago server
+	// Default protocol for communicating with the Drago server
 	DefaultScheme string = "http"
+	// Default port for communicating with the Drago server
+	DefaultPort string = "8080"
 	// Prefix applied to all paths
 	DefaultPreprendPath string = "/api"
 )
@@ -27,13 +32,16 @@ type Config struct {
 
 // Client provides a client to the Drago API
 type Client struct {
-	config     Config
-	httpClient *http.Client
+	config		Config
+	httpClient 	*http.Client
 }
 
 // NewClient returns a new client
 func NewClient(c *Config) (*Client, error) {
 	h := cleanhttp.DefaultClient()
+
+	//parse URL
+
 
 	client := &Client{
 		config:     *c,
@@ -42,26 +50,47 @@ func NewClient(c *Config) (*Client, error) {
 	return client, nil
 }
 
-func (c Client) newRequest(method, path string, body io.Reader, queries interface{}) (*http.Request, error) {
+
+// newRequest :
+func (c Client) newRequest(method, path string, in interface{}, queries interface{}) (*http.Request, error) {
+	//URL
+	rawURL := c.config.Address
+	
+	if strings.Index(rawURL, "//") == 0 {
+		rawURL = DefaultScheme + ":" + rawURL
+	}
+	if !strings.Contains(rawURL, "://") {
+		rawURL = DefaultScheme + "://" + rawURL
+	}
+
+	ru,_ := url.Parse(rawURL)
+	if ru.Port() == "" {
+		ru.Host = ru.Hostname() + ":" + DefaultPort
+	}
+
 	u := url.URL{
-		Scheme: DefaultScheme,
-		Host:   c.config.Address,
+		Scheme: ru.Scheme,
+		Host:   ru.Host,
 		Path:   DefaultPreprendPath + path,
 	}
 
+	//BODY
+	body, err := encodeBody(in)
+	if err != nil {
+		return nil, err
+	}
+
+	//REQUEST
 	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
 		return nil, err
 	}
 
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-
+	//HEADERS
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("X-Drago-Token", c.config.Token)
 	
-	//set queries
+	//QUERIES
 	if queries != nil {
 		v, err := query.Values(queries)
 		if err != nil {
@@ -73,53 +102,28 @@ func (c Client) newRequest(method, path string, body io.Reader, queries interfac
 	return req, nil
 }
 
-// Get :
-func (c Client) Get(endpoint string, out interface{}, queries interface{}) error {
-	req, err := c.newRequest("GET", endpoint, nil, queries)
+// doRequest :
+func (c Client) doRequest(req *http.Request, out interface{}) (error){
+	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
 	}
+	defer res.Body.Close()
 
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return err
+	if ok := res.StatusCode >= 200 && res.StatusCode < 300; !ok {
+		resBody, _ := ioutil.ReadAll(res.Body)
+		res.Body.Close()
+
+		return fmt.Errorf("{\"status\": \"%v\", \"body\": %v}", res.Status, string(resBody))
 	}
-	defer resp.Body.Close()
 
-	
-
-	if err := decodeBody(resp, out); err != nil {
+	if err := decodeBody(res, out); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-// Post :
-func (c Client) Post(endpoint string, in, out interface{}, queries interface{}) error {
-
-	body, err := encodeBody(in)
-	if err != nil {
-		return err
-	}
-
-	req, err := c.newRequest("POST", endpoint, body, queries)
-	if err != nil {
-		return err
-	}
-
-	resp, err := c.httpClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
-
-	if err := decodeBody(resp, out); err != nil {
-		return err
-	}
-
-	return nil
-}
 
 // encodeBody is used to encode a JSON body
 func encodeBody(obj interface{}) (io.Reader, error) {
@@ -147,4 +151,25 @@ func decodeBody(resp *http.Response, out interface{}) error {
 		dec := json.NewDecoder(resp.Body)
 		return dec.Decode(out)
 	}
+}
+
+// Get :
+func (c Client) Get(endpoint string, out interface{}, queries interface{}) error {
+	req, err := c.newRequest("GET", endpoint, nil, queries)
+	if err != nil {
+		return err
+	}
+
+	return c.doRequest(req, out)
+}
+
+// Post :
+func (c Client) Post(endpoint string, in, out interface{}, queries interface{}) error {
+
+	req, err := c.newRequest("POST", endpoint, in, queries)
+	if err != nil {
+		return err
+	}
+
+	return c.doRequest(req, out)
 }

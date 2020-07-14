@@ -39,13 +39,13 @@ func NewInterfacesListCmd() *cobra.Command {
 				NetworkIDFilter:	networkID,
 			}
 
-			hl,err := a.Interfaces().ListInterfaces(f)
+			il,err := a.Interfaces().ListInterfaces(f)
 			if err != nil {
-				fmt.Println("failed to list interfaces: ",err)
+				fmt.Println(err)
 				os.Exit(1)
 			}
 
-			dump,_ := json.MarshalIndent(hl.Items, "", "    ")
+			dump,_ := json.MarshalIndent(il.Items, "", "    ")
 			fmt.Println(string(dump))
 		},
 	}

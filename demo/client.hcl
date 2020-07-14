@@ -12,8 +12,9 @@ client {
     enabled = true
     data_dir = "/opt/drago/client"
     servers = [ "localhost:8080" ]
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE5MDkyNzExMjQsImlhdCI6MTU5MzkxMTEyNCwiaWQiOiIzNzJjY2ZhYi1mZjE0LTQ0YzAtYmE3Mi00ZDQwNzI5OGEwYTYiLCJsYWJlbHMiOltdLCJuYmYiOjE1OTM5MTExMjQsInN1YiI6Ijg0NGQ4ZDg5LTM0MzAtNDJiMS1iNjdmLTYxMWY1NzdlZjMzOSIsInR5cGUiOiJjbGllbnQifQ.5W-Ct7E2VjmSFXfryV8X_5DCAbhCAKF7Rn6bgkFDSEI"
+    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE5MTAxMTMzOTUsImlhdCI6MTU5NDc1MzM5NSwiaWQiOiJkYWVhZWUwMC02MWY3LTQ1OTAtODhiYy1jYWE3OGM2MWFmODgiLCJsYWJlbHMiOltdLCJuYmYiOjE1OTQ3NTMzOTUsInN1YiI6ImYwMzc0MWNhLTA0OWMtNGNkYy1hMmIwLWVhMzk2MzZhMjIyMSIsInR5cGUiOiJjbGllbnQifQ.xf7tM-1wD3JKW1S1U3TS0YfHIywDmfd3tiqqOa-I5zY"
     interfaces_prefix= "dg-"
+    links_persistent_keepalive= 120
 }
 
 vault {

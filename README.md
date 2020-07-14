@@ -29,7 +29,7 @@ Drago is a flexible configuration manager for WireGuard networks which is design
 - Automatic key rotation
 - Extensible via REST API
 - Slick management dashboard
-- Automatic IP assignment (coming soon)
+- Automatic IP assignment
 
 ## Use cases
 - Secure home automation, SSH access, etc
@@ -148,7 +148,7 @@ sudo ./drago --config="./dist/client.yml"
 - [ ] Integration with userspace WireGuard implementations such as `cloudflare/boringtun`
 - [ ] Integration with firewall tools for more sophisticated networking rules
 - [ ] Auto-join and auto-meshing modes
-- [ ] Automatic IP assignment
+- [x] Automatic IP assignment
 - [ ] Automatic discovery 
 
 ## License
