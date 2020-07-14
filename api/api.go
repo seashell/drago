@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"errors"
+	"strings"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -15,8 +16,10 @@ import (
 )
 
 const (
-	// Default protocol for communicating with the the Drago server
+	// Default protocol for communicating with the Drago server
 	DefaultScheme string = "http"
+	// Default port for communicating with the Drago server
+	DefaultPort string = "8080"
 	// Prefix applied to all paths
 	DefaultPreprendPath string = "/api"
 )
@@ -29,13 +32,16 @@ type Config struct {
 
 // Client provides a client to the Drago API
 type Client struct {
-	config     Config
-	httpClient *http.Client
+	config		Config
+	httpClient 	*http.Client
 }
 
 // NewClient returns a new client
 func NewClient(c *Config) (*Client, error) {
 	h := cleanhttp.DefaultClient()
+
+	//parse URL
+
 
 	client := &Client{
 		config:     *c,
@@ -46,26 +52,45 @@ func NewClient(c *Config) (*Client, error) {
 
 
 // newRequest :
-func (c Client) newRequest(method, path string, body io.Reader, queries interface{}) (*http.Request, error) {
+func (c Client) newRequest(method, path string, in interface{}, queries interface{}) (*http.Request, error) {
+	//URL
+	rawURL := c.config.Address
+	
+	if strings.Index(rawURL, "//") == 0 {
+		rawURL = DefaultScheme + ":" + rawURL
+	}
+	if !strings.Contains(rawURL, "://") {
+		rawURL = DefaultScheme + "://" + rawURL
+	}
+
+	ru,_ := url.Parse(rawURL)
+	if ru.Port() == "" {
+		ru.Host = ru.Hostname() + ":" + DefaultPort
+	}
+
 	u := url.URL{
-		Scheme: DefaultScheme,
-		Host:   c.config.Address,
+		Scheme: ru.Scheme,
+		Host:   ru.Host,
 		Path:   DefaultPreprendPath + path,
 	}
 
+	//BODY
+	body, err := encodeBody(in)
+	if err != nil {
+		return nil, err
+	}
+
+	//REQUEST
 	req, err := http.NewRequest(method, u.String(), body)
 	if err != nil {
 		return nil, err
 	}
 
-	if body != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-
+	//HEADERS
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("X-Drago-Token", c.config.Token)
 	
-	//set queries
+	//QUERIES
 	if queries != nil {
 		v, err := query.Values(queries)
 		if err != nil {
@@ -141,12 +166,7 @@ func (c Client) Get(endpoint string, out interface{}, queries interface{}) error
 // Post :
 func (c Client) Post(endpoint string, in, out interface{}, queries interface{}) error {
 
-	body, err := encodeBody(in)
-	if err != nil {
-		return err
-	}
-
-	req, err := c.newRequest("POST", endpoint, body, queries)
+	req, err := c.newRequest("POST", endpoint, in, queries)
 	if err != nil {
 		return err
 	}
