@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
@@ -6,18 +6,37 @@ import { icons } from '_assets/'
 import Box from '_components/box'
 import Text from '_components/text'
 import IconButton from '_components/icon-button'
+import Button from '_components/button'
 
 const Container = styled(Box).attrs({
-  display: 'flex',
   border: 'discrete',
   m: 1,
-  p: 3,
 })`
-  height: 40px;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
   cursor: pointer;
   :hover {
     box-shadow: ${props => props.theme.shadows.medium};
+  }
+`
+
+const SummaryContainer = styled(Box).attrs({
+  p: 3,
+})`
+  align-items: center;
+  height: 40px;
+  display: flex;
+`
+
+const DetailsContainer = styled(Box)`
+  height: 100px;
+  padding: 8px;
+  position: relative;
+  display: ${props => (props.isVisible ? 'flex' : 'none')};
+  button {
+    position: absolute;
+    right: 0px;
+    bottom: 0px;
   }
 `
 
@@ -50,42 +69,85 @@ const LinkCard = ({
   onClick,
   onDelete,
 }) => {
+  const [isExpanded, setExpanded] = useState(false)
+
   const handleDeleteButtonClick = e => {
     e.stopPropagation()
     e.preventDefault()
     onDelete()
   }
 
+  const handleCardClick = () => {
+    setExpanded(!isExpanded)
+  }
+
+  const handleEditButtonClick = e => {
+    e.stopPropagation()
+    e.preventDefault()
+    onClick()
+  }
+
   return (
-    <Container onClick={onClick}>
-      <Box width="240px">
-        <IconContainer mr="12px">
-          <IconButton ml="auto" icon={<icons.Link />} />
-        </IconContainer>
-        <div>
-          <Text textStyle="subtitle" fontSize="14px">
-            From {fromInterface.name} on {fromInterface.host.name}
-          </Text>
-          <Text textStyle="subtitle" fontSize="14px">
-            To {toInterface.name} on {toInterface.host.name}
-          </Text>
-        </div>
-      </Box>
-      <Box flexDirection="column" alignItems="center" width="300px">
-        <Text textStyle="detail">Allowed IPs</Text>
-        <Box width="250px" justifyContent="center">
-          <Text textStyle="detail">
-            {allowedIps.map(el => (
-              <AllowedIPBlock>{el}</AllowedIPBlock>
-            ))}
-          </Text>
+    <Container onClick={handleEditButtonClick}>
+      <SummaryContainer>
+        <Box width="100%">
+          <IconContainer mr="12px">
+            <IconButton ml="auto" icon={<icons.Link />} />
+          </IconContainer>
+          <div>
+            <Box alignItems="center">
+              <Text textStyle="subtitle" fontSize="14px">
+                From
+              </Text>
+              <Text ml={1} textStyle="detail" fontSize="12px">
+                {fromInterface.name}
+              </Text>
+              <Text ml={1} textStyle="subtitle" fontSize="14px">
+                on
+              </Text>
+              <Text ml={1} textStyle="detail" fontSize="12px">
+                {fromInterface.host.name}
+              </Text>
+            </Box>
+            <Box alignItems="center">
+              <Text textStyle="subtitle" fontSize="14px">
+                To
+              </Text>
+              <Text ml={1} textStyle="detail" fontSize="12px">
+                {toInterface.name}
+              </Text>
+              <Text ml={1} textStyle="subtitle" fontSize="14px">
+                on
+              </Text>
+              <Text ml={1} textStyle="detail" fontSize="12px">
+                {toInterface.host.name}
+              </Text>
+            </Box>
+          </div>
         </Box>
-      </Box>
-      <Box ml="auto" flexDirection="column" alignItems="center">
-        <Text textStyle="detail">Keepalive</Text>
-        <Text textStyle="detail">{persistentKeepalive}</Text>
-      </Box>
-      <IconButton ml="auto" icon={<icons.Times />} onClick={handleDeleteButtonClick} />
+        <Box flexDirection="column" ml="auto" alignItems="center">
+          <Text textStyle="detail">Allowed IPs</Text>
+          <Box width="250px" justifyContent="center">
+            <Text textStyle="detail">
+              {allowedIps.map(el => (
+                <AllowedIPBlock>{el}</AllowedIPBlock>
+              ))}
+            </Text>
+          </Box>
+        </Box>
+        <Box width="150px" flexDirection="column" alignItems="center">
+          <Text textStyle="detail">Keepalive</Text>
+          <Text textStyle="detail">{persistentKeepalive}</Text>
+        </Box>
+        <Box>
+          <IconButton ml="auto" icon={<icons.Times />} onClick={handleDeleteButtonClick} />
+        </Box>
+      </SummaryContainer>
+      <DetailsContainer isVisible={isExpanded}>
+        <Button variant="primaryInverted" width="80px" onClick={handleEditButtonClick}>
+          Edit
+        </Button>
+      </DetailsContainer>
     </Container>
   )
 }
