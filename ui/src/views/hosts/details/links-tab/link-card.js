@@ -129,7 +129,7 @@ const LinkCard = ({
           <Text textStyle="detail">Allowed IPs</Text>
           <Box width="250px" justifyContent="center">
             <Text textStyle="detail">
-              {['10.1.1.1/24', '10.2.2.3/16'].map(el => (
+              {allowedIps.map(el => (
                 <AllowedIPBlock>{el}</AllowedIPBlock>
               ))}
             </Text>
