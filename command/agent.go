@@ -71,6 +71,7 @@ func NewAgentCmd() *cobra.Command {
 					Token:        		config.Client.Token,
 					InterfacesPrefix:	config.Client.InterfacesPrefix,
 					SyncInterval: 		si,
+					LinksPersistentKeepalive:	config.Client.LinksPersistentKeepalive,
 				},
 			}
 

@@ -23,11 +23,12 @@ var DefaultConfig = DragoConfig{
 		},
 	},
 	Client: &ClientStanza{
-		Enabled:      		false,
-		Servers:      		nil,
-		DataDir:      		"/tmp",
-		Token:        		"",
-		InterfacesPrefix:	"dg-",
-		SyncInterval: 		"5s",
+		Enabled:      				false,
+		Servers:      				nil,
+		DataDir:      				"/tmp",
+		Token:        				"",
+		InterfacesPrefix:			"dg-",
+		SyncInterval: 				"5s",
+		LinksPersistentKeepalive: 	0,
 	},
 }
