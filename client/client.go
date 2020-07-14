@@ -31,6 +31,7 @@ type Config struct {
 	DataDir      		string
 	InterfacesPrefix	string
 	SyncInterval 		time.Duration
+	LinksPersistentKeepalive	int
 }
 
 func New(c Config) (*Client, error) {
@@ -149,6 +150,11 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 				if peer.PersistentKeepalive != nil {
 					t := time.Duration(*peer.PersistentKeepalive) * time.Second
 					persistentKeepalive = &t
+				} else {
+					if c.config.LinksPersistentKeepalive != 0 {
+						t := time.Duration(c.config.LinksPersistentKeepalive) * time.Second
+						persistentKeepalive = &t
+					}					
 				}
 
 				//Endpoint
