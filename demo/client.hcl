@@ -12,7 +12,7 @@ client {
     enabled = true
     data_dir = "/opt/drago/client"
     servers = [ "localhost:8080" ]
-    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE5MTAxMTMzOTUsImlhdCI6MTU5NDc1MzM5NSwiaWQiOiJkYWVhZWUwMC02MWY3LTQ1OTAtODhiYy1jYWE3OGM2MWFmODgiLCJsYWJlbHMiOltdLCJuYmYiOjE1OTQ3NTMzOTUsInN1YiI6ImYwMzc0MWNhLTA0OWMtNGNkYy1hMmIwLWVhMzk2MzZhMjIyMSIsInR5cGUiOiJjbGllbnQifQ.xf7tM-1wD3JKW1S1U3TS0YfHIywDmfd3tiqqOa-I5zY"
+    token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE5MTAyMDcwNjgsImlhdCI6MTU5NDg0NzA2OCwiaWQiOiJjMGRlN2VjOS1jNzQ0LTQzMDktYWY4Zi1jNGRhNGI0NTA1N2IiLCJsYWJlbHMiOltdLCJuYmYiOjE1OTQ4NDcwNjgsInN1YiI6IjMzMzJmNjI1LWY4M2ItNDE3Ny05Y2QwLTc3OGQ4Y2FmMmMxNSIsInR5cGUiOiJjbGllbnQifQ.X9RCk8Dl-zEweFNyBiTVWoIctrxAlyv83LesR34EwVY"
     interfaces_prefix= "dg-"
     links_persistent_keepalive= 120
 }

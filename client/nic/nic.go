@@ -80,12 +80,12 @@ func (n *NetworkInterfaceCtrl) resetWgNetworkInterfaces() error {
 			//match device alias with prefix provided by n.namePrefix 
 			matched, err := regexp.MatchString(n.namePrefix+`.*`, ni.Attrs().Name)
 			if err != nil {
-				fmt.Println("Warning: failed to match interface name: ", err)
+				return fmt.Errorf("Failed to match interface name: %v\n", err)
 			}
 		
 			if matched {
 				if err := n.DeleteNetworkInterface(ni.Attrs().Name); err != nil {
-					fmt.Println("Warning: failed to delete network interface: ", err)
+					return fmt.Errorf("Failed to delete network interface: %v\n", err)
 				}
 				delete(n.NetworkInterfaces, ni.Attrs().Alias)
 			}
@@ -104,39 +104,33 @@ func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
 	lattr.Alias = *ts.Alias
 
 	if err := netlink.LinkAdd(&netlink.Wireguard{LinkAttrs: lattr}); err != nil {
-		fmt.Println("failed to create new network device: ", err)
-		return err
+		return fmt.Errorf("Failed to create new network device: %v\n", err)
 	}
 
 	l, err := netlink.LinkByName(ts.Name)
 	if err != nil {
-		fmt.Println("failed to get network device by name: ", err)
-		return err
+		return fmt.Errorf("Failed to get network device by name: %v\n", err)
 	}
 
 	if err := netlink.LinkSetAlias(l, lattr.Alias); err != nil {
-		fmt.Println("failed to set link alias: ", err)
-		return err
+		return fmt.Errorf("Failed to set link alias: %v\n", err)
 	}
 
 
 	// apply wireguard config
 	if err := n.wgController.ConfigureDevice(ts.Name, *ts.Wireguard); err != nil {
 		if err != nil {
-			fmt.Println("Unknown device configuration error: ", err)
-			return err
+			return fmt.Errorf("Unknown wireguard configuration error: %v\n", err)
 		}
 	}
 
 	// apply new settings
 	if err := netlink.AddrAdd(l, ts.Address); err != nil {
-		fmt.Println("failed to add IP address:", err)
-		return err
+		return fmt.Errorf("Failed to add IP address: %v\n", err)
 	}
 
 	if err := netlink.LinkSetUp(l); err != nil {
-		fmt.Println("failed to set network device up:", err)
-		return err
+		return fmt.Errorf("Failed to set network device up: %v\n", err)
 	}
 
 	for _, peer := range ts.Wireguard.Peers {
@@ -145,7 +139,7 @@ func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
 				LinkIndex: l.Attrs().Index,
 				Dst:       &allowedIP,
 			}); err != nil {
-				fmt.Println("failed to add IP route:", err)
+				return fmt.Errorf("Failed to add IP route: %v\n", err)
 			}
 		}
 	}
@@ -164,16 +158,16 @@ func (n *NetworkInterfaceCtrl) DeleteNetworkInterface(name string) error {
 
 	ipRoutes, err := netlink.RouteList(&netlink.Wireguard{LinkAttrs: lattr}, 0)
 	if err != nil {
-		fmt.Println("warning: failed to get IP routes list:", err)
+		return fmt.Errorf("Failed to get IP routes list: %v\n", err)
 	}
 	for _, route := range ipRoutes {
 		if err = netlink.RouteDel(&route); err != nil {
-			fmt.Println("warning: failed to remove IP route:", err)
+			return fmt.Errorf("Failed to remove IP route: %v\n", err)
 		}
 	}
 
 	if err := netlink.LinkDel(&netlink.Wireguard{LinkAttrs: lattr}); err != nil {
-		fmt.Println("Warning: failed to delete network device: ", err)
+		return fmt.Errorf("Failed to delete network device: %v\n", err)
 	}
 
 	return nil

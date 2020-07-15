@@ -6,6 +6,8 @@ import (
 	"github.com/seashell/drago/client"
 	"github.com/seashell/drago/server"
 	"github.com/seashell/drago/version"
+
+	"github.com/seashell/drago/agent/logger"
 )
 
 var AgentVersion string
@@ -36,8 +38,17 @@ func New(c Config) (*agent, error) {
 }
 
 func (a *agent) Run() {
+	
+	logger, err := logger.New(logger.Configuration{
+		Level: logger.Debug,
+	})
+	if err != nil {
+		fmt.Println(err)
+		panic("Error creating logger")
+	}
+
 	if a.config.Server.Enabled {
-		fmt.Println("Initializing agent (server)")
+		logger.Infof("Initializing server agent\n")
 		s, err := server.New(a.config.Server)
 		if err != nil {
 			panic(err)
@@ -46,8 +57,8 @@ func (a *agent) Run() {
 	}
 
 	if a.config.Client.Enabled {
-		fmt.Println("Initializing agent (client)")
-		c, err := client.New(a.config.Client)
+		logger.Infof("Initializing client agent\n")
+		c, err := client.New(a.config.Client, logger)
 		if err != nil {
 			panic(err)
 		}
