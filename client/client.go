@@ -36,31 +36,31 @@ type Config struct {
 	LinksPersistentKeepalive	int
 }
 
-func New(c Config, l logger.Logger) (*Client, error) {
+func New(conf Config, log logger.Logger) (*Client, error) {
 	a, err := api.NewClient(&api.Config{
-		Address: c.Servers[0], //TODO: add support for multiple API addresses
-		Token:   c.Token,
+		Address: conf.Servers[0], //TODO: add support for multiple API addresses
+		Token:   conf.Token,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	n, err := nic.NewCtrl(c.InterfacesPrefix)
+	n, err := nic.NewCtrl(conf.InterfacesPrefix, log)
 	if err != nil {
 		return nil, err
 	}
 
-	s, err := state.NewFileDB(c.DataDir)
+	s, err := state.NewFileDB(conf.DataDir)
 	if err != nil {
 		return nil, err
 	}
 
 	return &Client{
-		config:    	c,
+		config:    	conf,
 		niCtrl:    	n,
 		apiClient: 	a,
 		stateDB:   	s,
-		log:		l,
+		log:		log,
 	}, nil
 }
 

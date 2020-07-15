@@ -5,10 +5,13 @@ import (
 	"math/rand"
 	"encoding/hex"
 	"regexp"	
-
+	"time"
+	
 	"github.com/vishvananda/netlink"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+
+	"github.com/seashell/drago/pkg/logger"
 )
 
 // Settings :
@@ -32,10 +35,12 @@ type NetworkInterfaceCtrl struct {
 	namePrefix	 string
 	wgController *wgctrl.Client
 	wgPrivateKey *wgtypes.Key
+
+	log      logger.Logger
 }
 
 // NewCtrl :
-func NewCtrl(namePrefix string) (*NetworkInterfaceCtrl, error) {
+func NewCtrl(namePrefix string, log logger.Logger) (*NetworkInterfaceCtrl, error) {
 
 	wg, err := wgctrl.New()
 	if err != nil {
@@ -52,6 +57,7 @@ func NewCtrl(namePrefix string) (*NetworkInterfaceCtrl, error) {
 		wgController:   wg,
 		wgPrivateKey:   &pk,
 		namePrefix:		namePrefix,
+		log:			log,
 	}, nil
 }
 
@@ -113,24 +119,24 @@ func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
 	}
 
 	if err := netlink.LinkSetAlias(l, lattr.Alias); err != nil {
-		return fmt.Errorf("Failed to set link alias: %v\n", err)
+		n.log.Warnf("Setting link alias error at %v: %v\n", time.Now().Round(0), err)
 	}
 
 
 	// apply wireguard config
 	if err := n.wgController.ConfigureDevice(ts.Name, *ts.Wireguard); err != nil {
 		if err != nil {
-			return fmt.Errorf("Unknown wireguard configuration error: %v\n", err)
+			n.log.Warnf("Unknown wireguard configuration error at %v: %v\n", time.Now().Round(0), err)
 		}
 	}
 
 	// apply new settings
 	if err := netlink.AddrAdd(l, ts.Address); err != nil {
-		return fmt.Errorf("Failed to add IP address: %v\n", err)
+		n.log.Warnf("Adding interface address error at %v: %v\n", time.Now().Round(0), err)
 	}
 
 	if err := netlink.LinkSetUp(l); err != nil {
-		return fmt.Errorf("Failed to set network device up: %v\n", err)
+		n.log.Warnf("Setting interface up error at %v: %v\n", time.Now().Round(0), err)
 	}
 
 	for _, peer := range ts.Wireguard.Peers {
@@ -139,7 +145,7 @@ func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
 				LinkIndex: l.Attrs().Index,
 				Dst:       &allowedIP,
 			}); err != nil {
-				return fmt.Errorf("Failed to add IP route: %v\n", err)
+				n.log.Warnf("Setting IP route error at %v: %v\n", time.Now().Round(0), err)
 			}
 		}
 	}
