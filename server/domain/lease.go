@@ -12,7 +12,7 @@ import (
 	"github.com/seashell/drago/pkg/logger"
 )
 
-const DefaultReconcileInterval = 1 // In minutes
+const DefaultReconcileInterval = 30 // In seconds
 
 var (
 	service networkIPAddressLeaseService
@@ -63,7 +63,7 @@ func NewIPAddressLeaseService(
 
 		go func() {
 			for {
-				time.Sleep(DefaultReconcileInterval * time.Minute)
+				time.Sleep(DefaultReconcileInterval * time.Second)
 
 				now := time.Now()
 
@@ -344,9 +344,14 @@ func (s *networkIPAddressLeaseService) reconcile() error {
 }
 
 func getUint32NetworkMarginalIPAddresses(nip net.IPNet) (uint32, uint32) {
+
+	ip := nip.IP.To4()
+	ip[3]++
+	
+	start := binary.BigEndian.Uint32(ip)
 	mask := binary.BigEndian.Uint32(nip.Mask)
-	start := binary.BigEndian.Uint32(nip.IP.To4())
 	finish := (start & mask) | (mask ^ 0xffffffff)
+
 
 	return start, finish
 }
