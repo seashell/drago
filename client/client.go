@@ -1,7 +1,6 @@
 package client
 
 import (
-	"fmt"
 	"net"
 	"reflect"
 	"strconv"
@@ -13,6 +12,7 @@ import (
 
 	"github.com/vishvananda/netlink"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
+	"github.com/seashell/drago/pkg/logger"
 )
 
 type Client struct {
@@ -22,6 +22,8 @@ type Client struct {
 	apiClient *api.Client
 
 	stateDB state.StateDB
+
+	log      logger.Logger
 }
 
 type Config struct {
@@ -34,8 +36,7 @@ type Config struct {
 	LinksPersistentKeepalive	int
 }
 
-func New(c Config) (*Client, error) {
-
+func New(c Config, l logger.Logger) (*Client, error) {
 	a, err := api.NewClient(&api.Config{
 		Address: c.Servers[0], //TODO: add support for multiple API addresses
 		Token:   c.Token,
@@ -55,26 +56,27 @@ func New(c Config) (*Client, error) {
 	}
 
 	return &Client{
-		config:    c,
-		niCtrl:    n,
-		apiClient: a,
-		stateDB:   s,
+		config:    	c,
+		niCtrl:    	n,
+		apiClient: 	a,
+		stateDB:   	s,
+		log:		l,
 	}, nil
 }
 
 func (c *Client) Run() {
-	fmt.Println("Loading and applying current local settings ...")
+	c.log.Debugf("Applying local settings at %v\n", time.Now().Round(0))
 	ls, err := c.stateDB.GetHostSettings()
 	if err != nil {
-		fmt.Println("warning, failed to parse settings from DB: ", err)
+		c.log.Warnf("Parsing error at %v: %v\n", time.Now().Round(0), err)
 	}
 	if err := c.niCtrl.Update(c.fromApiSettingsToNic(ls)); err != nil {
-		fmt.Println("warning, failed to update network interfaces: ", err)
+		c.log.Warnf("Interfaces update error at %v: %v\n", time.Now().Round(0), err)
 	} else {
-		fmt.Println("Done applying current local settings ...")
+		c.log.Debugf("Finished applying local settings at %v\n", time.Now().Round(0))
 	}
 
-	fmt.Println("Syncing with remote servers every ", c.config.SyncInterval)
+	c.log.Infof("Starting sychronization with servers every %v\n", c.config.SyncInterval)
 	go func() {
 		for {
 			// Parse current host network interfaces state
@@ -88,24 +90,24 @@ func (c *Client) Run() {
 			// Submit current network interfaces state and get target remote settings
 			ts, err := NewSynchronizationEndpoint(c).SynchronizeSelf(&api.HostState{NetworkInterfaces: niState})
 			if err != nil {
-				fmt.Println("warning, failed to sync with remote servers: ", err)
+				c.log.Warnf("Server synchronization error at %v: %v\n", time.Now().Round(0), err)
 			} else if ts != nil {
 				ls, err := c.stateDB.GetHostSettings()
 				if err != nil {
-					fmt.Println("warning, failed to parse settings from DB: ", err)
+					c.log.Warnf("Database error at %v: %v\n", time.Now().Round(0), err)
 				}
 				//If target remote settings != local settings, apply remote settings
 				if !reflect.DeepEqual(ts, ls) {
-					fmt.Println("Started updating network interfaces ...")
+					c.log.Debugf("Applying remote settings at %v\n", time.Now().Round(0))
 					if err := c.niCtrl.Update(c.fromApiSettingsToNic(ts)); err != nil {
 						//If not sucessful,  do not persist remote settings
-						fmt.Println("warning, failed to update network interfaces: ", err)
+						c.log.Warnf("Interfaces update error at %v: %v\n", time.Now().Round(0), err)
 					} else {
 						//If successful, update target local settings with target remote settings
 						if err := c.stateDB.PutHostSettings(ts); err != nil {
-							fmt.Println("warning, failed to persist settings to DB: ", err)
+							c.log.Warnf("Database error at %v: %v\n", time.Now().Round(0), err)
 						}
-						fmt.Println("Updating network interfaces done")
+						c.log.Debugf("Finished applying remote settings at %v\n", time.Now().Round(0))
 					}
 				}
 			}
@@ -131,7 +133,7 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 				if peer.PublicKey != nil {
 					pub, err = wgtypes.ParseKey(*peer.PublicKey)
 					if err != nil {
-						fmt.Println("warning: failed to parse public key: ", err)
+						c.log.Warnf("Key parsing error at %v: %v\n", time.Now().Round(0), err)
 					}
 				}
 
@@ -140,7 +142,7 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 				for _, ip := range peer.AllowedIps {
 					_, allowedIP, err := net.ParseCIDR(ip)
 					if err != nil {
-						fmt.Println("warning: failed to parse IP CIDR: ", err)
+						c.log.Warnf("CIDR parsing error at %v: %v\n", time.Now().Round(0), err)
 					}
 					allowedIPs = append(allowedIPs, *allowedIP)
 				}
@@ -199,7 +201,7 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 		//Address
 		addr, err := netlink.ParseAddr(*ni.Address)
 		if err != nil {
-			fmt.Println("failed to parse IP address:", err)
+			c.log.Warnf("IP address parsing error at %v: %v\n", time.Now().Round(0), err)
 		}
 		ts = append(ts, nic.Settings{ 
 			Alias:	   ni.Name,
