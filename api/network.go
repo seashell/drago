@@ -51,21 +51,32 @@ func (n *Networks) Create(ctx context.Context, network *Network) (*string, error
 }
 
 // Update :
-func (n *Networks) Update(ctx context.Context, network *Network) error {
-	err := n.client.updateResource(*network.ID, networksPath, network)
+func (n *Networks) Update(ctx context.Context, network *Network) (*string, error) {
+
+	receiver := struct {
+		*Network
+	}{}
+
+	err := n.client.updateResource(*network.ID, networksPath, network, &receiver)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return receiver.ID, nil
 }
 
 // Delete :
-func (n *Networks) Delete(ctx context.Context, id string) error {
-	err := n.client.deleteResource(id, networksPath)
+func (n *Networks) Delete(ctx context.Context, id string) (*string, error) {
+	receiver := struct {
+		*Network
+	}{}
+
+	err := n.client.deleteResource(id, networksPath, &receiver)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return receiver.ID, nil
 }
 
 // List :

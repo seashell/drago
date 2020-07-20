@@ -53,19 +53,31 @@ func (l *Links) Create(ctx context.Context, link *Link) (*string, error) {
 }
 
 // Update :
-func (l *Links) Update(ctx context.Context, link *Link) error {
-	err := l.client.updateResource(*link.ID, linksPath, link)
+func (l *Links) Update(ctx context.Context, link *Link) (*string, error) {
+
+	receiver := struct {
+		*Link
+	}{}
+
+	err := l.client.updateResource(*link.ID, linksPath, link, &receiver)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return receiver.ID, nil
 }
 
 // Delete :
-func (l *Links) Delete(ctx context.Context, id string) error {
-	err := l.client.deleteResource(id, linksPath)
+func (l *Links) Delete(ctx context.Context, id string) (*string, error) {
+
+	receiver := struct {
+		*Link
+	}{}
+
+	err := l.client.deleteResource(id, linksPath, &receiver)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return receiver.ID, nil
 }

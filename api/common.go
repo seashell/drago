@@ -54,7 +54,7 @@ func (c *Client) createResource(path string, sender interface{}, receiver interf
 	return c.doRequest(req, receiver)
 }
 
-func (c *Client) updateResource(id, path string, sender interface{}) error {
+func (c *Client) updateResource(id, path string, sender interface{}, receiver interface{}) error {
 
 	base, err := url.Parse(c.config.Address)
 	if err != nil {
@@ -73,10 +73,10 @@ func (c *Client) updateResource(id, path string, sender interface{}) error {
 	}
 
 	c.addHeaders(req)
-	return c.doRequest(req, nil)
+	return c.doRequest(req, receiver)
 }
 
-func (c *Client) deleteResource(id, path string) error {
+func (c *Client) deleteResource(id, path string, receiver interface{}) error {
 
 	u, err := url.Parse(c.config.Address)
 	if err != nil {
@@ -92,10 +92,10 @@ func (c *Client) deleteResource(id, path string) error {
 	}
 
 	c.addHeaders(req)
-	return c.doRequest(req, nil)
+	return c.doRequest(req, receiver)
 }
 
-func (c *Client) listResources(path string, page *Page, filter map[string]string, receiver interface{}) error {
+func (c *Client) listResources(path string, page *Page, filters map[string]string, receiver interface{}) error {
 	u, err := url.Parse(c.config.Address)
 	if err != nil {
 		return err
@@ -108,7 +108,7 @@ func (c *Client) listResources(path string, page *Page, filter map[string]string
 		return err
 	}
 
-	c.addQuery(filter, page, req)
+	c.addQuery(filters, page, req)
 	c.addHeaders(req)
 
 	return c.doRequest(req, receiver)
@@ -119,11 +119,11 @@ func (c *Client) addHeaders(req *http.Request) {
 	req.Header.Add("X-Drago-Token", c.config.Token)
 }
 
-func (c *Client) addQuery(query map[string]string, page *Page, req *http.Request) {
+func (c *Client) addQuery(filters map[string]string, page *Page, req *http.Request) {
 	q := req.URL.Query()
 
-	if len(query) > 0 {
-		for k, v := range query {
+	if len(filters) > 0 {
+		for k, v := range filters {
 			q.Add(k, v)
 		}
 	}

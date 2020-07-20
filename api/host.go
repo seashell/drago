@@ -54,10 +54,10 @@ func (h *Hosts) Create(ctx context.Context, host *Host) (*string, error) {
 // Update :
 func (h *Hosts) Update(ctx context.Context, host *Host) (*string, error) {
 	receiver := struct {
-		ID *string `json:"id"`
+		*Host
 	}{}
 
-	err := h.client.updateResource(hostsPath, *host.ID, host)
+	err := h.client.updateResource(hostsPath, *host.ID, host, &receiver)
 	if err != nil {
 		return nil, err
 	}
@@ -66,12 +66,17 @@ func (h *Hosts) Update(ctx context.Context, host *Host) (*string, error) {
 }
 
 // Delete :
-func (h *Hosts) Delete(ctx context.Context, id string) error {
-	err := h.client.deleteResource(id, hostsPath)
+func (h *Hosts) Delete(ctx context.Context, id string) (*string, error) {
+	receiver := struct {
+		*Host
+	}{}
+
+	err := h.client.deleteResource(id, hostsPath, &receiver)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return nil
+
+	return receiver.ID, nil
 }
 
 // List :
