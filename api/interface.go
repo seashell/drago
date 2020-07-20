@@ -62,24 +62,33 @@ func (i *Interfaces) Create(ctx context.Context, iface *Interface) (*string, err
 }
 
 // Update :
-func (i *Interfaces) Update(ctx context.Context, iface *Interface) error {
+func (i *Interfaces) Update(ctx context.Context, iface *Interface) (*string, error) {
 
-	err := i.client.updateResource(*iface.ID, interfacesPath, iface)
+	receiver := struct {
+		*Interface
+	}{}
+
+	err := i.client.updateResource(*iface.ID, interfacesPath, iface, &receiver)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return receiver.ID, nil
 }
 
 // Delete :
-func (i *Interfaces) Delete(ctx context.Context, id string) error {
-	err := i.client.deleteResource(id, interfacesPath)
+func (i *Interfaces) Delete(ctx context.Context, id string) (*string, error) {
+
+	receiver := struct {
+		*Interface
+	}{}
+
+	err := i.client.deleteResource(id, interfacesPath, &receiver)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return receiver.ID, nil
 }
 
 // ListByHostID :
