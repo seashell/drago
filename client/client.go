@@ -1,44 +1,46 @@
 package client
 
 import (
+	"context"
 	"net"
 	"reflect"
 	"strconv"
 	"time"
 
-	"github.com/seashell/drago/api"
-	"github.com/seashell/drago/client/nic"
-	"github.com/seashell/drago/client/state"
+	api "github.com/seashell/drago/api"
+	nic "github.com/seashell/drago/client/nic"
+	"github.com/seashell/drago/client/storage"
 
-	"github.com/vishvananda/netlink"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"github.com/seashell/drago/pkg/logger"
+	log "github.com/seashell/drago/pkg/log"
+	netlink "github.com/vishvananda/netlink"
+	wgtypes "golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
+// Client :
 type Client struct {
-	config Config
+	config *Config
+	logger log.Logger
 
 	niCtrl    *nic.NetworkInterfaceCtrl
 	apiClient *api.Client
-
-	stateDB state.StateDB
-
-	log      logger.Logger
+	stateDB   storage.StateRpository
 }
 
+// Config :
 type Config struct {
-	Enabled      		bool
-	Servers      		[]string
-	Token        		string
-	DataDir      		string
-	InterfacesPrefix	string
-	SyncInterval 		time.Duration
-	LinksPersistentKeepalive	int
+	Enabled                  bool
+	Servers                  []string
+	Token                    string
+	DataDir                  string
+	InterfacesPrefix         string
+	SyncInterval             time.Duration
+	LinksPersistentKeepalive int
 }
 
-func New(conf Config, log logger.Logger) (*Client, error) {
+// New :
+func New(conf *Config, log log.Logger) (*Client, error) {
 	a, err := api.NewClient(&api.Config{
-		Address: conf.Servers[0], //TODO: add support for multiple API addresses
+		Address: conf.Servers[0],
 		Token:   conf.Token,
 	})
 	if err != nil {
@@ -50,104 +52,113 @@ func New(conf Config, log logger.Logger) (*Client, error) {
 		return nil, err
 	}
 
-	s, err := state.NewFileDB(conf.DataDir)
+	s, err := storage.NewJsonStorage(conf.DataDir + "state.json")
 	if err != nil {
 		return nil, err
 	}
 
 	return &Client{
-		config:    	conf,
-		niCtrl:    	n,
-		apiClient: 	a,
-		stateDB:   	s,
-		log:		log,
+		config:    conf,
+		niCtrl:    n,
+		apiClient: a,
+		stateDB:   s,
+		logger:    log,
 	}, nil
 }
 
+// Run :
 func (c *Client) Run() {
-	c.log.Debugf("Applying local settings at %v\n", time.Now().Round(0))
+
+	c.logger.Debugf("Applying local settings\n")
+
 	ls, err := c.stateDB.GetHostSettings()
 	if err != nil {
-		c.log.Warnf("Parsing error at %v: %v\n", time.Now().Round(0), err)
+		c.logger.Warnf("Parsing error: %v\n", err)
 	}
 	if err := c.niCtrl.Update(c.fromApiSettingsToNic(ls)); err != nil {
-		c.log.Warnf("Interfaces update error at %v: %v\n", time.Now().Round(0), err)
+		c.logger.Warnf("Interfaces update error: %v\n", err)
 	} else {
-		c.log.Debugf("Finished applying local settings at %v\n", time.Now().Round(0))
+		c.logger.Debugf("Finished applying local settings\n")
 	}
 
-	c.log.Infof("Starting sychronization with servers every %v\n", c.config.SyncInterval)
+	c.logger.Infof("Starting sychronization with servers every %v\n", c.config.SyncInterval)
+
 	go func() {
 		for {
-			// Parse current host network interfaces state
-			niState := []api.NetworkInterfaceState{}
+
+			niState := []*api.WgInterfaceState{}
+
 			for _, iface := range c.niCtrl.NetworkInterfaces {
-				niState = append(niState, api.NetworkInterfaceState{
-					Name:        *iface.Settings.Alias,
-					WgPublicKey: iface.Settings.Wireguard.PrivateKey.PublicKey().String(),
+				pk := iface.Settings.Wireguard.PrivateKey.PublicKey().String()
+				niState = append(niState, &api.WgInterfaceState{
+					Name:      iface.Settings.Alias,
+					PublicKey: &pk,
 				})
 			}
-			// Submit current network interfaces state and get target remote settings
-			ts, err := NewSynchronizationEndpoint(c).SynchronizeSelf(&api.HostState{NetworkInterfaces: niState})
-			if err != nil {
-				c.log.Warnf("Server synchronization error at %v: %v\n", time.Now().Round(0), err)
-			} else if ts != nil {
-				ls, err := c.stateDB.GetHostSettings()
+
+			state := &api.HostState{
+				Interfaces: niState,
+			}
+
+			desired, err := c.apiClient.Agent().SynchronizeSelf(context.Background(), state)
+
+			if err == nil {
+
+				current, err := c.stateDB.GetHostSettings()
 				if err != nil {
-					c.log.Warnf("Database error at %v: %v\n", time.Now().Round(0), err)
+					c.logger.Warnf("Error fetching host settings from local storage: %v\n", err)
 				}
-				//If target remote settings != local settings, apply remote settings
-				if !reflect.DeepEqual(ts, ls) {
-					c.log.Debugf("Applying remote settings at %v\n", time.Now().Round(0))
-					if err := c.niCtrl.Update(c.fromApiSettingsToNic(ts)); err != nil {
-						//If not sucessful,  do not persist remote settings
-						c.log.Warnf("Interfaces update error at %v: %v\n", time.Now().Round(0), err)
+
+				if !reflect.DeepEqual(desired, current) {
+					c.logger.Debugf("Applying remote settings\n")
+					if err := c.niCtrl.Update(c.fromApiSettingsToNic(desired)); err != nil {
+						c.logger.Warnf("Error applying network interface settings: %v\n", err)
 					} else {
-						//If successful, update target local settings with target remote settings
-						if err := c.stateDB.PutHostSettings(ts); err != nil {
-							c.log.Warnf("Database error at %v: %v\n", time.Now().Round(0), err)
+						if err := c.stateDB.PutHostSettings(desired); err != nil {
+							c.logger.Warnf("Error persisting host settings to local storage: %v\n", err)
 						}
-						c.log.Debugf("Finished applying remote settings at %v\n", time.Now().Round(0))
+						c.logger.Debugf("Host settings reconciliation successfully completed!")
 					}
 				}
+			} else {
+				c.logger.Warnf("Reconciliation error: %v\n", err)
 			}
 
 			time.Sleep(c.config.SyncInterval)
+
 		}
 	}()
-
 }
 
-func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
-	ts := []nic.Settings{}
-	for _, ni := range as.NetworkInterfaces {
-		//Parse WG settings
+func (c *Client) fromApiSettingsToNic(apiSettings *api.HostSettings) []nic.Settings {
 
-		// peers
+	nicSettings := []nic.Settings{}
+
+	for _, iface := range apiSettings.Interfaces {
+
 		var wgPeers []wgtypes.PeerConfig
-		for _, peer := range as.WireguardPeers {
-			if *ni.Name == *peer.Interface {
-				//Key
-				var pub wgtypes.Key
+
+		for _, peer := range apiSettings.Peers {
+
+			if *iface.Name == peer.Interface {
 				var err error
+				var pubkey wgtypes.Key
 				if peer.PublicKey != nil {
-					pub, err = wgtypes.ParseKey(*peer.PublicKey)
+					pubkey, err = wgtypes.ParseKey(*peer.PublicKey)
 					if err != nil {
-						c.log.Warnf("Key parsing error at %v: %v\n", time.Now().Round(0), err)
+						c.logger.Warnf("Key parsing error: %v\n", err)
 					}
 				}
 
-				//AllowedIPs
 				var allowedIPs []net.IPNet
-				for _, ip := range peer.AllowedIps {
+				for _, ip := range peer.AllowedIPs {
 					_, allowedIP, err := net.ParseCIDR(ip)
 					if err != nil {
-						c.log.Warnf("CIDR parsing error at %v: %v\n", time.Now().Round(0), err)
+						c.logger.Warnf("CIDR parsing error at %v: %v\n", err)
 					}
 					allowedIPs = append(allowedIPs, *allowedIP)
 				}
 
-				//PersistentKeepalive
 				var persistentKeepalive *time.Duration
 				if peer.PersistentKeepalive != nil {
 					t := time.Duration(*peer.PersistentKeepalive) * time.Second
@@ -156,10 +167,9 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 					if c.config.LinksPersistentKeepalive != 0 {
 						t := time.Duration(c.config.LinksPersistentKeepalive) * time.Second
 						persistentKeepalive = &t
-					}					
+					}
 				}
 
-				//Endpoint
 				var endpoint *net.UDPAddr
 				if peer.Address != nil {
 					p, _ := strconv.Atoi(*peer.Port)
@@ -174,7 +184,7 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 					UpdateOnly:                  false,
 					ReplaceAllowedIPs:           true,
 					PresharedKey:                nil,
-					PublicKey:                   pub,
+					PublicKey:                   pubkey,
 					AllowedIPs:                  allowedIPs,
 					Endpoint:                    endpoint,
 					PersistentKeepaliveInterval: persistentKeepalive,
@@ -183,10 +193,9 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 			}
 		}
 
-		//ListenPort
 		var listenPort *int
-		if ni.ListenPort != nil {
-			lp, _ := strconv.Atoi(*ni.ListenPort)
+		if iface.ListenPort != nil {
+			lp, _ := strconv.Atoi(*iface.ListenPort)
 			listenPort = &lp
 		}
 
@@ -197,17 +206,17 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 			Peers:        wgPeers,
 		}
 
-		//Parse link device settings
-		//Address
-		addr, err := netlink.ParseAddr(*ni.Address)
+		addr, err := netlink.ParseAddr(*iface.Address)
 		if err != nil {
-			c.log.Warnf("IP address parsing error at %v: %v\n", time.Now().Round(0), err)
+			c.logger.Warnf("IP address parsing error at %v: %v\n", time.Now().Round(0), err)
 		}
-		ts = append(ts, nic.Settings{ 
-			Alias:	   ni.Name,
+
+		nicSettings = append(nicSettings, nic.Settings{
+			Alias:     iface.Name,
 			Address:   addr,
 			Wireguard: wgConfig,
 		})
+
 	}
-	return ts
+	return nicSettings
 }

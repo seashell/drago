@@ -109,3 +109,22 @@ func (i *Interfaces) ListByHostID(ctx context.Context, id string, page *Page) ([
 
 	return receiver.Interfaces, receiver.Page, nil
 }
+
+// ListByNetworkID :
+func (i *Interfaces) ListByNetworkID(ctx context.Context, id string, page *Page) ([]*Interface, *Page, error) {
+	receiver := struct {
+		Interfaces []*Interface `json:"items"`
+		*Page
+	}{}
+
+	filters := map[string]string{
+		"networkId": id,
+	}
+
+	err := i.client.listResources(interfacesPath, page, filters, &receiver)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return receiver.Interfaces, receiver.Page, nil
+}

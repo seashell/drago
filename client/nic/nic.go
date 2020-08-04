@@ -1,25 +1,24 @@
 package nic
 
 import (
+	"encoding/hex"
 	"fmt"
 	"math/rand"
-	"encoding/hex"
-	"regexp"	
-	"time"
-	
+	"regexp"
+
 	"github.com/vishvananda/netlink"
 	"golang.zx2c4.com/wireguard/wgctrl"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 
-	"github.com/seashell/drago/pkg/logger"
+	log "github.com/seashell/drago/pkg/log"
 )
 
 // Settings :
 type Settings struct {
-	Name      	string
-	Alias		*string	
-	Address   	*netlink.Addr
-	Wireguard	*wgtypes.Config
+	Name      string
+	Alias     *string
+	Address   *netlink.Addr
+	Wireguard *wgtypes.Config
 }
 
 // NetworkInterface :
@@ -31,16 +30,14 @@ type NetworkInterface struct {
 // NetworkInterfaceCtrl :
 type NetworkInterfaceCtrl struct {
 	NetworkInterfaces map[string]*NetworkInterface
-
-	namePrefix	 string
-	wgController *wgctrl.Client
-	wgPrivateKey *wgtypes.Key
-
-	log      logger.Logger
+	namePrefix        string
+	wgController      *wgctrl.Client
+	wgPrivateKey      *wgtypes.Key
+	log               log.Logger
 }
 
 // NewCtrl :
-func NewCtrl(namePrefix string, log logger.Logger) (*NetworkInterfaceCtrl, error) {
+func NewCtrl(namePrefix string, log log.Logger) (*NetworkInterfaceCtrl, error) {
 
 	wg, err := wgctrl.New()
 	if err != nil {
@@ -54,10 +51,10 @@ func NewCtrl(namePrefix string, log logger.Logger) (*NetworkInterfaceCtrl, error
 
 	return &NetworkInterfaceCtrl{
 		NetworkInterfaces: make(map[string]*NetworkInterface),
-		wgController:   wg,
-		wgPrivateKey:   &pk,
-		namePrefix:		namePrefix,
-		log:			log,
+		wgController:      wg,
+		wgPrivateKey:      &pk,
+		namePrefix:        namePrefix,
+		log:               log,
 	}, nil
 }
 
@@ -66,12 +63,11 @@ func (n *NetworkInterfaceCtrl) Update(ts []Settings) error {
 	if err := n.resetWgNetworkInterfaces(); err != nil {
 		return err
 	}
-
 	for _, s := range ts {
-		b := make([]byte, 5) //equals 10 charachters
-		rand.Read(b) 
+		b := make([]byte, 5) //equals 10 characters
+		rand.Read(b)
 		r := hex.EncodeToString(b)
-		s.Name = n.namePrefix+r
+		s.Name = n.namePrefix + r
 		if err := n.ConfigureNetworkInterface(&s); err != nil {
 			return err
 		}
@@ -83,28 +79,27 @@ func (n *NetworkInterfaceCtrl) resetWgNetworkInterfaces() error {
 	niList, _ := netlink.LinkList()
 	for _, ni := range niList {
 		if ni.Type() == "wireguard" {
-			//match device alias with prefix provided by n.namePrefix 
+			// Match device alias with prefix provided by n.namePrefix
 			matched, err := regexp.MatchString(n.namePrefix+`.*`, ni.Attrs().Name)
 			if err != nil {
 				return fmt.Errorf("Failed to match interface name: %v\n", err)
 			}
-		
+
 			if matched {
 				if err := n.DeleteNetworkInterface(ni.Attrs().Name); err != nil {
 					return fmt.Errorf("Failed to delete network interface: %v\n", err)
 				}
 				delete(n.NetworkInterfaces, ni.Attrs().Alias)
 			}
-
 		}
-
 	}
 	return nil
 }
 
 // ConfigureNetworkInterface :
 func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
-	// register new interface
+
+	// Register new interface
 	lattr := netlink.NewLinkAttrs()
 	lattr.Name = ts.Name
 	lattr.Alias = *ts.Alias
@@ -119,24 +114,23 @@ func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
 	}
 
 	if err := netlink.LinkSetAlias(l, lattr.Alias); err != nil {
-		n.log.Warnf("Setting link alias error at %v: %v\n", time.Now().Round(0), err)
+		n.log.Warnf("Setting link alias error: %v\n", err)
 	}
 
-
-	// apply wireguard config
+	// Apply WireGuard config
 	if err := n.wgController.ConfigureDevice(ts.Name, *ts.Wireguard); err != nil {
 		if err != nil {
-			n.log.Warnf("Unknown wireguard configuration error at %v: %v\n", time.Now().Round(0), err)
+			n.log.Warnf("Unknown wireguard configuration error: %v\n", err)
 		}
 	}
 
-	// apply new settings
+	// Apply new settings
 	if err := netlink.AddrAdd(l, ts.Address); err != nil {
-		n.log.Warnf("Adding interface address error at %v: %v\n", time.Now().Round(0), err)
+		n.log.Warnf("Adding interface address error: %v\n", err)
 	}
 
 	if err := netlink.LinkSetUp(l); err != nil {
-		n.log.Warnf("Setting interface up error at %v: %v\n", time.Now().Round(0), err)
+		n.log.Warnf("Setting interface up error: %v\n", err)
 	}
 
 	for _, peer := range ts.Wireguard.Peers {
@@ -145,7 +139,7 @@ func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
 				LinkIndex: l.Attrs().Index,
 				Dst:       &allowedIP,
 			}); err != nil {
-				n.log.Warnf("Setting IP route error at %v: %v\n", time.Now().Round(0), err)
+				n.log.Warnf("Setting IP route error: %v\n", err)
 			}
 		}
 	}
