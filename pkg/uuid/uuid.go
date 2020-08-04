@@ -1,24 +1,21 @@
 package uuid
 
-import "github.com/google/uuid"
+import (
+	"crypto/rand"
+	"fmt"
+)
 
-// UUID : Type representing an UUID
-type UUID [16]byte
-
-// Nil : Nil UUID
-var Nil UUID
-
-// NewRandom : Generate random UUID
-func NewRandom() (UUID, error) {
-	uuid, err := uuid.NewRandom()
-	if err != nil {
-		return Nil, err
+// Generate is used to generate a random UUID
+func Generate() string {
+	buf := make([]byte, 16)
+	if _, err := rand.Read(buf); err != nil {
+		panic(fmt.Errorf("failed to read random bytes: %v", err))
 	}
 
-	return UUID(uuid), nil
-}
-
-// String : Convert an UUID to string
-func (id UUID) String() string {
-	return uuid.UUID(id).String()
+	return fmt.Sprintf("%08x-%04x-%04x-%04x-%12x",
+		buf[0:4],
+		buf[4:6],
+		buf[6:8],
+		buf[8:10],
+		buf[10:16])
 }
