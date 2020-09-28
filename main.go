@@ -6,25 +6,64 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"runtime"
+	"runtime/debug"
 
 	command "github.com/seashell/drago/command"
 	cli "github.com/seashell/drago/pkg/cli"
 	version "github.com/seashell/drago/version"
 )
 
+// Credits to https://github.com/pulumi/pulumi/blob/master/pkg/cmd/pulumi/main.go
+func panicHandler() {
+	if panicPayload := recover(); panicPayload != nil {
+
+		stack := string(debug.Stack())
+		fmt.Fprintln(os.Stderr, "")
+		fmt.Fprintln(os.Stderr, "================================================================================")
+		fmt.Fprintln(os.Stderr, "Drago has encountered a fatal error. This is a bug!")
+		fmt.Fprintln(os.Stderr, "We would appreciate a report: https://github.com/seashell/drago/issues/")
+		fmt.Fprintln(os.Stderr, "Please provide all of the below text in your report.")
+		fmt.Fprintln(os.Stderr, "================================================================================")
+
+		fmt.Fprintf(os.Stderr, "Drago Version:       %s\n", version.Version)
+		fmt.Fprintf(os.Stderr, "Go Version:          %s\n", runtime.Version())
+		fmt.Fprintf(os.Stderr, "Go Compiler:         %s\n", runtime.Compiler)
+		fmt.Fprintf(os.Stderr, "Architecture:        %s\n", runtime.GOARCH)
+		fmt.Fprintf(os.Stderr, "Operating System:    %s\n", runtime.GOOS)
+		fmt.Fprintf(os.Stderr, "Panic:               %s\n\n", panicPayload)
+		fmt.Fprintln(os.Stderr, stack)
+	}
+}
+
 func init() {
 	os.Setenv("TZ", "UTC")
 }
 
 func main() {
-	os.Exit(Run(os.Args[1:]))
+	os.Exit(run(os.Args[1:]))
 }
 
-func Run(args []string) int {
+func run(args []string) int {
 
 	cli := setupCLI()
 
-	code, err := cli.Run(context.Background(), args)
+	ctx := context.Background()
+	ctx, cancel := context.WithCancel(ctx)
+
+	signalCh := make(chan os.Signal)
+	signal.Notify(signalCh, os.Interrupt)
+
+	go func() {
+		<-signalCh
+		fmt.Fprintf(os.Stderr, "Received signal. Interrupting...\n")
+		cancel()
+	}()
+
+	defer panicHandler()
+
+	code, err := cli.Run(ctx, args)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Error executing CLI: %s\n", err.Error())
 		return 1
@@ -33,52 +72,20 @@ func Run(args []string) int {
 	return code
 }
 
-// setupCLI
 func setupCLI() *cli.CLI {
 
-	base := command.BaseCommand{
-		UI: &cli.SimpleUI{
-			Reader:      os.Stdin,
-			Writer:      os.Stdout,
-			ErrorWriter: os.Stderr,
-		},
+	ui := &cli.SimpleUI{
+		Reader:      os.Stdin,
+		Writer:      os.Stdout,
+		ErrorWriter: os.Stderr,
 	}
 
 	cli := cli.New(&cli.Config{
-		Name:    "drago",
-		Version: version.GetVersion().VersionNumber(),
+		Name: "drago",
 		Commands: map[string]cli.Command{
-			"agent": &command.AgentCommand{
-				BaseCommand: base,
-			},
-			"host": &command.HostCommand{
-				BaseCommand: base,
-			},
-			"host create": &command.HostCreateCommand{
-				BaseCommand: base,
-			},
-			"host delete": &command.HostDeleteCommand{
-				BaseCommand: base,
-			},
-			"host list": &command.HostListCommand{
-				BaseCommand: base,
-			},
-			"token": &command.TokenCommand{
-				BaseCommand: base,
-			},
-			"token create": &command.TokenCreateCommand{
-				BaseCommand: base,
-			},
-			"token delete": &command.TokenDeleteCommand{
-				BaseCommand: base,
-			},
-			"token info": &command.TokenInfoCommand{
-				BaseCommand: base,
-			},
-			"token list": &command.TokenListCommand{
-				BaseCommand: base,
-			},
+			"agent": &command.AgentCommand{UI: ui},
 		},
+		Version: version.GetVersion().VersionNumber(),
 	})
 
 	return cli

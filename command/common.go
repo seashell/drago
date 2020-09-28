@@ -3,23 +3,29 @@ package command
 import (
 	"flag"
 	"fmt"
-	"strings"
 
 	cli "github.com/seashell/drago/pkg/cli"
 )
 
+// manyStrings
+type manyStrings []string
+
+func (s *manyStrings) Set(val string) error {
+	*s = append(*s, val)
+	return nil
+}
+
+func (s *manyStrings) String() string {
+	var out []string
+	out = *s
+	return fmt.Sprintf("%v", out)
+}
+
+// RootFlagSet :
 type RootFlagSet struct {
 	*flag.FlagSet
-	// Attributes containing values parsed from user input (e.g., flags,
-	// environment variables, etc) which are not directly required by the
-	// command implementation, but are important to provide them with common
-	// functionality such as the API client, and avoid replicating code.
-	//
-	// Address of the Drago server
-	address string
-
-	// Secret token for authentication
-	token string
+	envPaths    manyStrings
+	configPaths manyStrings
 }
 
 // FlagSet declares flags that are common to all commands,
@@ -33,8 +39,8 @@ func FlagSet(name string) *RootFlagSet {
 
 	flags.Usage = func() {}
 
-	flags.StringVar(&flags.address, "address", "", "")
-	flags.StringVar(&flags.token, "token", "", "")
+	flags.Var(&flags.envPaths, "env", "")
+	flags.Var(&flags.configPaths, "config", "")
 
 	// TODO: direct output to UI
 	flags.SetOutput(nil)
@@ -45,16 +51,15 @@ func FlagSet(name string) *RootFlagSet {
 // GlobalOptions returns the global usage options string.
 func GlobalOptions() string {
 	text := `
-  --address=<addr>
-    The address of the Drago server.
-    Overrides the DRAGO_ADDR environment variable if set.
-    Default = http://127.0.0.1:8080
+  --config=<path>
+    Path to a HCL file containing valid Drago configurations.
+    Overrides the DRAGO_CONFIG_PATH environment variable if set.
 
-  --token
-    The SecretID of an ACL token to use to authenticate API requests with.
-    Overrides the DRAGO_TOKEN environment variable if set.
+  --env=<path>
+    Path to a an env file
+    Overrides the DRAGO_ENV_FILE_PATH environment variable if set.
 `
-	return strings.TrimSpace(text)
+	return text
 }
 
 // DefaultErrorMessage returns the default error message for this command

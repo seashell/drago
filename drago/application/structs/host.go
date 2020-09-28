@@ -2,53 +2,46 @@ package structs
 
 import "time"
 
-type CreateHostInput struct {
-	*dto
-	Name             *string  `json:"name" validate:"required,min=1,max=50"`
-	AdvertiseAddress *string  `json:"advertiseAddress" validate:"omitempty,ip_addr|fqdn"`
-	Labels           []string `json:"labels" validate:"dive,omitempty,dashedalphanum"`
+// Host :
+type Host struct {
+	Name       string       `json:"name"`
+	Interfaces []*Interface `json:"interfaces,omitempty"`
+	Peers      []*Peer      `json:"peers,omitempty"`
 }
 
-type CreateHostOutput struct {
-	*dto
-	ID *string `json:"id"`
+// Interface :
+type Interface struct {
+	Name       string `json:"name,omitempty"`
+	PublicKey  string `json:"publicKey,omitempty"`
+	Address    string `json:"address,omitempty"`
+	ListenPort string `json:"listenPort,omitempty"`
+	Table      string `json:"table,omitempty"`
+	DNS        string `json:"dns,omitempty"`
+	MTU        string `json:"mtu,omitempty"`
+	PreUp      string `json:"preUp,omitempty"`
+	PostUp     string `json:"postUp,omitempty"`
+	PreDown    string `json:"preDown,omitempty"`
+	PostDown   string `json:"postDown,omitempty"`
 }
 
-type UpdateHostInput struct {
-	*dto
-	ID               string   `validate:"required,uuid4"`
-	Name             *string  `json:"name,omitempty"`
-	AdvertiseAddress *string  `json:"advertiseAddress,omitempty"`
-	Labels           []string `json:"labels,omitempty"`
+// Peer :
+type Peer struct {
+	Interface           string    `json:"interface,omitempty"`
+	Address             string    `json:"address,omitempty"`
+	Port                string    `json:"port,omitempty"`
+	PublicKey           string    `json:"publicKey,omitempty"`
+	AllowedIPs          []string  `json:"allowedIps"`
+	PersistentKeepalive int       `json:"persistentKeepalive,omitempty"`
+	LatencyMs           uint64    `json:"latencyMs,omitempty"`
+	LastHandshake       time.Time `json:"lastHandshake,omitempty"`
 }
 
-type UpdateHostOutput struct {
-	*dto
-	ID *string `json:"id"`
+// HostSynchronizeInput :
+type HostSynchronizeInput struct {
+	Host
 }
 
-type GetHostInput struct {
-	*dto
-	ID string `validate:"required,uuid4"`
-}
-
-type GetHostOutput struct {
-	*dto
-	ID               string     `validate:"required,uuid4"`
-	Name             *string    `json:"name,omitempty"`
-	AdvertiseAddress *string    `json:"advertiseAddress,omitempty"`
-	Labels           []string   `json:"labels,omitempty"`
-	CreatedAt        *time.Time `json:"createdAt,omitempty"`
-	UpdatedAt        *time.Time `json:"updatedAt,omitempty"`
-}
-
-type ListHostsInput struct {
-	*dto
-	PageInput
-}
-
-type ListHostsOutput struct {
-	*dto
-	PageOutput
-	Items []*GetHostOutput `json:"items"`
+// HostSynchronizeOutput :
+type HostSynchronizeOutput struct {
+	Host
 }

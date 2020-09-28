@@ -1,43 +1,44 @@
 package nic
 
 import (
+	"crypto/rand"
 	"encoding/hex"
 	"fmt"
-	"math/rand"
-	"regexp"
+	"net"
+	"os/exec"
+	"time"
 
-	"github.com/vishvananda/netlink"
-	"golang.zx2c4.com/wireguard/wgctrl"
-	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-
-	log "github.com/seashell/drago/pkg/log"
+	domain "github.com/seashell/drago/client/domain"
+	netlink "github.com/vishvananda/netlink"
+	wgctrl "golang.zx2c4.com/wireguard/wgctrl"
+	wgtypes "golang.zx2c4.com/wireguard/wgctrl/wgtypes"
 )
 
-// Settings :
-type Settings struct {
-	Name      string
-	Alias     *string
-	Address   *netlink.Addr
-	Wireguard *wgtypes.Config
+const (
+	linkTypeWireguard = "wireguard"
+)
+
+// Config contains configurations for a network controller.
+type Config struct {
+	// InterfacePrefix defines the string prepended to each interface name.
+	// Example: if InterfacePrefix is "abc", interfaces will be named as
+	// "abc-xxxxxx", where "xxxxxx" is a random string.
+	InterfacePrefix string
+
+	// WireguardPath is the path to a userspace Wireguard binary. In case
+	// it is not defined, Drago will try to use the kernel module.
+	WireguardPath string
 }
 
-// NetworkInterface :
-type NetworkInterface struct {
-	Settings *Settings
-	Link     *netlink.Link
+// Controller : network interface controller.
+type Controller struct {
+	config *Config
+	key    *wgtypes.Key
+	wg     *wgctrl.Client
 }
 
-// NetworkInterfaceCtrl :
-type NetworkInterfaceCtrl struct {
-	NetworkInterfaces map[string]*NetworkInterface
-	namePrefix        string
-	wgController      *wgctrl.Client
-	wgPrivateKey      *wgtypes.Key
-	log               log.Logger
-}
-
-// NewCtrl :
-func NewCtrl(namePrefix string, log log.Logger) (*NetworkInterfaceCtrl, error) {
+// NewController :
+func NewController(config *Config) (*Controller, error) {
 
 	wg, err := wgctrl.New()
 	if err != nil {
@@ -49,131 +50,197 @@ func NewCtrl(namePrefix string, log log.Logger) (*NetworkInterfaceCtrl, error) {
 		return nil, err
 	}
 
-	return &NetworkInterfaceCtrl{
-		NetworkInterfaces: make(map[string]*NetworkInterface),
-		wgController:      wg,
-		wgPrivateKey:      &pk,
-		namePrefix:        namePrefix,
-		log:               log,
-	}, nil
+	c := &Controller{
+		config: config,
+		key:    &pk,
+		wg:     wg,
+	}
+
+	return c, nil
 }
 
-// Update :
-func (n *NetworkInterfaceCtrl) Update(ts []Settings) error {
-	if err := n.resetWgNetworkInterfaces(); err != nil {
+// ListInterfaces returns a slice of all network interfaces managed by
+// the controller.
+func (c *Controller) ListInterfaces() ([]*domain.Interface, error) {
+
+	out := []*domain.Interface{}
+
+	links, err := listLinksWithPrefix(c.config.InterfacePrefix)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, l := range links {
+		out = append(out, &domain.Interface{
+			Name: l.Attrs().Name,
+			// TODO: populate other fields
+		})
+	}
+
+	return out, nil
+}
+
+// DeleteInterface deletes a network interface and all associated routes.
+func (c *Controller) DeleteInterface(name string) error {
+	err := deleteLinkAndRoutes(name)
+	if err != nil {
 		return err
 	}
-	for _, s := range ts {
-		b := make([]byte, 5) //equals 10 characters
-		rand.Read(b)
-		r := hex.EncodeToString(b)
-		s.Name = n.namePrefix + r
-		if err := n.ConfigureNetworkInterface(&s); err != nil {
+	return nil
+}
+
+// DeleteAllInterfaces deletes all network interfaces and routes.
+func (c *Controller) DeleteAllInterfaces() error {
+	err := deleteLinkAndRoutesWithPrefix(c.config.InterfacePrefix)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// PrivateKey returns ...
+func (c *Controller) PrivateKey() *wgtypes.Key {
+	return c.key
+}
+
+// CreateInterface ...
+func (c *Controller) CreateInterface(iface *domain.Interface) error {
+
+	linkName, linkAlias := c.randomInterfaceName(), iface.Name
+
+	err := c.createLink(linkName, linkAlias)
+	if err != nil {
+		return err
+	}
+
+	// Apply WireGuard configurations to the newly created link
+	config := wgtypes.Config{
+		PrivateKey:   c.key,
+		ListenPort:   nil,
+		Peers:        []wgtypes.PeerConfig{},
+		ReplacePeers: true,
+	}
+
+	if iface.ListenPort != 0 {
+		config.ListenPort = &iface.ListenPort
+	}
+
+	for _, peer := range iface.Peers {
+		p, err := c.newPeerConfig(peer)
+		if err != nil {
+			return err
+		}
+		config.Peers = append(config.Peers, *p)
+	}
+
+	err = c.wg.ConfigureDevice(linkName, config)
+	if err != nil {
+		return err
+	}
+
+	// Assign IP address in CIDR format to the newly created link
+	err = setLinkAddress(linkName, iface.Address)
+	if err != nil {
+		return err
+	}
+
+	err = enableLink(linkName)
+	if err != nil {
+		return err
+	}
+
+	idx, err := getLinkIndex(linkName)
+	if err != nil {
+		return err
+	}
+
+	for _, peer := range config.Peers {
+		for _, ip := range peer.AllowedIPs {
+			if err = netlink.RouteAdd(&netlink.Route{LinkIndex: idx, Dst: &ip}); err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (c *Controller) createLink(name string, alias string) error {
+
+	attrs := netlink.NewLinkAttrs()
+	attrs.Name, attrs.Alias = name, alias
+
+	// Create a new WireGuard interface. If a path to a valid userspace WireGuard binary
+	// was specified in the configurations, use if. Otherwise, create the interface manually.
+	if c.config.WireguardPath != "" {
+		err := exec.Command(c.config.WireguardPath, name).Run()
+		if err != nil {
+			return err
+		}
+	} else {
+		if err := netlink.LinkAdd(&netlink.Wireguard{LinkAttrs: attrs}); err != nil {
 			return err
 		}
 	}
-	return nil
-}
 
-func (n *NetworkInterfaceCtrl) resetWgNetworkInterfaces() error {
-	niList, _ := netlink.LinkList()
-	for _, ni := range niList {
-		if ni.Type() == "wireguard" {
-			// Match device alias with prefix provided by n.namePrefix
-			matched, err := regexp.MatchString(n.namePrefix+`.*`, ni.Attrs().Name)
-			if err != nil {
-				return fmt.Errorf("Failed to match interface name: %v\n", err)
-			}
-
-			if matched {
-				if err := n.DeleteNetworkInterface(ni.Attrs().Name); err != nil {
-					return fmt.Errorf("Failed to delete network interface: %v\n", err)
-				}
-				delete(n.NetworkInterfaces, ni.Attrs().Alias)
-			}
-		}
-	}
-	return nil
-}
-
-// ConfigureNetworkInterface :
-func (n *NetworkInterfaceCtrl) ConfigureNetworkInterface(ts *Settings) error {
-
-	// Register new interface
-	lattr := netlink.NewLinkAttrs()
-	lattr.Name = ts.Name
-	lattr.Alias = *ts.Alias
-
-	if err := netlink.LinkAdd(&netlink.Wireguard{LinkAttrs: lattr}); err != nil {
-		return fmt.Errorf("Failed to create new network device: %v\n", err)
-	}
-
-	l, err := netlink.LinkByName(ts.Name)
+	err := setLinkAlias(name, alias)
 	if err != nil {
-		return fmt.Errorf("Failed to get network device by name: %v\n", err)
+		return err
 	}
 
-	if err := netlink.LinkSetAlias(l, lattr.Alias); err != nil {
-		n.log.Warnf("Setting link alias error: %v\n", err)
+	return nil
+}
+
+func (c *Controller) newPeerConfig(peer *domain.Peer) (*wgtypes.PeerConfig, error) {
+
+	var err error
+
+	config := &wgtypes.PeerConfig{
+		Remove:                      false,
+		UpdateOnly:                  false,
+		ReplaceAllowedIPs:           true,
+		PresharedKey:                nil,
+		PublicKey:                   wgtypes.Key{},
+		AllowedIPs:                  []net.IPNet{},
+		Endpoint:                    nil,
+		PersistentKeepaliveInterval: nil,
 	}
 
-	// Apply WireGuard config
-	if err := n.wgController.ConfigureDevice(ts.Name, *ts.Wireguard); err != nil {
+	if peer.PublicKey != "" {
+		var key wgtypes.Key
+		if key, err = wgtypes.ParseKey(peer.PublicKey); err != nil {
+			return nil, err
+		}
+		config.PublicKey = key
+	}
+
+	for _, ip := range peer.AllowedIPs {
+		_, parsed, err := net.ParseCIDR(ip)
 		if err != nil {
-			n.log.Warnf("Unknown wireguard configuration error: %v\n", err)
+			return nil, err
+		}
+		config.AllowedIPs = append(config.AllowedIPs, *parsed)
+	}
+
+	if peer.PersistentKeepalive != 0 {
+		pk := time.Duration(peer.PersistentKeepalive) * time.Second
+		config.PersistentKeepaliveInterval = &pk
+	}
+
+	if peer.Address != "" {
+		config.Endpoint = &net.UDPAddr{
+			IP:   net.ParseIP(peer.Address),
+			Port: peer.Port,
 		}
 	}
 
-	// Apply new settings
-	if err := netlink.AddrAdd(l, ts.Address); err != nil {
-		n.log.Warnf("Adding interface address error: %v\n", err)
-	}
-
-	if err := netlink.LinkSetUp(l); err != nil {
-		n.log.Warnf("Setting interface up error: %v\n", err)
-	}
-
-	for _, peer := range ts.Wireguard.Peers {
-		for _, allowedIP := range peer.AllowedIPs {
-			if err = netlink.RouteAdd(&netlink.Route{
-				LinkIndex: l.Attrs().Index,
-				Dst:       &allowedIP,
-			}); err != nil {
-				n.log.Warnf("Setting IP route error: %v\n", err)
-			}
-		}
-	}
-
-	n.NetworkInterfaces[*ts.Alias] = &NetworkInterface{
-		Settings: ts,
-		Link:     &l,
-	}
-	return nil
+	return config, nil
 }
 
-// DeleteNetworkInterface :
-func (n *NetworkInterfaceCtrl) DeleteNetworkInterface(name string) error {
-	lattr := netlink.NewLinkAttrs()
-	lattr.Name = name
-
-	ipRoutes, err := netlink.RouteList(&netlink.Wireguard{LinkAttrs: lattr}, 0)
-	if err != nil {
-		return fmt.Errorf("Failed to get IP routes list: %v\n", err)
+func (c *Controller) randomInterfaceName() string {
+	buf := make([]byte, 3)
+	if _, err := rand.Read(buf); err != nil {
+		panic(fmt.Errorf("failed to read random bytes: %v", err))
 	}
-	for _, route := range ipRoutes {
-		if err = netlink.RouteDel(&route); err != nil {
-			return fmt.Errorf("Failed to remove IP route: %v\n", err)
-		}
-	}
-
-	if err := netlink.LinkDel(&netlink.Wireguard{LinkAttrs: lattr}); err != nil {
-		return fmt.Errorf("Failed to delete network device: %v\n", err)
-	}
-
-	return nil
-}
-
-// GetWgPrivateKey :
-func (n *NetworkInterfaceCtrl) GetWgPrivateKey() *wgtypes.Key {
-	return n.wgPrivateKey
+	return c.config.InterfacePrefix + "-" + hex.EncodeToString(buf)
 }

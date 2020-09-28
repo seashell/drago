@@ -4,170 +4,200 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"os/signal"
 	"strconv"
 	"strings"
 
+	"github.com/caarlos0/env"
+	"github.com/dimiro1/banner"
+	"github.com/joho/godotenv"
 	agent "github.com/seashell/drago/agent"
+	cli "github.com/seashell/drago/pkg/cli"
 	log "github.com/seashell/drago/pkg/log"
-	logrus "github.com/seashell/drago/pkg/log/logrus"
-	version "github.com/seashell/drago/version"
+	zap "github.com/seashell/drago/pkg/log/zap"
 )
 
+// AgentCommand :
 type AgentCommand struct {
-	BaseCommand
+	UI cli.UI
 }
 
+// Name :
 func (c *AgentCommand) Name() string {
 	return "agent"
 }
 
+// Synopsis :
 func (c *AgentCommand) Synopsis() string {
 	return "Runs a drago agent"
 }
 
+// Run :
 func (c *AgentCommand) Run(ctx context.Context, args []string) int {
+
+	displayBanner()
 
 	config := c.parseConfig(args)
 
-	logger, err := logrus.NewLoggerAdapter(logrus.Config{
+	// logger, err := logrus.NewLoggerAdapter(logrus.Config{
+	// 	LoggerOptions: log.LoggerOptions{
+	// 		Level:  config.LogLevel,
+	// 		Prefix: "agent: ",
+	// 	},
+	// })
+
+	logger, err := zap.NewLoggerAdapter(zap.Config{
 		LoggerOptions: log.LoggerOptions{
+			Level:  config.LogLevel,
 			Prefix: "agent: ",
-			Level:  logrus.Debug,
 		},
 	})
+
 	if err != nil {
 		c.UI.Error(err.Error())
 		return 1
 	}
 
-	agent, err := agent.New(config, logger)
-	if err != nil {
-		c.UI.Error("==> " + "Error initializing agent: " + err.Error() + "\n")
-		return 1
+	c.UI.Output("==> Starting Drago agent...")
+
+	// Create DataDir and other subdirectories if they do not exist
+	if _, err := os.Stat(config.DataDir); os.IsNotExist(err) {
+		os.Mkdir(config.DataDir, 0755)
 	}
 
-	defer func() {
-		agent.Shutdown()
-	}()
+	c.printConfig(config)
 
-	c.printAgentConfig(config)
+	_, err = agent.New(config, logger)
+	if err != nil {
+		c.UI.Error(fmt.Sprintf("Error starting agent: %s\n", err.Error()))
+	}
 
-	c.UI.Output("==> Drago agent started! Log data will stream in below:\n")
+	<-ctx.Done()
 
-	return c.handleSignals()
+	return 0
 }
 
-// parseConfig
 func (c *AgentCommand) parseConfig(args []string) *agent.Config {
-
-	var devMode bool
-	var configPath string
 
 	flags := FlagSet(c.Name())
 
-	flags.Usage = func() {
-		c.UI.Output(c.Help())
-	}
-
-	cmdConfig := &agent.Config{
-		Server:  &agent.ServerConfig{},
-		Client:  &agent.ClientConfig{},
-		ACL:     &agent.ACLConfig{},
-		Ports:   &agent.Ports{},
-		Version: version.GetVersion(),
-	}
-
-	// Agent mode
-	flags.BoolVar(&devMode, "dev", false, "")
-	flags.BoolVar(&cmdConfig.Server.Enabled, "server", false, "")
-	flags.BoolVar(&cmdConfig.Client.Enabled, "client", false, "")
-
-	// Client-only options
-	flags.StringVar(&cmdConfig.Client.StateDir, "state-dir", "", "")
-	flags.StringVar(&cmdConfig.Client.InterfacesPrefix, "interface-prefix", "", "")
-	flags.StringVar(&cmdConfig.Client.Server, "remote-server", "", "")
-
-	// Server-only options
-	// --
-
-	// General options
-	flags.StringVar(&configPath, "config", "", "")
-	flags.StringVar(&cmdConfig.BindAddr, "bind", "", "")
-	flags.StringVar(&cmdConfig.DataDir, "data_dir", "", "")
-	flags.StringVar(&cmdConfig.LogLevel, "log-level", "", "")
-	flags.StringVar(&cmdConfig.PluginDir, "plugin-dir", "", "")
-
-	// ACL options
-	flags.BoolVar(&cmdConfig.ACL.Enabled, "acl-enabled", false, "")
-
-	if err := flags.Parse(args); err != nil {
-		c.UI.Error("==> Error: " + err.Error() + "\n")
-		return nil
-	}
+	configFromFlags := c.parseFlags(flags, args)
+	configFromFile := c.parseConfigFiles(flags.configPaths...)
+	configFromEnv := c.parseEnv(flags.envPaths...)
 
 	config := agent.DefaultConfig()
 
-	if configPath != "" {
-		config := &agent.Config{}
-		config, err := config.LoadFromFile(configPath)
-		if err != nil {
-			c.UI.Error(fmt.Sprintf("==> Error parsing configuration from file: %s", err))
-		}
-		c.UI.Output(fmt.Sprintf("==> Loaded configuration from %s", configPath))
-	} else {
-		c.UI.Warn("==> No configuration file loaded")
-	}
+	config = config.Merge(configFromFile)
+	config = config.Merge(configFromEnv)
+	config = config.Merge(configFromFlags)
 
-	config = config.Merge(cmdConfig)
-	if !config.IsValid() {
-		return nil
+	if err := config.Validate(); err != nil {
+		c.UI.Error(fmt.Sprintf("Invalid input: %s", err.Error()))
+		os.Exit(1)
 	}
 
 	return config
 }
 
-// printAgentConfig
-func (c *AgentCommand) printAgentConfig(config *agent.Config) {
+func (c *AgentCommand) parseFlags(flags *RootFlagSet, args []string) *agent.Config {
+
+	flags.Usage = func() {
+		c.UI.Output("\n" + c.Help() + "\n")
+	}
+
+	config := agent.EmptyConfig()
+
+	var devMode bool
+
+	// Agent mode
+	flags.BoolVar(&devMode, "dev", false, "")
+	flags.BoolVar(&config.Server.Enabled, "server", false, "")
+	flags.BoolVar(&config.Client.Enabled, "client", false, "")
+
+	// General options (available in both client and server modes)
+	flags.StringVar(&config.DataDir, "data-dir", "", "")
+	flags.StringVar(&config.BindAddr, "bind-addr", "", "")
+	flags.StringVar(&config.PluginDir, "plugin-dir", "", "")
+	flags.StringVar(&config.LogLevel, "log-level", "", "")
+
+	// Client-only options
+	flags.StringVar(&config.Client.StateDir, "state-dir", "", "")
+
+	// Server-only options
+	// --
+
+	// ACL options
+	flags.BoolVar(&config.ACL.Enabled, "acl-enabled", false, "")
+
+	if err := flags.Parse(args); err != nil {
+		c.UI.Error("==> Error: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	return config
+}
+
+func (c *AgentCommand) parseConfigFiles(paths ...string) *agent.Config {
+
+	config := agent.EmptyConfig()
+
+	if len(paths) > 0 {
+		// TODO : Load configurations from HCL files
+		c.UI.Info(fmt.Sprintf("==> Loading configurations from: %v", paths))
+	} else {
+		c.UI.Output("==> No configuration files loaded")
+	}
+
+	return config
+}
+
+func (c *AgentCommand) parseEnv(paths ...string) *agent.Config {
+
+	config := agent.EmptyConfig()
+
+	if len(paths) > 0 {
+
+		c.UI.Info(fmt.Sprintf("==> Loading environment variables from: %v", paths))
+		c.UI.Warn(fmt.Sprintf("  - This will not override already existing variables!"))
+
+		err := godotenv.Load(paths...)
+
+		if err != nil {
+			c.UI.Error(fmt.Sprintf("Error parsing env files: %s", err.Error()))
+			os.Exit(1)
+		}
+	}
+
+	env.Parse(config)
+
+	return config
+}
+
+func (c *AgentCommand) printConfig(config *agent.Config) {
 
 	info := map[string]string{
-		"bind addr": config.BindAddr,
-		"client":    strconv.FormatBool(config.Client.Enabled),
-		"log level": config.LogLevel,
-		"server":    strconv.FormatBool(config.Server.Enabled),
-		"version":   config.Version.VersionNumber(),
+		"data dir":        config.DataDir,
+		"bind addrs":      bindAddrsString(config),
+		"advertise addrs": advertiseAddrsString(config),
+		"log level":       config.LogLevel,
+		"client":          strconv.FormatBool(config.Client.Enabled),
+		"server":          strconv.FormatBool(config.Server.Enabled),
+		"version":         config.Version.VersionNumber(),
 	}
 
 	padding := 18
 	c.UI.Output("==> Drago agent configuration:\n")
-	for k, _ := range info {
+	for k := range info {
 		c.UI.Info(fmt.Sprintf(
-			"%s%s: %s",
+			"%s%s: %v",
 			strings.Repeat(" ", padding-len(k)),
 			strings.Title(k),
 			info[k]))
 	}
+
 	c.UI.Output("")
 }
 
-// handleSignals waits for specific signals and returns
-func (c *AgentCommand) handleSignals() int {
-
-	signalCh := make(chan os.Signal, 1)
-	signal.Notify(signalCh, os.Interrupt)
-
-	// Wait until a signal is received
-	var sig os.Signal
-	select {
-	case s := <-signalCh:
-		sig = s
-	}
-
-	c.UI.Output(fmt.Sprintf("Caught signal: %v", sig))
-
-	return 1
-}
-
+// Help :
 func (c *AgentCommand) Help() string {
 	h := `
 Usage: drago agent [options]
@@ -180,72 +210,47 @@ Usage: drago agent [options]
   as CLI arguments.
 
 General Options:
+` + GlobalOptions() + `
 
-  -bind=<addr>
-    The address the agent will bind to for all of its various network
-    services. The individual services that run bind to individual
-    ports on this address. Defaults to 127.0.0.1.
+Agent Options:
 
-  -data-dir=<path>
+  --data-dir=<path>
     The data directory where all state will be persisted. On Drago 
     clients this is used to store local network configurations, whereas
     on server nodes, the data dir is also used to keep the desired state
-    for all the managed networks.
+	for all the managed networks. Overrides the DRAGO_DATA_DIRenvironment
+	variable if set.
 
-  -plugin-dir=<path>
-    The plugin directory from which Drago plugins will be loaded.
-    If not specified, the plugin directory defaults <data-dir>/plugins/.
-
-  -config=<path>
-    The path to a config file to use for configuring the Drago agent.
-
-  -dev=<bool>
-    Start the agent in development mode, which means that both the
-    Drago client and server will be active at the same time. This
-    is useful for development and testing purposes. If the --dev flag
-    is passed to the agent, no other configuration is required.
+  --log-level=<level>
+    The logging level Drago should log at. Valid values are INFO, WARN, DEBUG, ERROR, FATAL.
+    Overrides the DRAGO_LOG_LEVEL environment variable if set.
 	
-  -log-level=<level>
-    Specify the verbosity level of Drago's logs. Valid values include
-    DEBUG, INFO, WARN, ERROR, and FATAL in decreasing order of verbosity.
-    The	default is INFO.
-
-Server Options:
-
-  -server=<bool>
-    Start the agent in server mode. A Drago server is responsible for
-    interacting with the storage backend and providing clients with
-    up-to-date configurations for their network interfaces.
-  
-Client Options:
-  -client=<bool>
-    Start the agent in client mode. A Drago client is responsible for
-    fetching the desired networking state from the server, and performing
-    a reconciliation procedure on its network interfaces. Additionally,
-    it is responsible for updating the seerver of its own state, including
-    metrics, and currently active public keys.
-
-  -state-dir
-    The directory used to store state and other persistent data. If not
-    specified a subdirectory under the higher-level option "-data-dir"
-    will be used.
-	
-  -interface-prefix=<string>
-    Specify the prefix used to identify all network interfaces managed by
-    Drago on client machines. This allow Drago to selectively apply configurations
-    and alter the state of specific interfaces without affecting others
-    that might have been created and are managed by the user.
-
-  -remote-server=<string>
-    The address of a known Drago server in format "host:port" with which the client
-    will connect to obtain its network configuration.
-
-ACL Options:
-
-  -acl-enabled
-    Specifies whether the agent should enable ACLs.
-
-
 `
 	return strings.TrimSpace(h)
+}
+
+// Prints an ASCII banner to the standard output
+func displayBanner() {
+	banner.Init(os.Stdout, true, true, strings.NewReader(agent.Banner))
+}
+
+func bindAddrsString(config *agent.Config) string {
+	http := fmt.Sprintf("%s:%d", config.BindAddr, config.Ports.HTTP)
+	rpc := fmt.Sprintf("%s:%d", config.BindAddr, config.Ports.RPC)
+	return fmt.Sprintf("HTTP: %s; RPC: %s", http, rpc)
+}
+
+func advertiseAddrsString(config *agent.Config) string {
+
+	http := fmt.Sprintf("%s:%d", config.BindAddr, config.Ports.HTTP)
+	//if config.AdvertiseAddrs.Peer != "" {
+	//	http = fmt.Sprintf("%s", config.AdvertiseAddrs.HTTP)
+	//}
+
+	rpc := fmt.Sprintf("%s:%d", config.BindAddr, config.Ports.RPC)
+	//if config.AdvertiseAddrs.HTTP != "" {
+	//	rpc = fmt.Sprintf("%s", config.AdvertiseAddrs.RPC)
+	//}
+
+	return fmt.Sprintf("HTTP: %s; RPC: %s", http, rpc)
 }

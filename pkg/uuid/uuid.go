@@ -5,14 +5,12 @@ import (
 	"fmt"
 )
 
-// Generate is used to generate a random UUID
 func Generate() string {
 	buf := make([]byte, 16)
 	if _, err := rand.Read(buf); err != nil {
 		panic(fmt.Errorf("failed to read random bytes: %v", err))
 	}
-
-	return fmt.Sprintf("%08x-%04x-%04x-%04x-%12x",
+	return fmt.Sprintf("%x-%x-%x-%x-%x",
 		buf[0:4],
 		buf[4:6],
 		buf[6:8],

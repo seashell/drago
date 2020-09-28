@@ -1,14 +1,13 @@
 package application
 
-type Application struct {
-	Services *Services
+import domain "github.com/seashell/drago/drago/domain"
+
+type Drago struct {
+	aclStateRepository  domain.ACLStateRepository
+	aclTokenRepository  domain.ACLPolicyRepository
+	aclPolicyRepository domain.ACLPolicyRepository
 }
 
-type Services struct {
-	Networks NetworkService
-}
-
-func New(services *Services) *Application {
-	app := &Application{services}
-	return app
+func New() (*Drago, error) {
+	return nil, nil
 }
