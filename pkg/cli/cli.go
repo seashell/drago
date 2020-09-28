@@ -10,6 +10,8 @@ import (
 	"text/template"
 )
 
+// Credits: https://github.com/mitchellh/cli
+
 // CLI contains the state necessary to run subcommands and parse the
 // command line arguments.
 //
@@ -83,12 +85,12 @@ func New(config *Config) *CLI {
 	return cli
 }
 
-// WriteHelp
+// WriteHelp :
 func (cli *CLI) WriteHelp(data string) (int, error) {
 	return cli.helpWriter.Write([]byte(data))
 }
 
-// Run
+// Run :
 func (cli *CLI) Run(ctx context.Context, args []string) (int, error) {
 
 	parsed := cli.parseArgs(args)
@@ -236,7 +238,7 @@ Subcommands:
 	t, err := template.New("root").Parse(tpl)
 	if err != nil {
 		t = template.Must(template.New("root").Parse(fmt.Sprintf(
-			"Internal error! Failed to parse command help template: %s\n", err)))
+			"Failed to parse command help template: %s\n", err)))
 	}
 
 	cmd, err := cli.router.GetCommand(n)
@@ -300,6 +302,5 @@ Subcommands:
 		return
 	}
 
-	cli.WriteHelp(fmt.Sprintf(
-		"Internal error rendering help: %s", err))
+	cli.WriteHelp(fmt.Sprintf("Error rendering help: %s", err))
 }

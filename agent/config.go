@@ -8,6 +8,7 @@ import (
 	"github.com/seashell/drago/version"
 )
 
+// Config contains configurations for the Drago agent
 type Config struct {
 	// UI defines whether or not Drago's web UI will be served
 	// by the agent
@@ -22,6 +23,12 @@ type Config struct {
 	// BindAddr is the address on which all of Drago's services will
 	// be bound. If not specified, this defaults to 127.0.0.1.
 	BindAddr string `hcl:"bind_addr"`
+
+	// AdvertiseAddrs is a struct containing the addresses advertised
+	// for each of Drago's network services in host:port format.
+	// It is optional, and all addresses default to the bind address
+	// with the default port corresponding to each service.
+	AdvertiseAddrs *AdvertiseAddrs `hcl:"advertise_addrs"`
 
 	// LogLevel is the level of the logs to put out
 	LogLevel string `hcl:"log_level"`
@@ -45,7 +52,7 @@ type Config struct {
 	Version *version.VersionInfo
 }
 
-// Merge merges two agent configurations
+// Merge merges two Config structs, returning the result
 func (c *Config) Merge(b *Config) *Config {
 
 	if b == nil {
@@ -94,9 +101,18 @@ func (c *Config) Merge(b *Config) *Config {
 		result.Server = result.Server.Merge(b.Server)
 	}
 
+	// Apply the advertise addrs config
+	if result.AdvertiseAddrs == nil && b.AdvertiseAddrs != nil {
+		advertise := *b.AdvertiseAddrs
+		result.AdvertiseAddrs = &advertise
+	} else if b.AdvertiseAddrs != nil {
+		result.AdvertiseAddrs = result.AdvertiseAddrs.Merge(b.AdvertiseAddrs)
+	}
+
 	return &result
 }
 
+// ServerConfig contains configurations for the Drago server
 type ServerConfig struct {
 	// Enabled controls if the agent is a server
 	Enabled bool `hcl:"enabled"`
@@ -105,7 +121,7 @@ type ServerConfig struct {
 	DataDir string `hcl:"data_dir"`
 }
 
-// Merge is used to merge two server configs together
+// Merge merges two ServerConfig structs, returning the result
 func (c *ServerConfig) Merge(b *ServerConfig) *ServerConfig {
 	result := *c
 
@@ -118,31 +134,34 @@ func (c *ServerConfig) Merge(b *ServerConfig) *ServerConfig {
 	return &result
 }
 
+// ClientConfig contains configurations for the Drago client
 type ClientConfig struct {
 	// Enabled controls if the agent is a client
 	Enabled bool `hcl:"enabled"`
 
 	// Server is the address of a known Drago server in "host:port" format
-	Server string `hcl:"server"`
+	Servers []string `hcl:"servers"`
 
 	// StateDir is the directory where the client state will be kep
 	StateDir string `hcl:"data_dir"`
 
-	// InterfacesPrefix is the prefix that will be added to any interface
+	// InterfacesPrefix is the prefix that will be added to all WireGuard
+	// interfaces managed by Drago
 	InterfacesPrefix string `hcl:"interfaces_prefix"`
 
 	// SyncInterval controls how frequently the client synchronizes its state
 	SyncIntervalSeconds time.Duration `hcl:"sync_interval"`
 }
 
+// Merge merges two ClientConfig structs, returning the result
 func (c *ClientConfig) Merge(b *ClientConfig) *ClientConfig {
 	result := *c
 
 	if b.Enabled {
 		result.Enabled = true
 	}
-	if b.Server != "" {
-		result.Server = b.Server
+	if b.Servers != nil {
+		result.Servers = b.Servers
 	}
 	if b.StateDir != "" {
 		result.StateDir = b.StateDir
@@ -157,6 +176,7 @@ func (c *ClientConfig) Merge(b *ClientConfig) *ClientConfig {
 	return &result
 }
 
+// ACLConfig contains configuration for Drago's ACL
 type ACLConfig struct {
 	// Enabled controls if the ACLs are managed and enforced
 	Enabled bool `hcl:"enabled"`
@@ -168,6 +188,7 @@ type ACLConfig struct {
 	TokenTTLHCL string `hcl:"token_ttl" json:"-"`
 }
 
+// Merge merges two ACLConfig structs, returning the result
 func (c *ACLConfig) Merge(b *ACLConfig) *ACLConfig {
 	result := *c
 
@@ -190,6 +211,7 @@ type Ports struct {
 	RPC  int `hcl:"rpc"`
 }
 
+// Merge merges two Ports structs, returning the result
 func (c *Ports) Merge(b *Ports) *Ports {
 	result := *c
 
@@ -203,22 +225,47 @@ func (c *Ports) Merge(b *Ports) *Ports {
 	return &result
 }
 
+// AdvertiseAddrs is used to control the addresses Drago advertises for
+// its different network services. All are optional and default to BindAddr and
+// their default Port. Expected format is address:port.
+type AdvertiseAddrs struct {
+	Peer   string `hcl:"peer"`
+	Client string `hcl:"client"`
+}
+
+// Merge merges two AdvertiseAddrs structs, returning the result
+func (c *AdvertiseAddrs) Merge(b *AdvertiseAddrs) *AdvertiseAddrs {
+	result := *c
+
+	if b.Peer != "" {
+		result.Peer = b.Peer
+	}
+	if b.Client != "" {
+		result.Client = b.Client
+	}
+
+	return &result
+}
+
+// DefaultConfig returns a Config struct populated with sane defaults
 func DefaultConfig() *Config {
 	return &Config{
-		LogLevel: "INFO",
+		LogLevel: "DEBUG",
 		UI:       true,
-		DataDir:  "/tmp",
+		DataDir:  "/tmp/drago",
 		BindAddr: "0.0.0.0",
 		Ports: &Ports{
 			HTTP: 8080,
 			RPC:  8081,
 		},
+		AdvertiseAddrs: &AdvertiseAddrs{},
 		Server: &ServerConfig{
 			Enabled: false,
-			DataDir: "/tmp",
+			DataDir: "/tmp/drago",
 		},
 		Client: &ClientConfig{
 			Enabled:             false,
+			Servers:             []string{"127.0.0.1"},
 			InterfacesPrefix:    "dg-",
 			SyncIntervalSeconds: 5,
 		},
@@ -226,13 +273,26 @@ func DefaultConfig() *Config {
 			Enabled:  false,
 			TokenTTL: 30 * time.Second,
 		},
-		Version: &version.VersionInfo{},
+		Version: version.GetVersion(),
 	}
 }
 
-func (c *Config) IsValid() bool {
-	// TODO
-	return true
+// EmptyConfig returns an empty Config struct with all nested structs
+// also initialized to a non-nil empty value.
+func EmptyConfig() *Config {
+	return &Config{
+		Ports:          &Ports{},
+		AdvertiseAddrs: &AdvertiseAddrs{},
+		Server:         &ServerConfig{},
+		Client:         &ClientConfig{},
+		ACL:            &ACLConfig{},
+	}
+}
+
+// Validate returns an error in case a Config struct is invalid.
+func (c *Config) Validate() error {
+	// TODO: implement validation
+	return nil
 }
 
 // LoadFromFile loads the configuration from a given path

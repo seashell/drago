@@ -5,25 +5,25 @@ import (
 	"strings"
 )
 
-// Router
+// Router ...
 type Router struct {
 	commands map[string]Command
 }
 
-// Create a new Router
+// NewRouter creates a new router.
 func NewRouter() *Router {
 	return &Router{
 		commands: map[string]Command{},
 	}
 }
 
-// Add command
+// AddCommand ...
 func (r *Router) AddCommand(n string, cmd Command) error {
 	r.commands[n] = cmd
 	return nil
 }
 
-// Get command
+// GetCommand ...
 func (r *Router) GetCommand(n string) (Command, error) {
 	cmd, ok := r.commands[n]
 	if !ok {
@@ -32,13 +32,13 @@ func (r *Router) GetCommand(n string) (Command, error) {
 	return cmd, nil
 }
 
-// Add commands based on a factory function so that every
-// registered command  has a parent
+// AddMissingParents ensures that every registered command
+// has a parent.
 func (r *Router) AddMissingParents(genCmd func() Command) {
 
 	missing := []string{}
 
-	for key, _ := range r.commands {
+	for key := range r.commands {
 
 		idx := strings.LastIndex(key, " ")
 
@@ -74,7 +74,7 @@ func (r *Router) GetSubcommands(prefix string) map[string]Command {
 	}
 
 	var keys []string
-	for k, _ := range r.commands {
+	for k := range r.commands {
 		if strings.HasPrefix(k, prefix) {
 			if !strings.Contains(k[len(prefix):], " ") {
 				// Ignore any sub-sub keys, i.e. "foo bar baz" when we want "foo bar"
@@ -114,8 +114,8 @@ func (r *Router) GetParent(n string) string {
 	return n[:idx]
 }
 
-// Return the longest prefix match among all commands registered in the
-// router, considering the query string passed as argument
+// GetLongestPrefix return the longest prefix match among all commands
+// registered in the router, considering the query string passed as argument
 func (r *Router) GetLongestPrefix(s string) (string, interface{}, bool) {
 
 	keys := make([]string, 0, len(r.commands))

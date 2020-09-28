@@ -1,94 +1,99 @@
 package drago
 
 import (
-	"context"
 	"sync"
 
 	application "github.com/seashell/drago/drago/application"
-	rpc "github.com/seashell/drago/drago/infrastructure/rpc"
-	receiver "github.com/seashell/drago/drago/infrastructure/rpc/receiver"
-	boltdb "github.com/seashell/drago/drago/infrastructure/storage/boltdb"
+	http "github.com/seashell/drago/drago/http"
+	rpc "github.com/seashell/drago/drago/rpc"
 	log "github.com/seashell/drago/pkg/log"
-	logrus "github.com/seashell/drago/pkg/log/logrus"
+	clientv3 "go.etcd.io/etcd/clientv3"
+	embed "go.etcd.io/etcd/embed"
 )
 
+// Server is the Drago server
 type Server struct {
 	config *Config
 	logger log.Logger
 
-	shutdown     bool
-	shutdownLock sync.Mutex
+	httpServer *http.Server
+	rpcServer  *rpc.Server
 
-	rpcServer *rpc.Server
+	etcdServer *embed.Etcd
+	etcdClient *clientv3.Client
 
 	services struct {
-		networks application.NetworkService
+		acl      application.ACLService
+		tokens   application.ACLTokenService
+		policies application.ACLPolicyService
 	}
 
-	shutdownCtx    context.Context
-	shutdownCancel context.CancelFunc
-	shutdownCh     <-chan struct{}
+	shutdown     bool
+	shutdownCh   chan struct{}
+	shutdownLock sync.Mutex
 }
 
-// Create a new Drago server, potentially returning an error
+// NewServer is used to create a new Drago server from the
+// configuration, potentially returning an error
 func NewServer(config *Config) (*Server, error) {
 
-	logger, err := logrus.NewLoggerAdapter(logrus.Config{
-		LoggerOptions: log.LoggerOptions{
-			Prefix: "drago: ",
-			Level:  logrus.Debug,
-		},
-	})
-	if err != nil {
-		panic(err)
-	}
-
 	s := &Server{
-		config: config,
-		logger: logger,
+		config:     config,
+		logger:     config.Logger,
+		shutdownCh: make(chan struct{}),
 	}
 
-	s.shutdownCtx, s.shutdownCancel = context.WithCancel(context.Background())
-	s.shutdownCh = s.shutdownCtx.Done()
+	var err error
 
-	backend, err := boltdb.NewBackend("database.db")
+	//err = s.setupEtcdServer()
+	//if err != nil {
+	//	s.logger.Errorf("Error setting up etcd server: %s", err.Error())
+	//}
+
+	//err = s.setupEtcdClient()
+	//if err != nil {
+	//	s.logger.Errorf("Error setting up etcd client: %s", err.Error())
+	//}
+
+	err = s.setupApplication()
 	if err != nil {
-		panic(err)
+		s.logger.Errorf("Error setting up application modules: %s", err.Error())
 	}
 
-	networkRepository := boltdb.NewNetworkRepositoryAdapter(backend)
+	err = s.setupACLSystem()
+	if err != nil {
+		s.logger.Errorf("Error setting up acl system: %s", err.Error())
+	}
 
-	s.services.networks = application.NewNetworkService(networkRepository)
+	err = s.setupHTTPServer()
+	if err != nil {
+		s.logger.Errorf("Error setting up http server: %s", err.Error())
+	}
 
-	// Setup RPC server
-	if err := s.setupRPCServer(); err != nil {
-		return nil, err
+	err = s.setupRPCServer()
+	if err != nil {
+		s.logger.Errorf("Error setting up rpc server: %s", err.Error())
 	}
 
 	return s, nil
 }
 
-func (s *Server) setupRPCServer() error {
+// Shutdown is used to tear down the server
+func (s *Server) Shutdown() error {
+	s.shutdownLock.Lock()
+	defer s.shutdownLock.Unlock()
 
-	config := &rpc.ServerConfig{
-		Logger:      s.logger,
-		BindAddress: s.config.BindAddr,
-		Receivers: map[string]interface{}{
-			"Networks": receiver.NewNetworkReceiverAdapter(s.services.networks),
-		},
+	if s.shutdown {
+		s.logger.Infof("already shutdown")
+		return nil
 	}
+	s.logger.Infof("shutting down")
 
-	rpcServer, err := rpc.NewServer(config)
-	if err != nil {
-		return err
-	}
+	s.etcdServer.Close()
+	s.etcdClient.Close()
 
-	s.rpcServer = rpcServer
-
-	s.rpcServer.Run()
+	s.shutdown = true
+	close(s.shutdownCh)
 
 	return nil
 }
-
-// Run
-func (s *Server) Run() {}

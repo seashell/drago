@@ -6,13 +6,15 @@ import (
 	"github.com/seashell/drago/version"
 )
 
-var bannerTmpl = fmt.Sprintf(`
+// Banner is a banner to be displayed when the Drago
+// agent is started
+var Banner = fmt.Sprintf(`
 ====|===================>
 ___  ____ ____ ____ ____ 
 |  \ |__/ |__| | __ |  | 
 |__/ |  \ |  | |__] |__| 
 		   
-               {{ .AnsiColor.Cyan }}%s{{ .AnsiColor.Default }}
+                  {{ .AnsiColor.Cyan }}%s{{ .AnsiColor.Default }}
 <===================|====
 
 `, version.GetVersion().VersionNumber())

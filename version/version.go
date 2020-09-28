@@ -16,13 +16,13 @@ var (
 	// A pre-release marker for the version. If this is "" (empty string)
 	// then it means that it is a final release. Otherwise, this is a pre-release
 	// such as "dev" (in development), "beta", "rc1", etc.
-	VersionPrerelease = "rc2"
+	VersionPrerelease = ""
 
 	// VersionMetadata is metadata further describing the build type.
 	VersionMetadata = ""
 )
 
-// VersionInfo
+// VersionInfo :
 type VersionInfo struct {
 	Revision          string
 	Version           string
@@ -30,6 +30,7 @@ type VersionInfo struct {
 	VersionMetadata   string
 }
 
+// GetVersion :
 func GetVersion() *VersionInfo {
 	ver := Version
 	rel := VersionPrerelease
@@ -49,6 +50,7 @@ func GetVersion() *VersionInfo {
 	}
 }
 
+// VersionNumber:
 func (c *VersionInfo) VersionNumber() string {
 	version := fmt.Sprintf("%s", c.Version)
 
@@ -63,6 +65,7 @@ func (c *VersionInfo) VersionNumber() string {
 	return version
 }
 
+// FullVersionNumber :
 func (c *VersionInfo) FullVersionNumber(rev bool) string {
 	var versionString bytes.Buffer
 
