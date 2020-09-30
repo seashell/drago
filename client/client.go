@@ -10,9 +10,9 @@ import (
 	"github.com/seashell/drago/client/nic"
 	"github.com/seashell/drago/client/state"
 
+	"github.com/seashell/drago/pkg/logger"
 	"github.com/vishvananda/netlink"
 	"golang.zx2c4.com/wireguard/wgctrl/wgtypes"
-	"github.com/seashell/drago/pkg/logger"
 )
 
 type Client struct {
@@ -23,17 +23,18 @@ type Client struct {
 
 	stateDB state.StateDB
 
-	log      logger.Logger
+	log logger.Logger
 }
 
 type Config struct {
-	Enabled      		bool
-	Servers      		[]string
-	Token        		string
-	DataDir      		string
-	InterfacesPrefix	string
-	SyncInterval 		time.Duration
-	LinksPersistentKeepalive	int
+	Enabled                  bool
+	Servers                  []string
+	Token                    string
+	DataDir                  string
+	InterfacesPrefix         string
+	SyncInterval             time.Duration
+	LinksPersistentKeepalive int
+	WireguardPath            string
 }
 
 func New(conf Config, log logger.Logger) (*Client, error) {
@@ -45,7 +46,7 @@ func New(conf Config, log logger.Logger) (*Client, error) {
 		return nil, err
 	}
 
-	n, err := nic.NewCtrl(conf.InterfacesPrefix, log)
+	n, err := nic.NewCtrl(conf.InterfacesPrefix, conf.WireguardPath, log)
 	if err != nil {
 		return nil, err
 	}
@@ -56,11 +57,11 @@ func New(conf Config, log logger.Logger) (*Client, error) {
 	}
 
 	return &Client{
-		config:    	conf,
-		niCtrl:    	n,
-		apiClient: 	a,
-		stateDB:   	s,
-		log:		log,
+		config:    conf,
+		niCtrl:    n,
+		apiClient: a,
+		stateDB:   s,
+		log:       log,
 	}, nil
 }
 
@@ -156,7 +157,7 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 					if c.config.LinksPersistentKeepalive != 0 {
 						t := time.Duration(c.config.LinksPersistentKeepalive) * time.Second
 						persistentKeepalive = &t
-					}					
+					}
 				}
 
 				//Endpoint
@@ -203,8 +204,8 @@ func (c *Client) fromApiSettingsToNic(as *api.HostSettings) []nic.Settings {
 		if err != nil {
 			c.log.Warnf("IP address parsing error at %v: %v\n", time.Now().Round(0), err)
 		}
-		ts = append(ts, nic.Settings{ 
-			Alias:	   ni.Name,
+		ts = append(ts, nic.Settings{
+			Alias:     ni.Name,
 			Address:   addr,
 			Wireguard: wgConfig,
 		})

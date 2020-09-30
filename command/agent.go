@@ -65,13 +65,14 @@ func NewAgentCmd() *cobra.Command {
 					},
 				},
 				Client: client.Config{
-					Enabled:      		config.Client.Enabled,
-					Servers:      		config.Client.Servers,
-					DataDir:      		config.Client.DataDir,
-					Token:        		config.Client.Token,
-					InterfacesPrefix:	config.Client.InterfacesPrefix,
-					SyncInterval: 		si,
-					LinksPersistentKeepalive:	config.Client.LinksPersistentKeepalive,
+					Enabled:                  config.Client.Enabled,
+					Servers:                  config.Client.Servers,
+					DataDir:                  config.Client.DataDir,
+					Token:                    config.Client.Token,
+					InterfacesPrefix:         config.Client.InterfacesPrefix,
+					SyncInterval:             si,
+					LinksPersistentKeepalive: config.Client.LinksPersistentKeepalive,
+					WireguardPath:            config.Client.WireguardPath,
 				},
 			}
 
