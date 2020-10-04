@@ -1,54 +1,113 @@
 package acl
 
-// Config is used to configure the ACL system (TODO: should this be made a global!?)
-type Config struct {
-	// Resources contains the definitions of the resource one
-	// would like to protect.
-	Resources map[string]*Resource
-	// Function that returns a token based on a secret,
-	// or nil if it does not exist.
-	ResolveToken func(string) (Token, error)
-	// Function that returns a policy based on its name,
-	// or an error if it does not exist.
-	ResolvePolicy func(string) (Policy, error)
-	// Log activity is a callback for logging any activity involving the
-	// ACL. It can be used, e.g., for keeping track of the tokens used
-	// for accessing each resource, or for maintaining a resour
-	LogActivity func(string)
+import (
+	"github.com/seashell/drago/pkg/log"
+)
+
+var logger log.Logger
+var resources map[string]*resource
+var resolveSecret SecretResolverFunc
+var resolvePolicy PolicyResolverFunc
+var anonymousToken Token
+
+var defaultLogger = &simpleLogger{
+	fields: map[string]interface{}{},
+	options: log.LoggerOptions{
+		Prefix: "acl",
+		Level:  levelInfo,
+	},
+}
+
+var defaultResolveSecret = func(string) (Token, error) {
+	return nil, ErrMissingSecretResolver
+}
+
+var defaultResolvePolicy = func(string) (Policy, error) {
+	return nil, ErrMissingPolicyResolver
+}
+
+type defaultAnonymousToken struct {
+	policies []string
+}
+
+func (t defaultAnonymousToken) Policies() []string {
+	return t.policies
+}
+
+func (t defaultAnonymousToken) IsManagement() bool {
+	return false
+}
+
+// SecretResolverFunc returns the token associated with a secret
+// if it exists, or nil otherwise.
+type SecretResolverFunc func(string) (Token, error)
+
+// PolicyResolverFunc returns a policy based on its name,
+// or an error if it does not exist.
+type PolicyResolverFunc func(string) (Policy, error)
+
+// Resource exposes functions for the configuration
+// of capabilities and aliases associated to a resource.
+type Resource interface {
+	AddCapability(...string) Resource
+	AddAlias(string, ...string) Resource
 }
 
 // Resource represents a resource in the context of which
 // one wants to enforce authorization.
-type Resource struct {
-	Name         string
-	Capabilities map[string]*Capability
-	Aliases      map[string]*CapabilityAlias
+type resource struct {
+	name         string
+	capabilities map[string]*capability
+	aliases      map[string]*capabilityAlias
 }
 
-func (r *Resource) hasCapability(s string) bool {
-	_, found := r.Capabilities[s]
+// Capability ...
+func (r *resource) AddCapability(caps ...string) Resource {
+	for _, cap := range caps {
+		r.capabilities[cap] = &capability{name: cap}
+	}
+	return r
+}
+
+// Alias ...
+func (r *resource) AddAlias(alias string, caps ...string) Resource {
+	// Make sure all capabilities are defined.
+	for _, c := range caps {
+		if !r.hasCapability(c) {
+			panic("undefined capability " + c)
+		}
+	}
+	r.aliases[alias] = &capabilityAlias{
+		label:     alias,
+		expandsTo: caps,
+	}
+	return r
+}
+
+func (r *resource) hasCapability(s string) bool {
+	_, found := r.capabilities[s]
 	return found
 }
 
-func (r *Resource) hasAlias(s string) bool {
-	_, found := r.Aliases[s]
+func (r *resource) hasAlias(s string) bool {
+	_, found := r.aliases[s]
 	return found
 }
 
-// Capability represents an operation possible in
+// capability represents an operation possible in
 // the context of a resource.
-type Capability struct {
-	Name        string
-	Description string
+type capability struct {
+	name        string
+	description string
 }
 
-// CapabilityAlias allows defining shorthands for
+// capabilityAlias allows defining shorthands for
 // representing multiple capabilities.
-type CapabilityAlias struct {
-	Label     string
-	ExpandsTo []string
+type capabilityAlias struct {
+	label     string
+	expandsTo []string
 }
 
-func (a *CapabilityAlias) expand() []string {
-	return a.ExpandsTo
+func (a *capabilityAlias) expand() []string {
+	return a.expandsTo
 }

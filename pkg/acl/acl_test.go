@@ -24,103 +24,259 @@ const (
 	capHostList  = "list"
 )
 
-var c = &Config{
-	Resources: map[string]*Resource{
-		"namespace": &Resource{
-			Name: "namespace",
-			Capabilities: map[string]*Capability{
-				capNamespaceReadX:  {capNamespaceReadX, "Allows x to be read on a namespace"},
-				capNamespaceReadY:  {capNamespaceReadY, "Allows y to be read on a namespace"},
-				capNamespaceWriteX: {capNamespaceWriteX, "Allows x to be written on a namespace"},
-				capNamespaceWriteY: {capNamespaceWriteY, "Allows y to be written on a namespace"},
-			},
-			Aliases: map[string]*CapabilityAlias{
-				"read":  {"read", []string{capNamespaceReadX, capNamespaceReadY}},
-				"write": {"write", []string{capNamespaceWriteX, capNamespaceWriteY}},
-			},
-		},
-		"network": &Resource{
-			Name: "network",
-			Capabilities: map[string]*Capability{
-				capNetworkRead:  {capNetworkRead, "Allows a network to be read"},
-				capNetworkWrite: {capNetworkWrite, "Allows a network to be written"},
-				capNetworkList:  {capNetworkList, "Allows networks to be listed"},
-			},
-			Aliases: map[string]*CapabilityAlias{
-				"write": {"read", []string{capNetworkWrite, capNetworkRead, capNetworkList}},
-				"read":  {"read", []string{capNetworkRead, capNetworkList}},
-			},
-		},
-		"host": &Resource{
-			Name: "host",
-			Capabilities: map[string]*Capability{
-				capHostRead:  {capHostRead, "Allows a host to be read"},
-				capHostWrite: {capHostWrite, "Allows a host to be written"},
-				capHostList:  {capHostList, "Allows hosts to be listed"},
-			},
-			Aliases: map[string]*CapabilityAlias{
-				"write": {"read", []string{capHostWrite, capHostRead, capHostList}},
-				"read":  {"read", []string{capHostRead, capHostList}},
-			},
-		},
-	}}
+var repo *mockRepository
 
-var mockRepo = &repository{
-	tokens: []*token{
-		{"71036287-81d1-474a-b4d5-25c2ee6f57ae", []string{"policy1"}},
-		{"54c06ace-7da6-443b-a5a2-05da5294fbd5", []string{"policy2"}},
-		{"e690413b-827b-400e-bc38-92a4b1580eac", []string{"policy1", "policy2"}},
-	},
-	policies: []*policy{
-		{"policy1", []Rule{
-			&rule{"namespace", "*", []string{"read"}},
-			&rule{"network", "*", []string{"read"}},
-			&rule{"host", "", []string{"read"}},
-		}},
-		{"policy2", []Rule{
-			&rule{"namespace", "*", []string{"write"}},
-			&rule{"network", "*", []string{"write"}},
-			&rule{"host", "*", []string{"list"}},
-		}},
-		{"policy3", []Rule{
-			&rule{"network", "*", []string{"read"}},
-			&rule{"host", "*", []string{"write"}},
-		}},
-	},
+type mockRepository struct {
+	tokens   []*mockToken
+	policies []*mockPolicy
+}
+
+func (r *mockRepository) FindTokenBySecret(s string) (Token, error) {
+	for _, t := range r.tokens {
+		if t.secret == s {
+			return t, nil
+		}
+	}
+	return nil, nil
+}
+
+func (r *mockRepository) GetPolicyByName(n string) (Policy, error) {
+	for _, p := range r.policies {
+		if p.name == n {
+			return p, nil
+		}
+	}
+	return nil, fmt.Errorf("not found : %s", n)
+}
+
+type mockToken struct {
+	management bool
+	secret     string
+	policies   []string
+}
+
+func (t *mockToken) Policies() []string {
+	return t.policies
+}
+
+func (t *mockToken) IsManagement() bool {
+	return t.management
+}
+
+type mockPolicy struct {
+	name  string
+	rules []*mockRule
+}
+
+func (p *mockPolicy) Name() string {
+	return p.name
+}
+
+func (p *mockPolicy) Rules() []Rule {
+	rules := []Rule{}
+	for _, r := range p.rules {
+		rules = append(rules, r)
+	}
+	return rules
+}
+
+type mockRule struct {
+	resource     string
+	pattern      string
+	capabilities []string
+}
+
+func (r *mockRule) Resource() string {
+	return r.resource
+}
+
+func (r *mockRule) Pattern() string {
+	return r.pattern
+}
+
+func (r *mockRule) Capabilities() []string {
+	return r.capabilities
+}
+
+func setupACL() {
+
+	NewResource("namespace").
+		AddCapability(capNamespaceReadX, capNamespaceReadY, capNamespaceWriteX, capNamespaceWriteY).
+		AddAlias("read", capNamespaceReadX, capNamespaceReadY).
+		AddAlias("write", capNamespaceWriteX, capNamespaceWriteY)
+
+	NewResource("network").
+		AddCapability(capNetworkRead, capNetworkWrite, capNetworkList).
+		AddAlias("read", capNetworkList, capHostRead).
+		AddAlias("write", capNetworkWrite, capNetworkRead, capNetworkWrite)
+
+	NewResource("host").
+		AddCapability(capNetworkRead, capNetworkWrite, capNetworkList).
+		AddAlias("read", capNetworkList, capHostRead).
+		AddAlias("write", capNetworkWrite, capNetworkRead, capNetworkWrite)
+
+	PolicyResolver(func(p string) (Policy, error) {
+		return repo.GetPolicyByName(p)
+	})
+
+	SecretResolver(func(s string) (Token, error) {
+		return repo.FindTokenBySecret(s)
+	})
+
+	AnonymousToken(&mockToken{false, "", []string{"anonymous"}})
+}
+
+func setupMockRepo() {
+	repo = &mockRepository{
+		tokens: []*mockToken{
+			{true, "39076595-19a6-4582-b0d9-bb4a266fd48a", []string{""}},
+			{false, "71036287-81d1-474a-b4d5-25c2ee6f57ae", []string{"policy1"}},
+			{false, "54c06ace-7da6-443b-a5a2-05da5294fbd5", []string{"policy2"}},
+			{false, "e690413b-827b-400e-bc38-92a4b1580eac", []string{"policy1", "policy2"}},
+		},
+		policies: []*mockPolicy{
+			{"policy1", []*mockRule{
+				{"namespace", "*", []string{"read"}},
+				{"network", "*", []string{"read"}},
+				{"host", "", []string{"read"}},
+			}},
+			{"policy2", []*mockRule{
+				{"namespace", "*", []string{"write"}},
+				{"network", "*", []string{"deny"}},
+				{"host", "*", []string{"list"}},
+			}},
+			{"policy3", []*mockRule{
+				{"network", "*", []string{"read"}},
+				{"host", "*", []string{"write"}},
+			}},
+			{"anonymous", []*mockRule{
+				{"network", "*", []string{"list"}},
+				{"host", "*", []string{"list"}},
+			}},
+		},
+	}
 }
 
 func TestACL(t *testing.T) {
 
-	c.ResolvePolicy = func(n string) (Policy, error) {
-		return mockRepo.GetPolicyByName(n)
-	}
+	setupMockRepo()
 
-	c.ResolveToken = func(s string) (Token, error) {
-		return mockRepo.FindTokenBySecret(s)
-	}
+	t.Run("MissingConfigurations", func(t *testing.T) {
 
-	// TODO: replace this with a standard logger
-	c.LogActivity = func(s string) {
-		fmt.Println("==> LOG: ", s)
-	}
+		secret := "54c06ace-7da6-443b-a5a2-05da5294fbd5"
 
-	// Initialize ACL
-	Initialize(c)
+		if _, err := ResolveSecret(secret); err == nil {
+			t.Fatal(err)
+		}
 
-	// Build ACL based on a secret
-	acl, err := NewACLFromSecret("54c06ace-7da6-443b-a5a2-05da5294fbd5")
-	if err != nil {
-		t.Fatal(err)
-	}
+		// Configure secret resolver
+		SecretResolver(func(s string) (Token, error) {
+			return repo.FindTokenBySecret(s)
+		})
+		if _, err := ResolveSecret(secret); err == nil {
+			t.Fatal(err)
+		}
 
-	// Print a string representation of the ACL.
-	fmt.Println(acl.String())
+		// Configure policy resolver
+		PolicyResolver(func(p string) (Policy, error) {
+			return repo.GetPolicyByName(p)
+		})
+		if _, err := ResolveSecret(secret); err != nil {
+			t.Fatal(err)
+		}
+	})
 
-	// Check if the ACL is authorized to perform a "write" operation
-	// on the resource of type "network" and identified by "abc".
-	fmt.Printf("isAuthorized(write, network, abcxy) = %v\n", acl.IsAuthorized("network", "abc", "write"))
+	setupACL()
 
-	// Check if the ACL is authorized to perform a "write" operation
-	// on the resource of type "host" and identified by "123".
-	fmt.Printf("isAuthorized(write, host, abcxy) = %v\n", acl.IsAuthorized("host", "123", "write"))
+	t.Run("ResolveSecret", func(t *testing.T) {
+
+		secret := "54c06ace-7da6-443b-a5a2-05da5294fbd5"
+
+		acl, err := ResolveSecret(secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if err := acl.CheckAuthorized("namespace", "12345", "write-x"); err != nil {
+			t.Fatalf("%v", err)
+		}
+
+		if err := acl.CheckAuthorized("network", "12345", "write"); err == nil {
+			t.Fatalf("%v", err)
+		}
+
+		if err := acl.CheckAuthorized("host", "12345", "write"); err == nil {
+			t.Fatalf("%v", err)
+		}
+	})
+
+	t.Run("InvalidSecret", func(t *testing.T) {
+
+		secret := "foobar"
+
+		_, err := ResolveSecret(secret)
+		if err == nil {
+			t.Fatal(err)
+		}
+	})
+
+	t.Run("ManagementToken", func(t *testing.T) {
+
+		secret := "39076595-19a6-4582-b0d9-bb4a266fd48a"
+
+		acl, err := ResolveSecret(secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if err := acl.CheckAuthorized("namespace", "12345", "write-x"); err != nil {
+			t.Fatalf("%v", err)
+		}
+
+		if err := acl.CheckAuthorized("network", "12345", "write"); err != nil {
+			t.Fatalf("%v", err)
+		}
+
+		if err := acl.CheckAuthorized("host", "12345", "write"); err != nil {
+			t.Fatalf("%v", err)
+		}
+	})
+
+	t.Run("AnonymousToken", func(t *testing.T) {
+
+		secret := ""
+
+		acl, err := ResolveSecret(secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if err := acl.CheckAuthorized("namespace", "12345", "write-x"); err == nil {
+			t.Fatalf("%v", err)
+		}
+
+		if err := acl.CheckAuthorized("network", "12345", "write"); err == nil {
+			t.Fatalf("%v", err)
+		}
+
+		if err := acl.CheckAuthorized("host", "12345", "list"); err != nil {
+			t.Fatalf("%v", err)
+		}
+	})
+
+	t.Run("StringDump", func(t *testing.T) {
+
+		secret := "54c06ace-7da6-443b-a5a2-05da5294fbd5"
+
+		acl, err := ResolveSecret(secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		str := acl.String()
+		if str != "" {
+			t.Fatal(err)
+		}
+	})
+
 }
