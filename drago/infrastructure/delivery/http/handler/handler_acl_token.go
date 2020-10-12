@@ -48,7 +48,10 @@ func (a *ACLTokenHandlerAdapter) handleGet(rw http.ResponseWriter, req *http.Req
 		return a.handleList(rw, req)
 	}
 
-	out, err := a.tokenService.GetByID(req.Context(), &structs.ACLTokenGetInput{ID: id})
+	out, err := a.tokenService.GetByID(req.Context(), &structs.ACLTokenGetInput{
+		BaseInput: baseInputFromReq(req),
+		ID:        id,
+	})
 	if err != nil {
 		return nil, NewError(404, ErrNotFound)
 	}
@@ -63,6 +66,7 @@ func (a *ACLTokenHandlerAdapter) handlePost(rw http.ResponseWriter, req *http.Re
 	if err != nil {
 		return nil, NewError(400, ErrBadRequest, err)
 	}
+	in.BaseInput = baseInputFromReq(req)
 
 	out, err := a.tokenService.Create(req.Context(), in)
 	if err != nil {
@@ -84,7 +88,10 @@ func (a *ACLTokenHandlerAdapter) handleDelete(rw http.ResponseWriter, req *http.
 		return nil, NewError(400, ErrBadRequest)
 	}
 
-	_, err := a.tokenService.Delete(req.Context(), &structs.ACLTokenDeleteInput{ID: id})
+	_, err := a.tokenService.Delete(req.Context(), &structs.ACLTokenDeleteInput{
+		BaseInput: baseInputFromReq(req),
+		ID:        id,
+	})
 	if err != nil {
 		return nil, NewError(404, ErrNotFound)
 	}
@@ -98,7 +105,9 @@ func (a *ACLTokenHandlerAdapter) handlePatch(rw http.ResponseWriter, req *http.R
 
 func (a *ACLTokenHandlerAdapter) handleList(rw http.ResponseWriter, req *http.Request) (interface{}, error) {
 
-	in := &structs.ACLTokenListInput{}
+	in := &structs.ACLTokenListInput{
+		BaseInput: baseInputFromReq(req),
+	}
 
 	out, err := a.tokenService.List(req.Context(), in)
 	if err != nil {

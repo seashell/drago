@@ -38,7 +38,6 @@ func (a *NetworkHandlerAdapter) Handle(rw http.ResponseWriter, req *http.Request
 func (a *NetworkHandlerAdapter) handleGet(rw http.ResponseWriter, req *http.Request) (interface{}, error) {
 
 	params := parsePathParams(req)
-
 	if len(params) > 1 {
 		return nil, NewError(404, ErrNotFound)
 	}
@@ -48,7 +47,10 @@ func (a *NetworkHandlerAdapter) handleGet(rw http.ResponseWriter, req *http.Requ
 		return a.handleList(rw, req)
 	}
 
-	out, err := a.networkService.GetByID(req.Context(), &structs.NetworkGetInput{ID: id})
+	out, err := a.networkService.GetByID(req.Context(), &structs.NetworkGetInput{
+		BaseInput: baseInputFromReq(req),
+		ID:        id,
+	})
 	if err != nil {
 		return nil, NewError(404, ErrNotFound)
 	}
@@ -63,6 +65,7 @@ func (a *NetworkHandlerAdapter) handlePost(rw http.ResponseWriter, req *http.Req
 	if err != nil {
 		return nil, NewError(400, ErrBadRequest, err)
 	}
+	in.BaseInput = baseInputFromReq(req)
 
 	out, err := a.networkService.Create(req.Context(), in)
 	if err != nil {
@@ -84,7 +87,10 @@ func (a *NetworkHandlerAdapter) handleDelete(rw http.ResponseWriter, req *http.R
 		return nil, NewError(400, ErrBadRequest)
 	}
 
-	_, err := a.networkService.Delete(req.Context(), &structs.NetworkDeleteInput{ID: id})
+	_, err := a.networkService.Delete(req.Context(), &structs.NetworkDeleteInput{
+		BaseInput: baseInputFromReq(req),
+		ID:        id,
+	})
 	if err != nil {
 		return nil, NewError(404, ErrNotFound)
 	}
@@ -98,7 +104,9 @@ func (a *NetworkHandlerAdapter) handlePatch(rw http.ResponseWriter, req *http.Re
 
 func (a *NetworkHandlerAdapter) handleList(rw http.ResponseWriter, req *http.Request) (interface{}, error) {
 
-	in := &structs.NetworkListInput{}
+	in := &structs.NetworkListInput{
+		BaseInput: baseInputFromReq(req),
+	}
 
 	out, err := a.networkService.List(req.Context(), in)
 	if err != nil {
