@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"strconv"
 	"strings"
+
+	"github.com/seashell/drago/drago/application/structs"
 )
 
 const (
@@ -66,4 +68,10 @@ func trimPathPrefix(req *http.Request, prefix string) *http.Request {
 	s = strings.TrimPrefix(s, prefix)
 	req.URL.Path = s
 	return req
+}
+
+func baseInputFromReq(req *http.Request) structs.BaseInput {
+	return structs.BaseInput{
+		Subject: parseSecret(req),
+	}
 }

@@ -48,7 +48,10 @@ func (a *ACLPolicyHandlerAdapter) handleGet(rw http.ResponseWriter, req *http.Re
 		return a.handleList(rw, req)
 	}
 
-	out, err := a.policyService.GetByName(req.Context(), &structs.ACLPolicyGetInput{Name: name})
+	out, err := a.policyService.GetByName(req.Context(), &structs.ACLPolicyGetInput{
+		BaseInput: baseInputFromReq(req),
+		Name:      name,
+	})
 	if err != nil {
 		return nil, NewError(404, ErrNotFound)
 	}
@@ -58,7 +61,9 @@ func (a *ACLPolicyHandlerAdapter) handleGet(rw http.ResponseWriter, req *http.Re
 
 func (a *ACLPolicyHandlerAdapter) handleList(rw http.ResponseWriter, req *http.Request) (interface{}, error) {
 
-	in := &structs.ACLPolicyListInput{}
+	in := &structs.ACLPolicyListInput{
+		BaseInput: baseInputFromReq(req),
+	}
 
 	out, err := a.policyService.List(req.Context(), in)
 	if err != nil {
