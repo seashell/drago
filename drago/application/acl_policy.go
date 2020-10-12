@@ -9,6 +9,12 @@ import (
 )
 
 const (
+	ACLPolicyList  = "list"
+	ACLPolicyRead  = "read"
+	ACLPolicyWrite = "write"
+)
+
+const (
 	errPolicyNotFound = "policy not found"
 )
 
@@ -17,37 +23,32 @@ var (
 	ErrPolicyNotFound = errors.New(errPolicyNotFound)
 )
 
-// ACLPolicyService ...
-type ACLPolicyService interface {
-	List(context.Context, *structs.ACLPolicyListInput) (*structs.ACLPolicyListOutput, error)
-	GetByName(context.Context, *structs.ACLPolicyGetInput) (*structs.ACLPolicyGetOutput, error)
-	Upsert(context.Context, *structs.ACLPolicyUpsertInput) (*structs.ACLPolicyUpsertOutput, error)
-	Delete(context.Context, *structs.ACLPolicyDeleteInput) (*structs.ACLPolicyDeleteOutput, error)
-}
-
 type aclPolicyService struct {
-	repo domain.ACLPolicyRepository
+	config *Config
 }
 
 // NewACLPolicyService ...
-func NewACLPolicyService(pr domain.ACLPolicyRepository) ACLPolicyService {
-	return &aclPolicyService{
-		repo: pr,
-	}
+func NewACLPolicyService(config *Config) ACLPolicyService {
+	return &aclPolicyService{config}
 }
 
 func (s *aclPolicyService) GetByName(ctx context.Context, in *structs.ACLPolicyGetInput) (*structs.ACLPolicyGetOutput, error) {
 
-	t, err := s.repo.GetByName(ctx, in.Name)
+	// Check if authorized
+	if err := s.authorize(ctx, in.Subject, in.Name, ACLPolicyRead); err != nil {
+		return nil, err
+	}
+
+	p, err := s.config.ACLPolicyRepository.GetByName(ctx, in.Name)
 	if err != nil {
 		return nil, err
 	}
 
 	out := &structs.ACLPolicyGetOutput{
 		ACLPolicy: structs.ACLPolicy{
-			Name:      t.Name,
-			CreatedAt: t.CreatedAt,
-			UpdatedAt: t.UpdatedAt,
+			Name:      p.Name,
+			CreatedAt: p.CreatedAt,
+			UpdatedAt: p.UpdatedAt,
 		},
 	}
 
@@ -56,18 +57,28 @@ func (s *aclPolicyService) GetByName(ctx context.Context, in *structs.ACLPolicyG
 
 func (s *aclPolicyService) Upsert(ctx context.Context, in *structs.ACLPolicyUpsertInput) (*structs.ACLPolicyUpsertOutput, error) {
 
-	_, err := s.repo.Upsert(ctx, &domain.ACLPolicy{
+	// Check if authorized
+	if err := s.authorize(ctx, in.Subject, "", ACLPolicyWrite); err != nil {
+		return nil, err
+	}
+
+	_, err := s.config.ACLPolicyRepository.Upsert(ctx, &domain.ACLPolicy{
 		Name: in.Name,
 	})
 	if err != nil {
 		return nil, err
 	}
-
 	return &structs.ACLPolicyUpsertOutput{}, nil
 }
 
 func (s *aclPolicyService) Delete(ctx context.Context, in *structs.ACLPolicyDeleteInput) (*structs.ACLPolicyDeleteOutput, error) {
-	_, err := s.repo.DeleteByName(ctx, in.Name)
+
+	// Check if authorized
+	if err := s.authorize(ctx, in.Subject, "", ACLPolicyWrite); err != nil {
+		return nil, err
+	}
+
+	_, err := s.config.ACLPolicyRepository.DeleteByName(ctx, in.Name)
 	if err != nil {
 		return nil, err
 	}
@@ -75,23 +86,36 @@ func (s *aclPolicyService) Delete(ctx context.Context, in *structs.ACLPolicyDele
 }
 
 func (s *aclPolicyService) List(ctx context.Context, in *structs.ACLPolicyListInput) (*structs.ACLPolicyListOutput, error) {
-	policies, err := s.repo.FindAll(ctx)
+
+	// Check if authorized
+	if err := s.authorize(ctx, in.Subject, "", ACLPolicyList); err != nil {
+		return nil, err
+	}
+
+	policies, err := s.config.ACLPolicyRepository.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	items := []*structs.ACLPolicyListItem{}
+	out := &structs.ACLPolicyListOutput{
+		Items: []*structs.ACLPolicyListItem{},
+	}
 	for _, p := range policies {
-		items = append(items, &structs.ACLPolicyListItem{
+		out.Items = append(out.Items, &structs.ACLPolicyListItem{
 			Name:      p.Name,
 			CreatedAt: p.CreatedAt,
 			UpdatedAt: p.UpdatedAt,
 		})
 	}
 
-	out := &structs.ACLPolicyListOutput{
-		Items: items,
-	}
-
 	return out, nil
+}
+
+func (s *aclPolicyService) authorize(ctx context.Context, sub, id, op string) error {
+	if s.config.ACLEnabled {
+		if err := s.config.AuthHandler.Authorize(ctx, sub, ResourceACLPolicy, id, op); err != nil {
+			return err
+		}
+	}
+	return nil
 }

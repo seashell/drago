@@ -117,9 +117,15 @@ func (a *Agent) serverConfig() (*drago.Config, error) {
 	c.UI = a.config.UI
 	c.BindAddr = a.config.BindAddr
 	c.DataDir = a.config.Server.DataDir
+
 	c.Ports = &drago.Ports{
 		HTTP: a.config.Ports.HTTP,
 		RPC:  a.config.Ports.RPC,
+	}
+
+	c.ACL = &drago.ACL{
+		Enabled:  a.config.ACL.Enabled,
+		TokenTTL: a.config.ACL.TokenTTL,
 	}
 
 	c.LogLevel = a.config.LogLevel

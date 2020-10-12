@@ -1,6 +1,7 @@
 package acl
 
 import (
+	"context"
 	"fmt"
 	"testing"
 )
@@ -25,6 +26,7 @@ const (
 )
 
 var repo *mockRepository
+var ctx = context.TODO()
 
 type mockRepository struct {
 	tokens   []*mockToken
@@ -50,7 +52,7 @@ func (r *mockRepository) GetPolicyByName(n string) (Policy, error) {
 }
 
 type mockToken struct {
-	management bool
+	privileged bool
 	secret     string
 	policies   []string
 }
@@ -59,8 +61,8 @@ func (t *mockToken) Policies() []string {
 	return t.policies
 }
 
-func (t *mockToken) IsManagement() bool {
-	return t.management
+func (t *mockToken) IsPrivileged() bool {
+	return t.privileged
 }
 
 type mockPolicy struct {
@@ -98,34 +100,6 @@ func (r *mockRule) Capabilities() []string {
 	return r.capabilities
 }
 
-func setupACL() {
-
-	NewResource("namespace").
-		AddCapability(capNamespaceReadX, capNamespaceReadY, capNamespaceWriteX, capNamespaceWriteY).
-		AddAlias("read", capNamespaceReadX, capNamespaceReadY).
-		AddAlias("write", capNamespaceWriteX, capNamespaceWriteY)
-
-	NewResource("network").
-		AddCapability(capNetworkRead, capNetworkWrite, capNetworkList).
-		AddAlias("read", capNetworkList, capHostRead).
-		AddAlias("write", capNetworkWrite, capNetworkRead, capNetworkWrite)
-
-	NewResource("host").
-		AddCapability(capNetworkRead, capNetworkWrite, capNetworkList).
-		AddAlias("read", capNetworkList, capHostRead).
-		AddAlias("write", capNetworkWrite, capNetworkRead, capNetworkWrite)
-
-	PolicyResolver(func(p string) (Policy, error) {
-		return repo.GetPolicyByName(p)
-	})
-
-	SecretResolver(func(s string) (Token, error) {
-		return repo.FindTokenBySecret(s)
-	})
-
-	AnonymousToken(&mockToken{false, "", []string{"anonymous"}})
-}
-
 func setupMockRepo() {
 	repo = &mockRepository{
 		tokens: []*mockToken{
@@ -157,55 +131,69 @@ func setupMockRepo() {
 	}
 }
 
+func ACLResolverConfig() *ResolverConfig {
+
+	model := NewModel()
+	model.Resource("namespace").
+		Capabilities(capNamespaceReadX, capNamespaceReadY, capNamespaceWriteX, capNamespaceWriteY).
+		Alias("read", capNamespaceReadX, capNamespaceReadY).
+		Alias("write", capNamespaceWriteX, capNamespaceWriteY)
+	model.Resource("network").
+		Capabilities(capNetworkRead, capNetworkWrite, capNetworkList).
+		Alias("read", capNetworkList, capHostRead).
+		Alias("write", capNetworkWrite, capNetworkRead, capNetworkWrite)
+	model.Resource("host").
+		Capabilities(capNetworkRead, capNetworkWrite, capNetworkList).
+		Alias("read", capNetworkList, capHostRead).
+		Alias("write", capNetworkWrite, capNetworkRead, capNetworkWrite)
+
+	config := &ResolverConfig{
+		Model: model,
+		SecretResolver: func(ctx context.Context, s string) (Token, error) {
+			if s == "" {
+				return &mockToken{false, "", []string{"anonymous"}}, nil
+			}
+			return repo.FindTokenBySecret(s)
+		},
+		PolicyResolver: func(ctx context.Context, p string) (Policy, error) {
+			return repo.GetPolicyByName(p)
+		},
+	}
+
+	return config
+}
+
 func TestACL(t *testing.T) {
 
 	setupMockRepo()
 
 	t.Run("MissingConfigurations", func(t *testing.T) {
-
-		secret := "54c06ace-7da6-443b-a5a2-05da5294fbd5"
-
-		if _, err := ResolveSecret(secret); err == nil {
-			t.Fatal(err)
-		}
-
-		// Configure secret resolver
-		SecretResolver(func(s string) (Token, error) {
-			return repo.FindTokenBySecret(s)
-		})
-		if _, err := ResolveSecret(secret); err == nil {
-			t.Fatal(err)
-		}
-
-		// Configure policy resolver
-		PolicyResolver(func(p string) (Policy, error) {
-			return repo.GetPolicyByName(p)
-		})
-		if _, err := ResolveSecret(secret); err != nil {
-			t.Fatal(err)
+		_, err := NewResolver(&ResolverConfig{})
+		if err == nil {
+			t.Fatalf("expected error. have %v", err)
 		}
 	})
 
-	setupACL()
+	resolver, _ := NewResolver(ACLResolverConfig())
 
 	t.Run("ResolveSecret", func(t *testing.T) {
 
 		secret := "54c06ace-7da6-443b-a5a2-05da5294fbd5"
 
-		acl, err := ResolveSecret(secret)
+		acl, err := resolver.ResolveSecret(ctx, secret)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if err := acl.CheckAuthorized("namespace", "12345", "write-x"); err != nil {
+		if err := acl.CheckAuthorized(ctx, "namespace", "12345", "write-x"); err != nil {
 			t.Fatalf("%v", err)
 		}
 
-		if err := acl.CheckAuthorized("network", "12345", "write"); err == nil {
+		if err := acl.CheckAuthorized(ctx, "network", "12345", "write"); err == nil {
 			t.Fatalf("%v", err)
 		}
 
-		if err := acl.CheckAuthorized("host", "12345", "write"); err == nil {
+		if err := acl.CheckAuthorized(ctx, "host", "12345", "write"); err == nil {
 			t.Fatalf("%v", err)
 		}
 	})
@@ -214,31 +202,42 @@ func TestACL(t *testing.T) {
 
 		secret := "foobar"
 
-		_, err := ResolveSecret(secret)
+		_, err := resolver.ResolveSecret(ctx, secret)
 		if err == nil {
 			t.Fatal(err)
 		}
 	})
 
-	t.Run("ManagementToken", func(t *testing.T) {
+	t.Run("PrivilegedToken", func(t *testing.T) {
 
 		secret := "39076595-19a6-4582-b0d9-bb4a266fd48a"
 
-		acl, err := ResolveSecret(secret)
+		acl, err := resolver.ResolveSecret(ctx, secret)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if err := acl.CheckAuthorized("namespace", "12345", "write-x"); err != nil {
+		if err := acl.CheckAuthorized(ctx, "namespace", "12345", "write-x"); err != nil {
 			t.Fatalf("%v", err)
 		}
 
-		if err := acl.CheckAuthorized("network", "12345", "write"); err != nil {
+		if err := acl.CheckAuthorized(ctx, "network", "12345", "write"); err != nil {
 			t.Fatalf("%v", err)
 		}
 
-		if err := acl.CheckAuthorized("host", "12345", "write"); err != nil {
+		if err := acl.CheckAuthorized(ctx, "host", "12345", "write"); err != nil {
 			t.Fatalf("%v", err)
+		}
+	})
+
+	t.Run("InvalidResource", func(t *testing.T) {
+		secret := "54c06ace-7da6-443b-a5a2-05da5294fbd5"
+		acl, err := resolver.ResolveSecret(ctx, secret)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := acl.CheckAuthorized(ctx, "foo", "bar", "write-x"); err == nil {
+			t.Fatalf("expected error. have %v", err)
 		}
 	})
 
@@ -246,20 +245,20 @@ func TestACL(t *testing.T) {
 
 		secret := ""
 
-		acl, err := ResolveSecret(secret)
+		acl, err := resolver.ResolveSecret(ctx, secret)
 		if err != nil {
 			t.Fatal(err)
 		}
 
-		if err := acl.CheckAuthorized("namespace", "12345", "write-x"); err == nil {
+		if err := acl.CheckAuthorized(ctx, "namespace", "12345", "write-x"); err == nil {
 			t.Fatalf("%v", err)
 		}
 
-		if err := acl.CheckAuthorized("network", "12345", "write"); err == nil {
+		if err := acl.CheckAuthorized(ctx, "network", "12345", "write"); err == nil {
 			t.Fatalf("%v", err)
 		}
 
-		if err := acl.CheckAuthorized("host", "12345", "list"); err != nil {
+		if err := acl.CheckAuthorized(ctx, "host", "12345", "list"); err != nil {
 			t.Fatalf("%v", err)
 		}
 	})
@@ -268,13 +267,13 @@ func TestACL(t *testing.T) {
 
 		secret := "54c06ace-7da6-443b-a5a2-05da5294fbd5"
 
-		acl, err := ResolveSecret(secret)
+		acl, err := resolver.ResolveSecret(ctx, secret)
 		if err != nil {
 			t.Fatal(err)
 		}
 
 		str := acl.String()
-		if str != "" {
+		if str == "" {
 			t.Fatal(err)
 		}
 	})

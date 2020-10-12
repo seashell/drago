@@ -7,10 +7,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+// BaseInput contains information that is common to all operations.
 type BaseInput struct {
-	Secret string
+	Subject string
 }
 
+// BaseOutput contains information that is common to all results.
 type BaseOutput struct {
 }
 

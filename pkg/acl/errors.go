@@ -7,6 +7,7 @@ import (
 const (
 	errTokenNotFound         = "token not found"
 	errPolicyNotFound        = "policy not found"
+	errMissingModel          = "missing model"
 	errMissingSecretResolver = "missing secret resolver"
 	errMissingPolicyResolver = "missing policy resolver"
 	errResolvingSecret       = "error resolving secret"
@@ -25,12 +26,16 @@ var (
 	// by the resolver function.
 	ErrPolicyNotFound = errors.New(errPolicyNotFound)
 
-	// ErrMissingSecretResolver is returned when the no SecretResolverFunc
-	// is configured.
+	// ErrMissingModel is returned when no Model is set in the Resolver
+	// configuration.
+	ErrMissingModel = errors.New(errMissingModel)
+
+	// ErrMissingSecretResolver is returned when no SecretResolverFunc
+	// is set in the Resolver configuration.
 	ErrMissingSecretResolver = errors.New(errMissingSecretResolver)
 
-	// ErrMissingPolicyResolver is returned when the no PolicyResolverFunc
-	// is configured.
+	// ErrMissingPolicyResolver is returned when no PolicyResolverFunc
+	// is set in the ACL configuration.
 	ErrMissingPolicyResolver = errors.New(errMissingPolicyResolver)
 
 	// ErrResolvingSecret is returned when an error occurs when resolving

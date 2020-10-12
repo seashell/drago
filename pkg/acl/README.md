@@ -1,6 +1,8 @@
 # acl
 Generic implementation of an Access Control List system for enforcing authorization across different resources. While originally meant for utilization in the [Drago](https://github.com/seashell/drago) project, this ACL system was built with flexibility in mind, and should be straightforward to configure and integrate into other codebases.
 
+Although different in many aspects, this implementation is largely based on the ACL systems built by Hashicorp for Nomad and Consul. It also took some inspiration from GCP's ACL system.
+
 ## Concepts
 * **Resource**: any type of resource that might require authorization. Example: book.
 
@@ -93,9 +95,5 @@ if !acl.IsAuthorized("book", "the-lord-of-the-rings-id", "write") {
 ...
 ```
 
-
-
-
-
-## Credits
-Although different in many aspects, this implementation was heavily inspired on the ACL systems built by Hashicorp for Nomad and Consul, as well as on concepts from GCP's ACL system.
+## TODO:
+- Benchmark time and memory overhead;

@@ -8,40 +8,23 @@ import (
 	structs "github.com/seashell/drago/drago/application/structs"
 )
 
-// NetworkInterfaceController provides network configuration capabilities.
-type NetworkInterfaceController interface {
-	CreateInterface(iface *domain.Interface) error
-	ListInterfaces() ([]*domain.Interface, error)
-	DeleteInterface(name string) error
-	DeleteAllInterfaces() error
-}
-
-// DragoAPI is a gateway/client for acessing Drago's remote API.
-type DragoAPI interface {
-	SynchronizeSelf(ctx context.Context, state *structs.HostSynchronizeInput) (*structs.HostSynchronizeOutput, error)
-}
-
 // ReconciliationService ...
 type ReconciliationService interface {
 	Reconcile(ctx context.Context) error
 }
 
 type reconciliationService struct {
-	api  DragoAPI
-	repo domain.Repository
-	nic  NetworkInterfaceController
+	config *Config
 }
 
 // NewReconciliationService ...
-func NewReconciliationService(repo domain.Repository, api DragoAPI, nic NetworkInterfaceController) ReconciliationService {
+func NewReconciliationService(config *Config) ReconciliationService {
 
 	s := &reconciliationService{
-		api:  api,
-		repo: repo,
-		nic:  nic,
+		config: config,
 	}
 
-	state, _ := s.repo.Get()
+	state, _ := s.config.StateRepository.Get()
 
 	if err := s.reconcileState(state); err != nil {
 		panic(err)
@@ -69,7 +52,7 @@ func (s *reconciliationService) Reconcile(ctx context.Context) error {
 	}
 
 	// Use API client to fetch desired state
-	out, err := s.api.SynchronizeSelf(ctx, in)
+	out, err := s.config.DragoGateway.Agent().SynchronizeSelf(ctx, in)
 	if err != nil {
 		return err
 	}
@@ -103,7 +86,7 @@ func (s *reconciliationService) currentState() *domain.Host {
 func (s *reconciliationService) reconcileState(desired *domain.Host) error {
 
 	// TODO: avoid deleting all interfaces on every reconciliation
-	err := s.nic.DeleteAllInterfaces()
+	err := s.config.InterfaceController.DeleteAllInterfaces()
 	if err != nil {
 		return err
 	}
@@ -116,7 +99,7 @@ func (s *reconciliationService) reconcileState(desired *domain.Host) error {
 			}
 		}
 		iface.Peers = peers
-		err := s.nic.CreateInterface(iface)
+		err := s.config.InterfaceController.CreateInterface(iface)
 		if err != nil {
 			return err
 		}

@@ -38,6 +38,9 @@ type Config struct {
 	// Ports.
 	Ports *Ports
 
+	// ACL
+	ACL *ACL
+
 	// Etcd.
 	Etcd *Etcd
 
@@ -91,6 +94,13 @@ type Etcd struct {
 	CORS string
 }
 
+// ACL :
+type ACL struct {
+	Enabled bool
+	// TokenTTL controls for how long we keep ACL tokens in cache.
+	TokenTTL time.Duration
+}
+
 // Ports :
 type Ports struct {
 	HTTP int
@@ -108,6 +118,10 @@ func DefaultConfig() *Config {
 		Ports: &Ports{
 			HTTP: defaultHTTPPort,
 			RPC:  defaultRPCPort,
+		},
+		ACL: &ACL{
+			Enabled:  false,
+			TokenTTL: 30 * time.Second,
 		},
 		Etcd: &Etcd{
 			Name:                       "default",
