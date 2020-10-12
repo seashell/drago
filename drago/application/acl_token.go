@@ -10,6 +10,12 @@ import (
 )
 
 const (
+	ACLTokenList  = "list"
+	ACLTokenRead  = "read"
+	ACLTokenWrite = "write"
+)
+
+const (
 	errTokenNotFound        = "token not found"
 	errInvalidTokenType     = "invalid token type"
 	errInvalidTokenPolicies = "invalid token policies"
@@ -26,30 +32,24 @@ var (
 	ErrInvalidTokenPolicies = errors.New(errInvalidTokenPolicies)
 )
 
-// ACLTokenService ...
-type ACLTokenService interface {
-	List(context.Context, *structs.ACLTokenListInput) (*structs.ACLTokenListOutput, error)
-	FindBySecret(context.Context, *structs.ACLTokenGetInput) (*structs.ACLTokenGetOutput, error)
-	GetByID(context.Context, *structs.ACLTokenGetInput) (*structs.ACLTokenGetOutput, error)
-	Create(context.Context, *structs.ACLTokenCreateInput) (*structs.ACLTokenCreateOutput, error)
-	Delete(context.Context, *structs.ACLTokenDeleteInput) (*structs.ACLTokenDeleteOutput, error)
-}
-
 type aclTokenService struct {
-	repo domain.ACLTokenRepository
+	config *Config
 }
 
 // NewACLTokenService ...
-func NewACLTokenService(tr domain.ACLTokenRepository) ACLTokenService {
-	return &aclTokenService{
-		repo: tr,
-	}
+func NewACLTokenService(config *Config) ACLTokenService {
+	return &aclTokenService{config}
 }
 
 // GetByID returns a Token entity by ID
 func (s *aclTokenService) GetByID(ctx context.Context, in *structs.ACLTokenGetInput) (*structs.ACLTokenGetOutput, error) {
 
-	t, err := s.repo.GetByID(ctx, in.ID)
+	// Check if authorized
+	if err := s.authorize(ctx, in.Subject, in.ID, ACLTokenRead); err != nil {
+		return nil, err
+	}
+
+	t, err := s.config.ACLTokenRepository.GetByID(ctx, in.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,11 +69,16 @@ func (s *aclTokenService) GetByID(ctx context.Context, in *structs.ACLTokenGetIn
 	return out, nil
 }
 
-// FindBySecret returns a Token entity by ID
-func (s *aclTokenService) FindBySecret(ctx context.Context, in *structs.ACLTokenGetInput) (*structs.ACLTokenGetOutput, error) {
+// GetBySecret returns a Token entity by ID
+func (s *aclTokenService) GetBySecret(ctx context.Context, in *structs.ACLTokenGetInput) (*structs.ACLTokenGetOutput, error) {
 
-	t, err := s.repo.FindBySecret(ctx, in.Secret)
+	t, err := s.config.ACLTokenRepository.FindBySecret(ctx, in.Secret)
 	if err != nil {
+		return nil, err
+	}
+
+	// Check if authorized
+	if err := s.authorize(ctx, in.Subject, t.ID, ACLTokenRead); err != nil {
 		return nil, err
 	}
 
@@ -95,6 +100,11 @@ func (s *aclTokenService) FindBySecret(ctx context.Context, in *structs.ACLToken
 // Create creates a new Token entity
 func (s *aclTokenService) Create(ctx context.Context, in *structs.ACLTokenCreateInput) (*structs.ACLTokenCreateOutput, error) {
 
+	// Check if authorized
+	if err := s.authorize(ctx, in.Subject, "", ACLTokenWrite); err != nil {
+		return nil, err
+	}
+
 	if in.Type != domain.ACLTokenTypeClient && in.Type != domain.ACLTokenTypeManagement {
 		return nil, structs.NewError(ErrInvalidTokenType, in.Type)
 	}
@@ -103,7 +113,7 @@ func (s *aclTokenService) Create(ctx context.Context, in *structs.ACLTokenCreate
 		return nil, structs.NewError(ErrInvalidTokenPolicies, in.Policies)
 	}
 
-	id, err := s.repo.Create(ctx, &domain.ACLToken{
+	id, err := s.config.ACLTokenRepository.Create(ctx, &domain.ACLToken{
 		Name:     in.Name,
 		Type:     in.Type,
 		Policies: in.Policies,
@@ -113,7 +123,7 @@ func (s *aclTokenService) Create(ctx context.Context, in *structs.ACLTokenCreate
 		return nil, err
 	}
 
-	t, err := s.repo.GetByID(ctx, *id)
+	t, err := s.config.ACLTokenRepository.GetByID(ctx, *id)
 	if err != nil {
 		return nil, err
 	}
@@ -135,7 +145,13 @@ func (s *aclTokenService) Create(ctx context.Context, in *structs.ACLTokenCreate
 
 // Delete deletes a token entity from the repository
 func (s *aclTokenService) Delete(ctx context.Context, in *structs.ACLTokenDeleteInput) (*structs.ACLTokenDeleteOutput, error) {
-	_, err := s.repo.DeleteByID(ctx, in.ID)
+
+	// Check if authorized
+	if err := s.authorize(ctx, in.Subject, "", ACLTokenWrite); err != nil {
+		return nil, err
+	}
+
+	_, err := s.config.ACLTokenRepository.DeleteByID(ctx, in.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -145,14 +161,22 @@ func (s *aclTokenService) Delete(ctx context.Context, in *structs.ACLTokenDelete
 // List retrieves all token entities in the repository
 func (s *aclTokenService) List(ctx context.Context, in *structs.ACLTokenListInput) (*structs.ACLTokenListOutput, error) {
 
-	tokens, err := s.repo.FindAll(ctx)
+	// Check if authorized
+	if err := s.authorize(ctx, in.Subject, "", ACLTokenList); err != nil {
+		return nil, err
+	}
+
+	tokens, err := s.config.ACLTokenRepository.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	items := []*structs.ACLTokenListItem{}
+	out := &structs.ACLTokenListOutput{
+		Items: []*structs.ACLTokenListItem{},
+	}
+
 	for _, t := range tokens {
-		items = append(items, &structs.ACLTokenListItem{
+		out.Items = append(out.Items, &structs.ACLTokenListItem{
 			ID:        t.ID,
 			Name:      t.Name,
 			Type:      t.Type,
@@ -162,9 +186,14 @@ func (s *aclTokenService) List(ctx context.Context, in *structs.ACLTokenListInpu
 		})
 	}
 
-	out := &structs.ACLTokenListOutput{
-		Items: items,
-	}
-
 	return out, nil
+}
+
+func (s *aclTokenService) authorize(ctx context.Context, sub, id, op string) error {
+	if s.config.ACLEnabled {
+		if err := s.config.AuthHandler.Authorize(ctx, sub, ResourceACLToken, id, op); err != nil {
+			return err
+		}
+	}
+	return nil
 }

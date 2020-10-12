@@ -8,6 +8,7 @@ import (
 const (
 	// ACLTokenTypeClient ...
 	ACLTokenTypeClient = "client"
+
 	// ACLTokenTypeManagement ...
 	ACLTokenTypeManagement = "management"
 )

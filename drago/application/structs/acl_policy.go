@@ -20,43 +20,60 @@ type ACLPolicyListItem struct {
 
 // ACLPolicyGetInput :
 type ACLPolicyGetInput struct {
-	// Specifies the name of the policy.
+	BaseInput
+
+	// Name contains the name of the policy to be retrieved.
 	Name string `json:"name"`
 }
 
 // ACLPolicyGetOutput :
 type ACLPolicyGetOutput struct {
+	BaseOutput
 	ACLPolicy
 }
 
 // ACLPolicyUpsertInput :
 type ACLPolicyUpsertInput struct {
-	// Specifies the name of the policy. Creates the policy if the name
-	// does not exist, otherwise updates the existing policy.
+	BaseInput
+
+	// Name contains the name of the policy to be created. If it already exists,
+	// its attributes are updated.
 	Name string `json:"name"`
 
-	// Specifies a human readable description of the policy.
+	// Description contains a human readable description of the policy.
 	Description string `json:"description"`
 
-	// Specifies the Policy rules in HCL or JSON format.
+	// Rules contains the policy rules in HCL or JSON format.
 	Rules string `json:"rules"`
 }
 
 // ACLPolicyUpsertOutput :
-type ACLPolicyUpsertOutput struct{}
+type ACLPolicyUpsertOutput struct {
+	BaseOutput
+}
 
 // ACLPolicyDeleteInput :
 type ACLPolicyDeleteInput struct {
+	BaseInput
+
+	// Name contains the name of the policy to be deleted.
 	Name string `json:"name"`
 }
 
 // ACLPolicyDeleteOutput :
-type ACLPolicyDeleteOutput struct{}
+type ACLPolicyDeleteOutput struct {
+	BaseOutput
+}
 
 // ACLPolicyListInput :
-type ACLPolicyListInput struct{}
+type ACLPolicyListInput struct {
+	BaseInput
+}
 
 // ACLPolicyListOutput :
 type ACLPolicyListOutput struct {
+	BaseOutput
+
+	// Items contains the policies found.
 	Items []*ACLPolicyListItem `json:"items"`
 }

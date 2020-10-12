@@ -2,19 +2,6 @@ package structs
 
 import (
 	"time"
-
-	"github.com/seashell/drago/drago/domain"
-)
-
-var (
-	// AnonymousACLToken is used no SecretID is provided, and the
-	// request is made anonymously.
-	AnonymousACLToken = &ACLToken{
-		ID:       "anonymous",
-		Name:     "Anonymous Token",
-		Type:     domain.ACLTokenTypeClient,
-		Policies: []string{"anonymous"},
-	}
 )
 
 // ACLToken :
@@ -40,17 +27,20 @@ type ACLTokenListItem struct {
 
 // ACLTokenGetInput :
 type ACLTokenGetInput struct {
+	BaseInput
 	ID     string `json:"id" validate:"uuid4"`
 	Secret string `json:"secret" validate:"uuid4"`
 }
 
 // ACLTokenGetOutput :
 type ACLTokenGetOutput struct {
+	BaseOutput
 	ACLToken
 }
 
 // ACLTokenCreateInput :
 type ACLTokenCreateInput struct {
+	BaseInput
 	Name     string   `json:"name,omitempty"`
 	Type     string   `json:"type"`
 	Policies []string `json:"policies"`
@@ -58,21 +48,28 @@ type ACLTokenCreateInput struct {
 
 // ACLTokenCreateOutput :
 type ACLTokenCreateOutput struct {
+	BaseOutput
 	ACLToken
 }
 
 // ACLTokenDeleteInput :
 type ACLTokenDeleteInput struct {
+	BaseInput
 	ID string `json:"id" validate:"uuid4"`
 }
 
 // ACLTokenDeleteOutput :
-type ACLTokenDeleteOutput struct{}
+type ACLTokenDeleteOutput struct {
+	BaseOutput
+}
 
 // ACLTokenListInput :
-type ACLTokenListInput struct{}
+type ACLTokenListInput struct {
+	BaseInput
+}
 
 // ACLTokenListOutput :
 type ACLTokenListOutput struct {
+	BaseOutput
 	Items []*ACLTokenListItem `json:"items"`
 }

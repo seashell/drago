@@ -4,9 +4,7 @@ import (
 	"net/url"
 	"path"
 	"strings"
-	"time"
 
-	clientv3 "go.etcd.io/etcd/clientv3"
 	embed "go.etcd.io/etcd/embed"
 )
 
@@ -51,7 +49,7 @@ func (s *Server) setupEtcdServer() error {
 	cfg.LogOutputs = []string{"stderr", path.Join(s.config.DataDir, "/etcd.log")}
 	cfg.LogLevel = strings.ToLower(s.config.LogLevel)
 
-	s.logger.Infof("starting etcd server")
+	s.config.Logger.Infof("starting etcd server")
 
 	etcdServer, err := embed.StartEtcd(cfg)
 	if err != nil {
@@ -59,23 +57,6 @@ func (s *Server) setupEtcdServer() error {
 	}
 
 	s.etcdServer = etcdServer
-
-	return nil
-}
-
-func (s *Server) setupEtcdClient() error {
-
-	etcdClient, err := clientv3.New(clientv3.Config{
-		Endpoints:        s.config.Etcd.InitialAdvertiseClientURLs,
-		AutoSyncInterval: time.Second * 5,
-		DialTimeout:      5 * time.Second,
-	})
-
-	if err != nil {
-		return err
-	}
-
-	s.etcdClient = etcdClient
 
 	return nil
 }

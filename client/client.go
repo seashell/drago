@@ -7,10 +7,10 @@ import (
 	"sync"
 	"time"
 
-	api "github.com/seashell/drago/api"
 	application "github.com/seashell/drago/client/application"
-	bolt "github.com/seashell/drago/client/bolt"
-	net "github.com/seashell/drago/client/net"
+	drago "github.com/seashell/drago/client/infrastructure/gateway/drago"
+	nic "github.com/seashell/drago/client/infrastructure/gateway/nic"
+	bolt "github.com/seashell/drago/client/infrastructure/repository/bolt"
 	log "github.com/seashell/drago/pkg/log"
 )
 
@@ -57,21 +57,15 @@ func New(config *Config) (*Client, error) {
 
 func (c *Client) setupApplication() error {
 
-	// Create Drago API gateway/client
-	gw, err := api.NewClient(&api.Config{
-		Address: c.config.Servers[0],
-		Token:   c.config.Token,
-	})
+	gw, err := drago.NewDragoGatewayAdapter(c.config.Servers[0], c.config.Token)
 	if err != nil {
 		return err
 	}
 
-	// Create network controller
-	nc, err := net.NewController(&net.Config{
-		LinkPrefix:    c.config.InterfacePrefix,
-		WireguardPath: c.config.WireguardPath,
-	}, c.logger)
-
+	nc, err := nic.NewController(&nic.Config{
+		InterfacePrefix: "drago",
+		WireguardPath:   c.config.WireguardPath,
+	})
 	if err != nil {
 		return err
 	}
@@ -81,9 +75,13 @@ func (c *Client) setupApplication() error {
 		return err
 	}
 
-	repo := bolt.NewRepositoryAdapter(backend)
+	config := &application.Config{
+		DragoGateway:        gw,
+		InterfaceController: nc,
+		StateRepository:     bolt.NewStateRepositoryAdapter(backend),
+	}
 
-	c.services.reconciliation = application.NewReconciliationService(repo, gw, nc)
+	c.services.reconciliation = application.NewReconciliationService(config)
 
 	return nil
 }
