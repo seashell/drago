@@ -63,7 +63,7 @@ func (s *networkService) Create(ctx context.Context, in *structs.NetworkCreateIn
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, "", NetworkWrite); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	id, err := s.config.NetworkRepository.Create(ctx, &domain.Network{
@@ -91,7 +91,7 @@ func (s *networkService) Delete(ctx context.Context, in *structs.NetworkDeleteIn
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, "", NetworkWrite); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	_, err := s.config.NetworkRepository.DeleteByID(ctx, in.ID)
@@ -107,7 +107,7 @@ func (s *networkService) List(ctx context.Context, in *structs.NetworkListInput)
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, "", NetworkList); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	networks, err := s.config.NetworkRepository.FindAll(ctx)

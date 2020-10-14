@@ -14,6 +14,7 @@ type ACLPolicy struct {
 type ACLPolicyListItem struct {
 	Name        string    `json:"name"`
 	Description string    `json:"description"`
+	Rules       string    `json:"rules"`
 	CreatedAt   time.Time `json:"createdAt"`
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
