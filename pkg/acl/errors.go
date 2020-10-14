@@ -46,9 +46,9 @@ var (
 	// a policy.
 	ErrResolvingPolicy = errors.New(errResolvingPolicy)
 
-	// ErrNotAuthorized is returned when the ACL does not have the
+	// ErrUnauthorized is returned when the ACL does not have the
 	// authorization to perform the requested operation on the specified resource.
-	ErrNotAuthorized = errors.New(errNotAuthorized)
+	ErrUnauthorized = errors.New(errNotAuthorized)
 
 	// ErrInvalidResource is returned when the resource being queried
 	// is not properly configured in the ACL system.

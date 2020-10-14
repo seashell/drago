@@ -14,9 +14,9 @@ type Policy interface {
 type Rule interface {
 	// Resource targeted by this rule.
 	Resource() string
-	// Pattern used to target specific instances
+	// Path used to target specific instances
 	// of the target resource, if applicable.
-	Pattern() string
+	Path() string
 	// Capabilities contains the actions allowed on
 	// instances of a resource matching this rule.
 	Capabilities() []string

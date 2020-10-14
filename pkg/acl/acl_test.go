@@ -84,7 +84,7 @@ func (p *mockPolicy) Rules() []Rule {
 
 type mockRule struct {
 	resource     string
-	pattern      string
+	path         string
 	capabilities []string
 }
 
@@ -92,8 +92,8 @@ func (r *mockRule) Resource() string {
 	return r.resource
 }
 
-func (r *mockRule) Pattern() string {
-	return r.pattern
+func (r *mockRule) Path() string {
+	return r.path
 }
 
 func (r *mockRule) Capabilities() []string {

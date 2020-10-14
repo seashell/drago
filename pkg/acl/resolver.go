@@ -115,9 +115,9 @@ func (r *Resolver) ResolveSecret(ctx context.Context, secret string) (*ACL, erro
 
 					// Initialize capability map for this pattern if it has not yet been
 					// initialized by a previously processed rule/policy.
-					if leaf, found := acl.capabilities[res.name].Get(rule.Pattern()); !found {
+					if leaf, found := acl.capabilities[res.name].Get(rule.Path()); !found {
 						capabilities = make(capMap)
-						acl.capabilities[res.name].Set(rule.Pattern(), capabilities)
+						acl.capabilities[res.name].Set(rule.Path(), capabilities)
 					} else {
 						capabilities = leaf.(capMap)
 					}
