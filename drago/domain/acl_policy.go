@@ -19,7 +19,7 @@ type ACLPolicy struct {
 // ACLPolicyRule ...
 type ACLPolicyRule struct {
 	Resource     string
-	Pattern      string
+	Path         string
 	Capabilities []string
 }
 

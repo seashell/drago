@@ -11,10 +11,13 @@ type Host struct {
 	Name             string
 	AdvertiseAddress string
 	Labels           []string
+	Interfaces       map[string]*Interface
+	Links            []*Link
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }
 
+// Interface ...
 type Interface struct {
 	Name       string
 	HostID     string
@@ -33,10 +36,10 @@ type Interface struct {
 	UpdatedAt  time.Time
 }
 
-type Peer struct {
-	ID                  string
-	FromInterfaceID     string
-	ToInterfaceID       string
+// Link ...
+type Link struct {
+	ToHostID            string
+	ToInterfaceName     string
 	AllowedIPs          []string
 	PersistentKeepalive int
 	CreatedAt           time.Time
@@ -51,4 +54,20 @@ type HostRepository interface {
 	DeleteByID(ctx context.Context, id string) (*string, error)
 	FindAll(ctx context.Context) ([]*Host, error)
 	FindByLabels(ctx context.Context, labels []string) ([]*Host, error)
+}
+
+func (h *Host) UpsertInterface(i *Interface) error {
+	return nil
+}
+
+func (h *Host) DeleteInterface(i string) error {
+	return nil
+}
+
+func (h *Host) UpsertLink(l *Link) error {
+	return nil
+}
+
+func (h *Host) DeleteLink(l string) error {
+	return nil
 }
