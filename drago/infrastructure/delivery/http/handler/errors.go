@@ -18,6 +18,7 @@ const (
 )
 
 var (
+
 	// ErrMethodNotAllowed :
 	ErrMethodNotAllowed = errors.New(errMethodNotAllowed)
 

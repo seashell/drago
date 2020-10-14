@@ -53,7 +53,7 @@ func (a *ACLTokenHandlerAdapter) handleGet(rw http.ResponseWriter, req *http.Req
 		ID:        id,
 	})
 	if err != nil {
-		return nil, NewError(404, ErrNotFound)
+		return nil, a.parseError(err)
 	}
 
 	return out, nil
@@ -70,7 +70,7 @@ func (a *ACLTokenHandlerAdapter) handlePost(rw http.ResponseWriter, req *http.Re
 
 	out, err := a.tokenService.Create(req.Context(), in)
 	if err != nil {
-		return nil, NewError(500, ErrInternal, err)
+		return nil, a.parseError(err)
 	}
 
 	return out, nil
@@ -93,7 +93,7 @@ func (a *ACLTokenHandlerAdapter) handleDelete(rw http.ResponseWriter, req *http.
 		ID:        id,
 	})
 	if err != nil {
-		return nil, NewError(404, ErrNotFound)
+		return nil, a.parseError(err)
 	}
 
 	return nil, nil
@@ -111,8 +111,18 @@ func (a *ACLTokenHandlerAdapter) handleList(rw http.ResponseWriter, req *http.Re
 
 	out, err := a.tokenService.List(req.Context(), in)
 	if err != nil {
-		return nil, err
+		return nil, a.parseError(err)
 	}
 
 	return out, nil
+}
+
+func (a *ACLTokenHandlerAdapter) parseError(err error) error {
+	switch err {
+	case application.ErrUnauthorized:
+		return NewError(401, ErrUnauthorized)
+	case application.ErrTokenNotFound:
+		return NewError(404, ErrNotFound)
+	}
+	return NewError(500, ErrInternal)
 }

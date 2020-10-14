@@ -53,7 +53,7 @@ func (a *ACLPolicyHandlerAdapter) handleGet(rw http.ResponseWriter, req *http.Re
 		Name:      name,
 	})
 	if err != nil {
-		return nil, NewError(404, ErrNotFound)
+		return nil, a.parseError(err)
 	}
 
 	return out, nil
@@ -67,8 +67,18 @@ func (a *ACLPolicyHandlerAdapter) handleList(rw http.ResponseWriter, req *http.R
 
 	out, err := a.policyService.List(req.Context(), in)
 	if err != nil {
-		return nil, err
+		return nil, a.parseError(err)
 	}
 
 	return out, nil
+}
+
+func (a *ACLPolicyHandlerAdapter) parseError(err error) error {
+	switch err {
+	case application.ErrUnauthorized:
+		return NewError(401, ErrUnauthorized)
+	case application.ErrPolicyNotFound:
+		return NewError(404, ErrNotFound)
+	}
+	return NewError(500, ErrInternal)
 }
