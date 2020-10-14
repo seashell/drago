@@ -38,7 +38,7 @@ func (a *ACL) CheckAuthorized(ctx context.Context, res string, path string, op s
 		return nil
 	}
 
-	return ErrNotAuthorized
+	return ErrUnauthorized
 }
 
 // queryCapabilities searches the ACL for all rules matching the queried resource
