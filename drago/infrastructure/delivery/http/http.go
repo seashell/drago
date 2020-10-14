@@ -85,7 +85,6 @@ func httpHandlerFunc(handler Handler) http.HandlerFunc {
 
 		if err != nil {
 			code := http.StatusInternalServerError
-
 			if err, ok := err.(Error); ok {
 				code = err.Code()
 				encoded := encode(&structs.Error{
