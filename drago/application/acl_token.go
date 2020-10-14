@@ -46,7 +46,7 @@ func (s *aclTokenService) GetByID(ctx context.Context, in *structs.ACLTokenGetIn
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, in.ID, ACLTokenRead); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	t, err := s.config.ACLTokenRepository.GetByID(ctx, in.ID)
@@ -79,7 +79,7 @@ func (s *aclTokenService) GetBySecret(ctx context.Context, in *structs.ACLTokenG
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, t.ID, ACLTokenRead); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	out := &structs.ACLTokenGetOutput{
@@ -102,7 +102,7 @@ func (s *aclTokenService) Create(ctx context.Context, in *structs.ACLTokenCreate
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, "", ACLTokenWrite); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	if in.Type != domain.ACLTokenTypeClient && in.Type != domain.ACLTokenTypeManagement {
@@ -125,7 +125,7 @@ func (s *aclTokenService) Create(ctx context.Context, in *structs.ACLTokenCreate
 
 	t, err := s.config.ACLTokenRepository.GetByID(ctx, *id)
 	if err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	out := &structs.ACLTokenCreateOutput{
@@ -148,7 +148,7 @@ func (s *aclTokenService) Delete(ctx context.Context, in *structs.ACLTokenDelete
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, "", ACLTokenWrite); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	_, err := s.config.ACLTokenRepository.DeleteByID(ctx, in.ID)
@@ -163,7 +163,7 @@ func (s *aclTokenService) List(ctx context.Context, in *structs.ACLTokenListInpu
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, "", ACLTokenList); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	tokens, err := s.config.ACLTokenRepository.FindAll(ctx)

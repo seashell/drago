@@ -36,7 +36,7 @@ func (s *aclPolicyService) GetByName(ctx context.Context, in *structs.ACLPolicyG
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, in.Name, ACLPolicyRead); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	p, err := s.config.ACLPolicyRepository.GetByName(ctx, in.Name)
@@ -59,7 +59,7 @@ func (s *aclPolicyService) Upsert(ctx context.Context, in *structs.ACLPolicyUpse
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, "", ACLPolicyWrite); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	_, err := s.config.ACLPolicyRepository.Upsert(ctx, &domain.ACLPolicy{
@@ -75,7 +75,7 @@ func (s *aclPolicyService) Delete(ctx context.Context, in *structs.ACLPolicyDele
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, "", ACLPolicyWrite); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	_, err := s.config.ACLPolicyRepository.DeleteByName(ctx, in.Name)
@@ -89,7 +89,7 @@ func (s *aclPolicyService) List(ctx context.Context, in *structs.ACLPolicyListIn
 
 	// Check if authorized
 	if err := s.authorize(ctx, in.Subject, "", ACLPolicyList); err != nil {
-		return nil, err
+		return nil, ErrUnauthorized
 	}
 
 	policies, err := s.config.ACLPolicyRepository.FindAll(ctx)
