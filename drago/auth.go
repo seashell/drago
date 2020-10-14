@@ -2,12 +2,16 @@ package drago
 
 import (
 	"context"
-	"fmt"
 
 	application "github.com/seashell/drago/drago/application"
 	domain "github.com/seashell/drago/drago/domain"
 	acl "github.com/seashell/drago/pkg/acl"
 )
+
+var anonymousToken = &Token{
+	privileged: false,
+	policies:   []string{"anonymous"},
+}
 
 // ACLModel defines an ACL model containing resource types, associated
 // capabilities, and aliases which can be used by the application.
@@ -46,6 +50,9 @@ func NewAuthorizationHandlerAdapter(aclTokenRepo domain.ACLTokenRepository,
 			if err != nil {
 				return nil, err
 			}
+			if t == nil {
+				return anonymousToken, nil
+			}
 			return &Token{
 				privileged: t.Type == domain.ACLTokenTypeManagement,
 				policies:   t.Policies,
@@ -63,7 +70,7 @@ func NewAuthorizationHandlerAdapter(aclTokenRepo domain.ACLTokenRepository,
 			for _, r := range pol.Rules {
 				res.rules = append(res.rules, &Rule{
 					resource:     r.Resource,
-					pattern:      r.Pattern,
+					path:         r.Path,
 					capabilities: r.Capabilities,
 				})
 			}
@@ -79,8 +86,11 @@ func NewAuthorizationHandlerAdapter(aclTokenRepo domain.ACLTokenRepository,
 // Authorize checks whether or not the specified operation is authorized or
 // not on the targeted resource and path, potentially returning an error.
 func (h *AuthorizationHandlerAdapter) Authorize(ctx context.Context, sub, res, path, op string) error {
-	fmt.Printf("==> op %s on %s/%s authorized!\n", op, res, path)
-	return nil
+	acl, err := h.resolver.ResolveSecret(ctx, sub)
+	if err != nil {
+		return err
+	}
+	return acl.CheckAuthorized(ctx, res, path, op)
 }
 
 // Policy implements the acl.Policy interface.
@@ -102,7 +112,7 @@ func (p *Policy) Rules() []acl.Rule {
 // Rule implements the acl.Rule interface.
 type Rule struct {
 	resource     string
-	pattern      string
+	path         string
 	capabilities []string
 }
 
@@ -112,10 +122,10 @@ func (r *Rule) Resource() string {
 	return r.resource
 }
 
-// Pattern returns the pattern this rule uses to
+// Path returns the pattern this rule uses to
 // match targeted specific resource instances.
-func (r *Rule) Pattern() string {
-	return r.pattern
+func (r *Rule) Path() string {
+	return r.path
 }
 
 // Capabilities return a slice of capabilities enabled
