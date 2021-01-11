@@ -1,6 +1,10 @@
 package api
 
-import "context"
+import (
+	"context"
+
+	"github.com/seashell/drago/drago/structs"
+)
 
 const (
 	tokensPath = "/api/tokens"
@@ -31,17 +35,13 @@ func (t *Tokens) Get(ctx context.Context) (*Token, error) {
 	return &Token{}, nil
 }
 
-func (t *Tokens) Create(ctx context.Context, token *Token) (*string, error) {
-	receiver := struct {
-		Token *string `json:"secret"`
-	}{}
-
-	err := t.client.createResource(tokensPath, token, &receiver)
+func (t *Tokens) Create(ctx context.Context, req *structs.ACLTokenUpsertRequest) (*structs.SingleACLTokenResponse, error) {
+	resp := &structs.SingleACLTokenResponse{}
+	err := t.client.createResource(tokensPath, req, resp)
 	if err != nil {
 		return nil, err
 	}
-
-	return receiver.Token, nil
+	return resp, nil
 }
 
 func (t *Tokens) Update(ctx context.Context, token *Token) (*string, error) {

@@ -84,6 +84,13 @@ func (l *logger) WithFields(fields log.Fields) log.Logger {
 	}
 }
 
+// WithName :
+func (l *logger) WithName(name string) log.Logger {
+	return &logEntry{
+		entry: l.logger.WithField("name", name),
+	}
+}
+
 // Debugf :
 func (l *logEntry) Debugf(format string, args ...interface{}) {
 	l.entry.Debugf(format, args...)
@@ -118,6 +125,13 @@ func (l *logEntry) Panicf(format string, args ...interface{}) {
 func (l *logEntry) WithFields(fields log.Fields) log.Logger {
 	return &logEntry{
 		entry: l.entry.WithFields(convertToLogrusFields(fields)),
+	}
+}
+
+// WithName :
+func (l *logEntry) WithName(name string) log.Logger {
+	return &logEntry{
+		entry: l.entry.WithField("name", name),
 	}
 }
 

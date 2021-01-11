@@ -1,0 +1,104 @@
+package structs
+
+import (
+	"errors"
+	"net"
+	"time"
+)
+
+// Network :
+type Network struct {
+	ID           string
+	Name         string
+	AddressRange string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}
+
+func (n *Network) Validate() error {
+	return nil
+}
+
+// CheckAddressInRange : Check whether an IP address in CIDR notation
+// is within the allowed range of the network.
+func (n *Network) CheckAddressInRange(ip string) error {
+	_, subnet, _ := net.ParseCIDR(n.AddressRange)
+	addr, _, _ := net.ParseCIDR(ip)
+	if subnet.Contains(addr) {
+		return nil
+	}
+	return errors.New("ip address not within network's allowed range")
+}
+
+// Merge :
+func (n *Network) Merge(in *Network) *Network {
+
+	result := *n
+
+	if in.ID != "" {
+		result.ID = in.ID
+	}
+	if in.Name != "" {
+		result.Name = in.Name
+	}
+	if in.AddressRange != "" {
+		result.AddressRange = in.AddressRange
+	}
+
+	return &result
+}
+
+// Stub :
+func (n *Network) Stub() *NetworkListStub {
+	return &NetworkListStub{
+		ID:           n.ID,
+		Name:         n.Name,
+		AddressRange: n.AddressRange,
+		CreatedAt:    n.CreatedAt,
+		UpdatedAt:    n.UpdatedAt,
+	}
+}
+
+// NetworkListStub :
+type NetworkListStub struct {
+	ID           string
+	Name         string
+	AddressRange string
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
+}
+
+// NetworkSpecificRequest :
+type NetworkSpecificRequest struct {
+	QueryOptions
+	ID string
+}
+
+// SingleNetworkResponse :
+type SingleNetworkResponse struct {
+	Response
+	Network *Network
+}
+
+// NetworkUpsertRequest :
+type NetworkUpsertRequest struct {
+	WriteRequest
+	Network *Network
+}
+
+// NetworkDeleteRequest :
+type NetworkDeleteRequest struct {
+	WriteRequest
+	IDs []string
+}
+
+// NetworkListRequest :
+type NetworkListRequest struct {
+	QueryOptions
+}
+
+// NetworkListResponse :
+type NetworkListResponse struct {
+	Response
+	Items []*NetworkListStub
+}

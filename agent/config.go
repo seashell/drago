@@ -270,7 +270,7 @@ func DefaultConfig() *Config {
 			SyncIntervalSeconds: 5,
 		},
 		ACL: &ACLConfig{
-			Enabled:  true,
+			Enabled:  false,
 			TokenTTL: 30 * time.Second,
 		},
 		Version: version.GetVersion(),
