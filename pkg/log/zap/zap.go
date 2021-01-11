@@ -93,6 +93,13 @@ func (l *logger) WithFields(fields log.Fields) log.Logger {
 	}
 }
 
+// WithName :
+func (l *logger) WithName(name string) log.Logger {
+	return &logger{
+		logger: l.logger.With(zap.String("name", name)),
+	}
+}
+
 func parseZapLevel(l string) (zapcore.Level, error) {
 	switch l {
 	case Info:

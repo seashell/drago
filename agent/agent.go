@@ -7,6 +7,7 @@ import (
 
 	client "github.com/seashell/drago/client"
 	drago "github.com/seashell/drago/drago"
+	config "github.com/seashell/drago/drago/structs/config"
 	log "github.com/seashell/drago/pkg/log"
 )
 
@@ -123,7 +124,7 @@ func (a *Agent) serverConfig() (*drago.Config, error) {
 		RPC:  a.config.Ports.RPC,
 	}
 
-	c.ACL = &drago.ACL{
+	c.ACL = &config.ACLConfig{
 		Enabled:  a.config.ACL.Enabled,
 		TokenTTL: a.config.ACL.TokenTTL,
 	}

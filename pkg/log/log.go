@@ -19,4 +19,5 @@ type Logger interface {
 	Fatalf(format string, args ...interface{})
 	Panicf(format string, args ...interface{})
 	WithFields(fields Fields) Logger
+	WithName(name string) Logger
 }

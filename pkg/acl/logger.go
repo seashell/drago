@@ -3,6 +3,7 @@ package acl
 import (
 	"fmt"
 
+	"github.com/imdario/mergo"
 	"github.com/seashell/drago/pkg/log"
 )
 
@@ -25,6 +26,7 @@ var levels = map[string]int{
 }
 
 type simpleLogger struct {
+	name    string
 	fields  log.Fields
 	options log.LoggerOptions
 }
@@ -60,10 +62,36 @@ func (l simpleLogger) Panicf(format string, args ...interface{}) {
 }
 
 func (l simpleLogger) WithFields(fields log.Fields) log.Logger {
-	l.fields = fields
-	return l
+	return &simpleLogger{
+		name:    l.name,
+		fields:  fields,
+		options: l.options,
+	}
+}
+
+func (l simpleLogger) WithName(name string) log.Logger {
+	return &simpleLogger{
+		name:    name,
+		fields:  l.fields,
+		options: l.options,
+	}
 }
 
 func (l *simpleLogger) isLevelEnabled(level string) bool {
 	return levels[l.options.Level] >= levels[level]
+}
+
+func mergeFields(a log.Fields, b log.Fields) log.Fields {
+
+	res := log.Fields{}
+
+	for k, v := range a {
+		res[k] = v
+	}
+
+	if err := mergo.Merge(&a, b, mergo.WithOverride); err != nil {
+		return res
+	}
+
+	return res
 }

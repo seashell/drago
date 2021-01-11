@@ -9,6 +9,7 @@ require (
 	github.com/go-playground/validator/v10 v10.3.0
 	github.com/hashicorp/go-cleanhttp v0.5.1
 	github.com/hashicorp/hcl/v2 v2.6.0
+	github.com/imdario/mergo v0.3.11
 	github.com/joho/godotenv v1.3.0
 	github.com/pkg/errors v0.8.1
 	github.com/shurcooL/go v0.0.0-20200502201357-93f07166e636 // indirect
