@@ -78,6 +78,10 @@ func (r *StateRepository) Interfaces() ([]*structs.Interface, error) {
 
 }
 
+func (r *StateRepository) InterfaceByID(iface *structs.Interface) (*structs.Interface, error) {
+	return nil, nil
+}
+
 func (r *StateRepository) UpsertInterface(iface *structs.Interface) error {
 
 	err := r.db.Update(func(tx *bbolt.Tx) error {

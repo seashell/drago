@@ -17,6 +17,9 @@ const (
 // Config : Drago client configuration
 type Config struct {
 
+	// DevMode indicates whether the client is running in development mode.
+	DevMode bool
+
 	// Version is the version of the Drago client.
 	Version *version.VersionInfo
 
@@ -51,7 +54,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		Version:           version.GetVersion(),
 		LogLevel:          defaultLogLevel,
-		Servers:           []string{"localhost"},
+		Servers:           []string{"localhost:8081"},
 		StateDir:          defaultStateDir,
 		InterfacePrefix:   defaultInterfacePrefix,
 		ReconcileInterval: 5 * time.Second,
