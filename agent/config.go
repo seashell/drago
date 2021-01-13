@@ -265,7 +265,7 @@ func DefaultConfig() *Config {
 		},
 		Client: &ClientConfig{
 			Enabled:             false,
-			Servers:             []string{"127.0.0.1"},
+			Servers:             []string{"127.0.0.1:8081"},
 			InterfacesPrefix:    "dg-",
 			SyncIntervalSeconds: 5,
 		},
