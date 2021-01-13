@@ -13,7 +13,7 @@ import (
 	agent "github.com/seashell/drago/agent"
 	cli "github.com/seashell/drago/pkg/cli"
 	log "github.com/seashell/drago/pkg/log"
-	zap "github.com/seashell/drago/pkg/log/zap"
+	"github.com/seashell/drago/pkg/log/simple"
 )
 
 // AgentCommand :
@@ -45,7 +45,14 @@ func (c *AgentCommand) Run(ctx context.Context, args []string) int {
 	// 	},
 	// })
 
-	logger, err := zap.NewLoggerAdapter(zap.Config{
+	// logger, err := zap.NewLoggerAdapter(zap.Config{
+	// 	LoggerOptions: log.LoggerOptions{
+	// 		Level:  config.LogLevel,
+	// 		Prefix: "agent: ",
+	// 	},
+	// })
+
+	logger, err := simple.NewLoggerAdapter(simple.Config{
 		LoggerOptions: log.LoggerOptions{
 			Level:  config.LogLevel,
 			Prefix: "agent: ",
@@ -66,12 +73,15 @@ func (c *AgentCommand) Run(ctx context.Context, args []string) int {
 
 	c.printConfig(config)
 
-	_, err = agent.New(config, logger)
+	agent, err := agent.New(config, logger)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error starting agent: %s\n", err.Error()))
+		return 1
 	}
 
 	<-ctx.Done()
+
+	agent.Shutdown()
 
 	return 0
 }
