@@ -12,7 +12,11 @@ type Repository interface {
 
 	ACLTokenRepository
 	ACLPolicyRepository
+
+	NodeRepository
+
 	NetworkRepository
+	InterfaceRepository
 
 	ACLState(ctx context.Context) (*structs.ACLState, error)
 	ACLSetState(ctx context.Context, state *structs.ACLState) error
@@ -42,4 +46,23 @@ type NetworkRepository interface {
 	NetworkByName(ctx context.Context, name string) (*structs.Network, error)
 	UpsertNetwork(ctx context.Context, n *structs.Network) error
 	DeleteNetworks(ctx context.Context, ids []string) error
+}
+
+// NodeRepository : Node repository interface
+type NodeRepository interface {
+	Nodes(ctx context.Context) ([]*structs.Node, error)
+	NodeByID(ctx context.Context, id string) (*structs.Node, error)
+	NodeBySecretID(ctx context.Context, sid string) (*structs.Node, error)
+	UpsertNode(ctx context.Context, n *structs.Node) error
+	DeleteNodes(ctx context.Context, ids []string) error
+}
+
+// InterfaceRepository : Interface repository interface
+type InterfaceRepository interface {
+	Interfaces(ctx context.Context) ([]*structs.Interface, error)
+	InterfacesByNodeID(ctx context.Context, s string) ([]*structs.Interface, error)
+	InterfacesByNetworkID(ctx context.Context, s string) ([]*structs.Interface, error)
+	InterfaceByID(ctx context.Context, id string) (*structs.Interface, error)
+	UpsertInterface(ctx context.Context, i *structs.Interface) error
+	DeleteInterfaces(ctx context.Context, ids []string) error
 }

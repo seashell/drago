@@ -61,31 +61,32 @@ type ACLPolicyListStub struct {
 
 // ACLPolicySpecificRequest :
 type ACLPolicySpecificRequest struct {
-	QueryOptions
-
 	// Name contains the name of the policy to be retrieved.
 	Name string
+
+	QueryOptions
 }
 
 // SingleACLPolicyResponse :
 type SingleACLPolicyResponse struct {
-	Response
-
 	ACLPolicy *ACLPolicy
+
+	Response
 }
 
 // ACLPolicyUpsertRequest :
 type ACLPolicyUpsertRequest struct {
-	WriteRequest
 	ACLPolicy *ACLPolicy
+
+	WriteRequest
 }
 
 // ACLPolicyDeleteRequest :
 type ACLPolicyDeleteRequest struct {
-	WriteRequest
-
 	// Name contains the name of the policy to be deleted.
 	Names []string
+
+	WriteRequest
 }
 
 // ACLPolicyListRequest :

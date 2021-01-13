@@ -87,36 +87,42 @@ type ACLTokenListRequest struct {
 
 // ACLTokenListResponse :
 type ACLTokenListResponse struct {
-	Response
 	Items []*ACLTokenListStub
+
+	Response
 }
 
 // ACLTokenSpecificRequest :
 type ACLTokenSpecificRequest struct {
-	QueryOptions
 	ID string
+
+	QueryOptions
 }
 
 // SingleACLTokenResponse :
 type SingleACLTokenResponse struct {
-	Response
 	ACLToken *ACLToken
+
+	Response
 }
 
 // ACLTokenUpsertRequest :
 type ACLTokenUpsertRequest struct {
-	WriteRequest
 	ACLToken *ACLToken
+
+	WriteRequest
 }
 
 // ACLTokenUpsertResponse :
 type ACLTokenUpsertResponse struct {
-	Response
 	ACLToken *ACLToken
+
+	Response
 }
 
 // ACLTokenDeleteRequest :
 type ACLTokenDeleteRequest struct {
-	WriteRequest
 	IDs []string
+
+	WriteRequest
 }

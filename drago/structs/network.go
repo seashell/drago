@@ -70,26 +70,30 @@ type NetworkListStub struct {
 
 // NetworkSpecificRequest :
 type NetworkSpecificRequest struct {
-	QueryOptions
 	ID string
+
+	QueryOptions
 }
 
 // SingleNetworkResponse :
 type SingleNetworkResponse struct {
-	Response
 	Network *Network
+
+	Response
 }
 
 // NetworkUpsertRequest :
 type NetworkUpsertRequest struct {
-	WriteRequest
 	Network *Network
+
+	WriteRequest
 }
 
 // NetworkDeleteRequest :
 type NetworkDeleteRequest struct {
-	WriteRequest
 	IDs []string
+
+	WriteRequest
 }
 
 // NetworkListRequest :
@@ -99,6 +103,7 @@ type NetworkListRequest struct {
 
 // NetworkListResponse :
 type NetworkListResponse struct {
-	Response
 	Items []*NetworkListStub
+
+	Response
 }

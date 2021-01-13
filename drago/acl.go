@@ -7,6 +7,7 @@ import (
 	auth "github.com/seashell/drago/drago/auth"
 	state "github.com/seashell/drago/drago/state"
 	structs "github.com/seashell/drago/drago/structs"
+	log "github.com/seashell/drago/pkg/log"
 	uuid "github.com/seashell/drago/pkg/uuid"
 )
 
@@ -18,14 +19,16 @@ const (
 // ACLService :
 type ACLService struct {
 	config      *Config
+	logger      log.Logger
 	state       state.Repository
 	authHandler auth.AuthorizationHandler
 }
 
 // NewACLService :
-func NewACLService(config *Config, state state.Repository, authHandler auth.AuthorizationHandler) *ACLService {
+func NewACLService(config *Config, logger log.Logger, state state.Repository, authHandler auth.AuthorizationHandler) *ACLService {
 	return &ACLService{
 		config:      config,
+		logger:      logger,
 		state:       state,
 		authHandler: authHandler,
 	}

@@ -3,8 +3,14 @@ package etcd
 import (
 	"encoding/json"
 	"fmt"
+	"net/url"
+	"path"
+	"strings"
+	"time"
 
+	"github.com/seashell/drago/drago/structs/config"
 	"go.etcd.io/etcd/clientv3"
+	"go.etcd.io/etcd/embed"
 )
 
 const (
@@ -16,31 +22,108 @@ const (
 	resourceTypeNetwork   = "network"
 )
 
+type Config struct {
+	DataDir  string
+	LogLevel string
+	config.EtcdConfig
+}
+
 // StateRepository implements StateRepository
 type StateRepository struct {
+	server *embed.Etcd
 	client *clientv3.Client
+	config *Config
 }
 
 // NewStateRepository :
-func NewStateRepository() (*StateRepository, error) {
+func NewStateRepository(config *Config) (*StateRepository, error) {
 
-	var client *clientv3.Client
-	// etcdClient, err := clientv3.New(clientv3.Config{
-	// 	Endpoints:        s.config.Etcd.InitialAdvertiseClientURLs,
-	// 	AutoSyncInterval: time.Second * 5,
-	// 	DialTimeout:      5 * time.Second,
-	// })
-	// if err != nil {
-	// 	return err
-	// }
+	r := &StateRepository{
+		config: config,
+	}
 
-	r := &StateRepository{client: client}
+	err := r.setupEtcdServer()
+	if err != nil {
+		return nil, fmt.Errorf("Error setting up etcd server: %s", err.Error())
+	}
+
+	err = r.setupEtcdClient()
+	if err != nil {
+		return nil, fmt.Errorf("Error setting up etcd client: %s", err.Error())
+	}
+
 	return r, nil
 }
 
-// Name ...
-func (b *StateRepository) Name() string {
+// Name returns the name identifying the state repository.
+func (r *StateRepository) Name() string {
 	return "etcd"
+}
+
+func (r *StateRepository) setupEtcdClient() error {
+	etcdClient, err := clientv3.New(clientv3.Config{
+		Endpoints:        r.config.InitialAdvertiseClientURLs,
+		AutoSyncInterval: time.Second * 5,
+		DialTimeout:      5 * time.Second,
+	})
+	if err != nil {
+		return err
+	}
+
+	r.client = etcdClient
+
+	return nil
+}
+
+func (r *StateRepository) setupEtcdServer() error {
+
+	cfg := embed.NewConfig()
+
+	// Advertise peer URLs
+	apURLs, err := parseUrls(r.config.InitialAdvertisePeerURLs)
+	if err != nil {
+		return err
+	}
+
+	// Listen peer URLs
+	lpURLs, err := parseUrls(r.config.ListenPeerURLs)
+	if err != nil {
+		return err
+	}
+
+	// Advertise client URLs
+	acURLs, err := parseUrls(r.config.InitialAdvertiseClientURLs)
+	if err != nil {
+		return err
+	}
+
+	// Listen client URLs
+	lcURLs, err := parseUrls(r.config.ListenClientURLs)
+	if err != nil {
+		return err
+	}
+
+	cfg.Name = r.config.Name
+	cfg.Dir = path.Join(r.config.DataDir, "/etcd")
+	cfg.WalDir = path.Join(r.config.DataDir, "/etcd", "/wal")
+	cfg.Logger = "zap"
+
+	cfg.APUrls = apURLs
+	cfg.LPUrls = lpURLs
+	cfg.ACUrls = acURLs
+	cfg.LCUrls = lcURLs
+
+	cfg.LogOutputs = []string{"stderr", path.Join(r.config.DataDir, "/etcd.log")}
+	cfg.LogLevel = strings.ToLower(r.config.LogLevel)
+
+	etcdServer, err := embed.StartEtcd(cfg)
+	if err != nil {
+		return err
+	}
+
+	r.server = etcdServer
+
+	return nil
 }
 
 func strToPtr(s string) *string {
@@ -62,4 +145,16 @@ func encodeValue(in interface{}) string {
 
 func decodeValue(data []byte, out interface{}) error {
 	return json.Unmarshal(data, out)
+}
+
+func parseUrls(urls []string) ([]url.URL, error) {
+	res := []url.URL{}
+	for _, v := range urls {
+		url, err := url.Parse(v)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, *url)
+	}
+	return res, nil
 }

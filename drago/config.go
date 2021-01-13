@@ -33,6 +33,9 @@ type Config struct {
 	// BindAddr.
 	BindAddr string
 
+	// RPCAdvertiseAddr is the address advertised to client nodes.
+	RPCAdvertiseAddr string
+
 	// DataDir is the directory to store our state in.
 	DataDir string
 
