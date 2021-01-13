@@ -15,18 +15,21 @@ func (s *ACLState) Update(rootID string) error {
 
 // ACLBootstrapRequest :
 type ACLBootstrapRequest struct {
-	WriteRequest
 	ResetIndex uint64
+
+	WriteRequest
 }
 
 // ResolveACLTokenRequest :
 type ResolveACLTokenRequest struct {
-	QueryOptions
 	Secret string
+
+	QueryOptions
 }
 
 // ResolveACLTokenResponse :
 type ResolveACLTokenResponse struct {
-	Response
 	ACLToken *ACLToken
+
+	Response
 }

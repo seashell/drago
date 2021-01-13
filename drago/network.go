@@ -7,6 +7,7 @@ import (
 	auth "github.com/seashell/drago/drago/auth"
 	state "github.com/seashell/drago/drago/state"
 	structs "github.com/seashell/drago/drago/structs"
+	log "github.com/seashell/drago/pkg/log"
 	uuid "github.com/seashell/drago/pkg/uuid"
 )
 
@@ -18,14 +19,16 @@ const (
 
 type NetworkService struct {
 	config      *Config
+	logger      log.Logger
 	state       state.Repository
 	authHandler auth.AuthorizationHandler
 }
 
 // NewNetworkService ...
-func NewNetworkService(config *Config, state state.Repository, authHandler auth.AuthorizationHandler) *NetworkService {
+func NewNetworkService(config *Config, logger log.Logger, state state.Repository, authHandler auth.AuthorizationHandler) *NetworkService {
 	return &NetworkService{
 		config:      config,
+		logger:      logger,
 		state:       state,
 		authHandler: authHandler,
 	}
