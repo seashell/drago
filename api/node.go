@@ -24,51 +24,47 @@ func (c *Client) Nodes() *Nodes {
 // Register :
 func (t *Nodes) Register(ctx context.Context, req *structs.NodeRegisterRequest) (*structs.NodeUpdateResponse, error) {
 
-	resp := &structs.NodeUpdateResponse{}
-
-	err := t.client.createResource(path.Join(nodesPath, req.ID), req, resp)
+	var resp structs.NodeUpdateResponse
+	err := t.client.createResource(path.Join(nodesPath, "register"), req, &resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return &resp, nil
 }
 
-// UpdateStatus :
+// Update :
 func (t *Nodes) UpdateStatus(ctx context.Context, req *structs.NodeUpdateStatusRequest) (*structs.NodeUpdateResponse, error) {
 
-	resp := &structs.NodeUpdateResponse{}
-
-	err := t.client.createResource(path.Join(nodesPath, req.ID, "status"), req, resp)
+	var resp structs.NodeUpdateResponse
+	err := t.client.createResource(path.Join(nodesPath, req.ID, "status"), req, &resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return &resp, nil
 }
 
 // GetNodeInterfaces :
-func (t *Nodes) GetNodeInterfaces(ctx context.Context, req *structs.NodeSpecificRequest) (*structs.NodeClientInterfacesResponse, error) {
+func (t *Nodes) GetNodeInterfaces(ctx context.Context, req *structs.NodeSpecificRequest) (*structs.NodeInterfacesResponse, error) {
 
-	resp := &structs.NodeClientInterfacesResponse{}
-
-	err := t.client.listResources(path.Join(nodesPath, req.ID, "interfaces"), nil, resp)
+	var resp structs.NodeInterfacesResponse
+	err := t.client.listResources(path.Join(nodesPath, req.ID, "interfaces"), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return &resp, nil
 }
 
 // GetNodePeers :
-func (t *Nodes) GetNodePeers(ctx context.Context, req *structs.NodeSpecificRequest) (*structs.NodeClientPeersResponse, error) {
+func (t *Nodes) GetNodePeers(ctx context.Context, req *structs.NodeSpecificRequest) (*structs.NodePeersResponse, error) {
 
-	resp := &structs.NodeClientPeersResponse{}
-
-	err := t.client.listResources(path.Join(nodesPath, req.ID, "peers"), nil, resp)
+	var resp structs.NodePeersResponse
+	err := t.client.listResources(path.Join(nodesPath, req.ID, "peers"), nil, &resp)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp, nil
+	return &resp, nil
 }
