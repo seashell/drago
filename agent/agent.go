@@ -35,7 +35,7 @@ func New(config *Config, logger log.Logger) (*Agent, error) {
 
 	a := &Agent{
 		config:     config,
-		logger:     logger,
+		logger:     logger.WithName("agent"),
 		shutdownCh: make(chan struct{}),
 	}
 
