@@ -14,14 +14,15 @@ const (
 
 // Node :
 type Node struct {
-	ID        string
-	SecretID  string
-	Name      string
-	Address   string
-	Status    string
-	Meta      map[string]string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID          string
+	SecretID    string
+	Name        string
+	Address     string
+	Status      string
+	ModifyIndex uint64
+	Meta        map[string]string
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // Validate validates a structs.Node object
@@ -68,6 +69,9 @@ func (n *Node) Merge(in *Node) *Node {
 	if in.Status != "" {
 		result.Status = in.Status
 	}
+	if in.ModifyIndex != 0 {
+		result.ModifyIndex = in.ModifyIndex
+	}
 
 	return &result
 }
@@ -75,26 +79,29 @@ func (n *Node) Merge(in *Node) *Node {
 // Stub :
 func (n *Node) Stub() *NodeListStub {
 	return &NodeListStub{
-		ID:        n.ID,
-		Name:      n.Name,
-		Status:    n.Status,
-		CreatedAt: n.CreatedAt,
-		UpdatedAt: n.UpdatedAt,
+		ID:          n.ID,
+		Name:        n.Name,
+		Status:      n.Status,
+		ModifyIndex: n.ModifyIndex,
+		CreatedAt:   n.CreatedAt,
+		UpdatedAt:   n.UpdatedAt,
 	}
 }
 
 // NodeListStub :
 type NodeListStub struct {
-	ID        string
-	Name      string
-	Status    string
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID          string
+	Name        string
+	Status      string
+	ModifyIndex uint64
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // NodeSpecificRequest :
 type NodeSpecificRequest struct {
-	ID string
+	ID       string
+	SecretID string
 
 	QueryOptions
 }

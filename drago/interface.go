@@ -2,11 +2,13 @@ package drago
 
 import (
 	"context"
+	"time"
 
 	auth "github.com/seashell/drago/drago/auth"
 	state "github.com/seashell/drago/drago/state"
 	structs "github.com/seashell/drago/drago/structs"
 	log "github.com/seashell/drago/pkg/log"
+	uuid "github.com/seashell/drago/pkg/uuid"
 )
 
 const (
@@ -93,6 +95,48 @@ func (s *InterfaceService) ListInterfaces(args *structs.InterfaceListRequest, ou
 		} else {
 			out.Items = append(out.Items, i.Stub())
 		}
+	}
+
+	return nil
+}
+
+// UpsertInterface upserts a new Interface entity
+func (s *InterfaceService) UpsertInterface(args *structs.InterfaceUpsertRequest, out *structs.GenericResponse) error {
+
+	ctx := context.TODO()
+
+	// Check if authorized
+	if s.config.ACL.Enabled {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "interface", "", NetworkWrite); err != nil {
+			return structs.ErrPermissionDenied
+		}
+	}
+
+	i := args.Interface
+
+	err := i.Validate()
+	if err != nil {
+		return structs.ErrInvalidInput
+	}
+
+	if i.ID == "" {
+		i.ID = uuid.Generate()
+		i.CreatedAt = time.Now()
+		i.ModifyIndex = 0
+	} else {
+		old, err := s.state.InterfaceByID(ctx, i.ID)
+		if err != nil {
+			return structs.ErrNotFound
+		}
+		i = old.Merge(i)
+	}
+
+	i.UpdatedAt = time.Now()
+	i.ModifyIndex++
+
+	err = s.state.UpsertInterface(ctx, i)
+	if err != nil {
+		return structs.ErrInternal
 	}
 
 	return nil

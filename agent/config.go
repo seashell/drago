@@ -14,6 +14,9 @@ type Config struct {
 	// by the agent
 	UI bool `hcl:"ui"`
 
+	// Name is used to identify individual agents
+	Name string `hcl:"name"`
+
 	// DataDir is the directory to store our state in
 	DataDir string `hcl:"data_dir"`
 
@@ -66,6 +69,9 @@ func (c *Config) Merge(b *Config) *Config {
 	}
 	if b.LogLevel != "" {
 		result.LogLevel = b.LogLevel
+	}
+	if b.Name != "" {
+		result.Name = b.Name
 	}
 	if b.DataDir != "" {
 		result.DataDir = b.DataDir
@@ -149,6 +155,12 @@ type ClientConfig struct {
 	// interfaces managed by Drago
 	InterfacesPrefix string `hcl:"interfaces_prefix"`
 
+	// WireguardPath is the path to a userspace WireGuard binary, if available
+	WireguardPath string `hcl:"wireguard_path"`
+
+	// Meta contains metadata about the client node
+	Meta map[string]string `hcl:"meta"`
+
 	// SyncInterval controls how frequently the client synchronizes its state
 	SyncIntervalSeconds time.Duration `hcl:"sync_interval"`
 }
@@ -166,11 +178,17 @@ func (c *ClientConfig) Merge(b *ClientConfig) *ClientConfig {
 	if b.StateDir != "" {
 		result.StateDir = b.StateDir
 	}
+	if b.WireguardPath != "" {
+		result.WireguardPath = b.WireguardPath
+	}
 	if b.InterfacesPrefix != "" {
 		result.InterfacesPrefix = b.InterfacesPrefix
 	}
 	if b.SyncIntervalSeconds != 0 {
 		result.SyncIntervalSeconds = b.SyncIntervalSeconds
+	}
+	if b.Meta != nil {
+		result.Meta = b.Meta
 	}
 
 	return &result
@@ -252,6 +270,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		LogLevel: "DEBUG",
 		UI:       true,
+		Name:     "",
 		DataDir:  "/tmp/drago",
 		BindAddr: "0.0.0.0",
 		Ports: &Ports{
@@ -266,7 +285,9 @@ func DefaultConfig() *Config {
 		Client: &ClientConfig{
 			Enabled:             false,
 			Servers:             []string{"127.0.0.1:8081"},
-			InterfacesPrefix:    "dg-",
+			Meta:                map[string]string{},
+			InterfacesPrefix:    "drago",
+			WireguardPath:       "",
 			SyncIntervalSeconds: 5,
 		},
 		ACL: &ACLConfig{

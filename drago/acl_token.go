@@ -64,6 +64,7 @@ func (s *ACLService) UpsertToken(args *structs.ACLTokenUpsertRequest, out *struc
 		t.ID = uuid.Generate()
 		t.Secret = uuid.Generate()
 		t.CreatedAt = time.Now()
+		t.ModifyIndex = 0
 	} else {
 		old, err := s.state.ACLTokenByID(ctx, t.ID)
 		if err != nil {
@@ -73,6 +74,7 @@ func (s *ACLService) UpsertToken(args *structs.ACLTokenUpsertRequest, out *struc
 	}
 
 	t.UpdatedAt = time.Now()
+	t.ModifyIndex++
 
 	err = s.state.UpsertACLToken(ctx, t)
 	if err != nil {

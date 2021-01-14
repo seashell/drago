@@ -104,6 +104,7 @@ func (s *NetworkService) UpsertNetwork(args *structs.NetworkUpsertRequest, out *
 	if n.ID == "" {
 		n.ID = uuid.Generate()
 		n.CreatedAt = time.Now()
+		n.ModifyIndex = 0
 	} else {
 		old, err := s.state.NetworkByID(ctx, n.ID)
 		if err != nil {
@@ -113,6 +114,7 @@ func (s *NetworkService) UpsertNetwork(args *structs.NetworkUpsertRequest, out *
 	}
 
 	n.UpdatedAt = time.Now()
+	n.ModifyIndex++
 
 	err = s.state.UpsertNetwork(ctx, n)
 	if err != nil {

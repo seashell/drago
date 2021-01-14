@@ -1,17 +1,22 @@
 package structs
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 type Interface struct {
-	ID         string
-	NodeID     string
-	NetworkID  string
-	Name       string
-	Address    string
-	ListenPort int
-	Peers      []*Peer
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID          string
+	NodeID      string
+	NetworkID   string
+	Name        string
+	Address     string
+	ListenPort  uint16
+	PublicKey   string
+	ModifyIndex uint64
+	Peers       []*Peer
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // Merge :
@@ -34,37 +39,58 @@ func (i *Interface) Merge(in *Interface) *Interface {
 	if in.Address != "" {
 		result.Address = in.Address
 	}
+	if in.PublicKey != "" {
+		result.PublicKey = in.PublicKey
+	}
 	if in.ListenPort != 0 {
 		result.ListenPort = in.ListenPort
+	}
+	if in.Peers != nil {
+		result.Peers = in.Peers
+	}
+	if in.ModifyIndex != 0 {
+		result.ModifyIndex = in.ModifyIndex
 	}
 
 	return &result
 }
 
+func (i *Interface) Validate() error {
+	if i.NodeID == "" {
+		return fmt.Errorf("missing node id")
+	}
+	if i.NetworkID == "" {
+		return fmt.Errorf("missing network id")
+	}
+	return nil
+}
+
 // Stub :
 func (i *Interface) Stub() *InterfaceListStub {
 	return &InterfaceListStub{
-		ID:         i.ID,
-		Name:       i.Name,
-		Address:    i.Address,
-		ListenPort: i.ListenPort,
-		NodeID:     i.NodeID,
-		NetworkID:  i.NetworkID,
-		CreatedAt:  i.CreatedAt,
-		UpdatedAt:  i.UpdatedAt,
+		ID:          i.ID,
+		Name:        i.Name,
+		Address:     i.Address,
+		ListenPort:  i.ListenPort,
+		NodeID:      i.NodeID,
+		NetworkID:   i.NetworkID,
+		ModifyIndex: i.ModifyIndex,
+		CreatedAt:   i.CreatedAt,
+		UpdatedAt:   i.UpdatedAt,
 	}
 }
 
 // InterfaceListStub :
 type InterfaceListStub struct {
-	ID         string
-	NodeID     string
-	NetworkID  string
-	Name       string
-	Address    string
-	ListenPort int
-	CreatedAt  time.Time
-	UpdatedAt  time.Time
+	ID          string
+	NodeID      string
+	NetworkID   string
+	Name        string
+	Address     string
+	ListenPort  uint16
+	ModifyIndex uint64
+	CreatedAt   time.Time
+	UpdatedAt   time.Time
 }
 
 // InterfaceSpecificRequest :
@@ -110,6 +136,13 @@ type InterfaceListResponse struct {
 	Response
 }
 
+// InterfaceUpdateRequest :
+type InterfaceUpdateRequest struct {
+	Interfaces []*Interface
+
+	WriteRequest
+}
+
 type Peer struct {
 	ID                  string
 	PublicKey           string
@@ -119,4 +152,10 @@ type Peer struct {
 	PersistentKeepalive int
 }
 
-type Link struct{}
+type Link struct {
+	ID                  string
+	FromInterfaceID     string
+	ToInterfaceID       string
+	AllowedIPs          []string
+	PersistentKeepalive int
+}

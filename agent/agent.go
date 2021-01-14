@@ -108,9 +108,9 @@ func (a *Agent) setupServer() error {
 	return nil
 }
 
-// clientConfig creates a new drago.Config struct based on an
+// serverConfig creates a new drago.Config struct based on an
 // agent.Config struct and which can be used to initialize
-// a Drago client
+// a Drago server
 func (a *Agent) serverConfig() (*drago.Config, error) {
 
 	c := drago.DefaultConfig()
@@ -164,6 +164,11 @@ func (a *Agent) clientConfig() (*client.Config, error) {
 
 	c.Servers = a.config.Client.Servers
 	c.StateDir = a.config.Server.DataDir
+
+	c.WireguardPath = a.config.Client.WireguardPath
+	c.InterfacesPrefix = a.config.Client.InterfacesPrefix
+
+	c.Meta = a.config.Client.Meta
 
 	c.LogLevel = a.config.LogLevel
 	c.Logger = a.logger

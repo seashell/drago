@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	interfacesBucketName = []byte("interfaces")
-	peersBucketName      = []byte("peers")
+	interfacesBucketName    = []byte("interfaces")
+	interfaceKeysBucketName = []byte("keys")
 )
 
 // StateRepository ...
@@ -32,7 +32,7 @@ func NewStateRepository(path string) (*StateRepository, error) {
 			return err
 		}
 
-		_, err = tx.CreateBucketIfNotExists(peersBucketName)
+		_, err = tx.CreateBucketIfNotExists(interfaceKeysBucketName)
 		if err != nil {
 			return err
 		}
@@ -78,49 +78,65 @@ func (r *StateRepository) Interfaces() ([]*structs.Interface, error) {
 
 }
 
-func (r *StateRepository) InterfaceByID(iface *structs.Interface) (*structs.Interface, error) {
-	return nil, nil
-}
-
 func (r *StateRepository) UpsertInterface(iface *structs.Interface) error {
 
 	err := r.db.Update(func(tx *bbolt.Tx) error {
 		b := tx.Bucket(interfacesBucketName)
-		return b.Put(interfacesBucketName, encode(iface))
+		return b.Put([]byte(iface.ID), encode(iface))
 	})
 
 	return err
 }
 
-func (r *StateRepository) Peers() ([]*structs.Peer, error) {
-	peers := []*structs.Peer{}
+func (r *StateRepository) DeleteInterfaces(ids []string) error {
 
-	err := r.db.View(func(tx *bbolt.Tx) error {
-		b := tx.Bucket(peersBucketName)
-		err := b.ForEach(func(k []byte, v []byte) error {
-
-			peer := &structs.Peer{}
-
-			err := decode(v, peer)
-			if err != nil {
+	err := r.db.Update(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(interfacesBucketName)
+		for _, id := range ids {
+			if err := b.Delete([]byte(id)); err != nil {
 				return err
 			}
-
-			peers = append(peers, peer)
-
-			return nil
-		})
-		return err
+		}
+		b = tx.Bucket(interfaceKeysBucketName)
+		for _, id := range ids {
+			if err := b.Delete([]byte(id)); err != nil {
+				return err
+			}
+		}
+		return nil
 	})
 
-	return peers, err
+	return err
 }
 
-func (r *StateRepository) UpsertPeer(peer *structs.Peer) error {
-	err := r.db.Update(func(tx *bbolt.Tx) error {
-		b := tx.Bucket(peersBucketName)
-		return b.Put(peersBucketName, encode(peer))
+func (r *StateRepository) InterfaceKeyByID(id string) (string, error) {
+
+	key := ""
+
+	err := r.db.View(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(interfaceKeysBucketName)
+
+		v := b.Get([]byte(id))
+
+		err := decode(v, &key)
+		if err != nil {
+			return err
+		}
+
+		return nil
 	})
+
+	return key, err
+
+}
+
+func (r *StateRepository) UpsertInterfaceKey(id, key string) error {
+
+	err := r.db.Update(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(interfaceKeysBucketName)
+		return b.Put([]byte(id), encode(key))
+	})
+
 	return err
 }
 

@@ -20,10 +20,10 @@ const (
 
 // Config contains configurations for a network controller.
 type Config struct {
-	// InterfacePrefix defines the string prepended to each interface name.
+	// InterfacesPrefix defines the string prepended to each interface name.
 	// Example: if InterfacePrefix is "abc", interfaces will be named as
 	// "abc-xxxxxx", where "xxxxxx" is a random string.
-	InterfacePrefix string
+	InterfacesPrefix string
 
 	// WireguardPath is the path to a userspace Wireguard binary. In case
 	// it is not defined, Drago will try to use the kernel module.
@@ -33,7 +33,6 @@ type Config struct {
 // Controller : network interface controller.
 type Controller struct {
 	config *Config
-	key    *wgtypes.Key
 	wg     *wgctrl.Client
 }
 
@@ -45,44 +44,65 @@ func NewController(config *Config) (*Controller, error) {
 		return nil, err
 	}
 
-	pk, err := wgtypes.GeneratePrivateKey()
-	if err != nil {
-		return nil, err
-	}
-
 	c := &Controller{
 		config: config,
-		key:    &pk,
 		wg:     wg,
 	}
 
 	return c, nil
 }
 
-// ListInterfaces returns a slice of all network interfaces managed by
+// GenerateKey : generates a new 32-bytes key, and return it in base64 encoding.
+func (c *Controller) GenerateKey() (string, error) {
+	pk, err := wgtypes.GeneratePrivateKey()
+	if err != nil {
+		return "", err
+	}
+	return pk.String(), nil
+}
+
+func (c *Controller) parseKey(s string) (wgtypes.Key, error) {
+	k, err := wgtypes.ParseKey(s)
+	if err != nil {
+		return wgtypes.Key{}, err
+	}
+	return k, nil
+}
+
+// Interfaces returns a slice of all network interfaces managed by
 // the controller.
-func (c *Controller) ListInterfaces() ([]*structs.Interface, error) {
+func (c *Controller) Interfaces() ([]*structs.Interface, error) {
 
 	out := []*structs.Interface{}
 
-	links, err := listLinksWithPrefix(c.config.InterfacePrefix)
+	links, err := linksByPrefix(c.config.InterfacesPrefix)
 	if err != nil {
 		return nil, err
 	}
 
 	for _, l := range links {
 		out = append(out, &structs.Interface{
+			ID:   l.Attrs().Alias,
 			Name: l.Attrs().Name,
-			// TODO: populate other fields
+			// TODO: capture other information that might be useful e.g. for diagnosis
 		})
 	}
 
 	return out, nil
 }
 
-// DeleteInterface deletes a network interface and all associated routes.
-func (c *Controller) DeleteInterface(name string) error {
-	err := deleteLinkAndRoutes(name)
+// DeleteInterfaceByName deletes a network interface and all associated routes by name.
+func (c *Controller) DeleteInterfaceByName(s string) error {
+	err := deleteLinkAndRoutesByName(s)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// DeleteInterfaceByAlias deletes a network interface and all associated routes by alias.
+func (c *Controller) DeleteInterfaceByAlias(s string) error {
+	err := deleteLinksAndRoutesByAlias(s)
 	if err != nil {
 		return err
 	}
@@ -91,38 +111,39 @@ func (c *Controller) DeleteInterface(name string) error {
 
 // DeleteAllInterfaces deletes all network interfaces and routes.
 func (c *Controller) DeleteAllInterfaces() error {
-	err := deleteLinkAndRoutesWithPrefix(c.config.InterfacePrefix)
+	err := deleteLinksAndRoutesByPrefix(c.config.InterfacesPrefix)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// PrivateKey returns ...
-func (c *Controller) PrivateKey() *wgtypes.Key {
-	return c.key
-}
+// CreateInterfaceWithKey ...
+func (c *Controller) CreateInterfaceWithKey(iface *structs.Interface, s string) error {
 
-// CreateInterface ...
-func (c *Controller) CreateInterface(iface *structs.Interface) error {
+	key, err := c.parseKey(s)
+	if err != nil {
+		return fmt.Errorf("invalid key: %s", err.Error())
+	}
 
-	linkName, linkAlias := c.randomInterfaceName(), iface.Name
+	linkName, linkAlias := c.randomInterfaceName(), iface.ID
 
-	err := c.createLink(linkName, linkAlias)
+	err = c.createLink(linkName, linkAlias)
 	if err != nil {
 		return err
 	}
 
 	// Apply WireGuard configurations to the newly created link
 	config := wgtypes.Config{
-		PrivateKey:   c.key,
+		PrivateKey:   &key,
 		ListenPort:   nil,
 		Peers:        []wgtypes.PeerConfig{},
 		ReplacePeers: true,
 	}
 
 	if iface.ListenPort != 0 {
-		config.ListenPort = &iface.ListenPort
+		p := int(iface.ListenPort)
+		config.ListenPort = &p
 	}
 
 	for _, peer := range iface.Peers {
@@ -133,27 +154,28 @@ func (c *Controller) CreateInterface(iface *structs.Interface) error {
 		config.Peers = append(config.Peers, *p)
 	}
 
-	err = c.wg.ConfigureDevice(linkName, config)
+	link, err := netlink.LinkByAlias(linkAlias)
+	if err != nil {
+		return err
+	}
+
+	err = c.wg.ConfigureDevice(link.Attrs().Name, config)
 	if err != nil {
 		return err
 	}
 
 	// Assign IP address in CIDR format to the newly created link
-	err = setLinkAddress(linkName, iface.Address)
+	err = setLinkAddress(link, iface.Address)
 	if err != nil {
 		return err
 	}
 
-	err = enableLink(linkName)
+	err = netlink.LinkSetUp(link)
 	if err != nil {
 		return err
 	}
 
-	idx, err := getLinkIndex(linkName)
-	if err != nil {
-		return err
-	}
-
+	idx := link.Attrs().Index
 	for _, peer := range config.Peers {
 		for _, ip := range peer.AllowedIPs {
 			if err = netlink.RouteAdd(&netlink.Route{LinkIndex: idx, Dst: &ip}); err != nil {
@@ -175,15 +197,20 @@ func (c *Controller) createLink(name string, alias string) error {
 	if c.config.WireguardPath != "" {
 		err := exec.Command(c.config.WireguardPath, name).Run()
 		if err != nil {
-			return err
+			return fmt.Errorf("can't create network interface with specified wireguard binary: %s", err.Error())
 		}
 	} else {
 		if err := netlink.LinkAdd(&netlink.Wireguard{LinkAttrs: attrs}); err != nil {
-			return err
+			return fmt.Errorf("can't create network interface : %s", err.Error())
 		}
 	}
 
-	err := setLinkAlias(name, alias)
+	link, err := netlink.LinkByName(name)
+	if err != nil {
+		return err
+	}
+
+	err = netlink.LinkSetAlias(link, alias)
 	if err != nil {
 		return err
 	}
@@ -242,5 +269,5 @@ func (c *Controller) randomInterfaceName() string {
 	if _, err := rand.Read(buf); err != nil {
 		panic(fmt.Errorf("failed to read random bytes: %v", err))
 	}
-	return c.config.InterfacePrefix + "-" + hex.EncodeToString(buf)
+	return c.config.InterfacesPrefix + "-" + hex.EncodeToString(buf)
 }
