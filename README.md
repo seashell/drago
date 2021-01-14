@@ -22,20 +22,20 @@ Drago is a flexible configuration manager for WireGuard networks which is design
 </p>
 
 ## Features
-✓ Single-binary, lightweight
-✓ Encrypted node-to-node communication
-✓ Support for multiple storage backends
-✓ Dynamic network configuration
-✓ Automatic key rotation
-✓ Extensible via REST API
-✓ Slick management dashboard
-✓ Automatic IP assignment
+- Single-binary, lightweight
+- Encrypted node-to-node communication
+- Support for multiple storage backends
+- Dynamic network configuration
+- Automatic key rotation
+- Extensible via REST API
+- Slick management dashboard
+- Automatic IP assignment
 
-#### Coming soon
-:clock1: Etcd as a storage backend
-:clock1: RPC API for clients nodes to interact with the server
-:clock1: Fine-grained authorization
-:clock1: CLI improvements
+#### Coming soon  :clock1:
+- Etcd as a storage backend
+- RPC API for clients nodes to interact with the server
+- Fine-grained authorization
+- CLI improvements
 
 ## Use cases
 - Secure home automation, SSH access, etc
