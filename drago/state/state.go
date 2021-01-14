@@ -66,3 +66,13 @@ type InterfaceRepository interface {
 	UpsertInterface(ctx context.Context, i *structs.Interface) error
 	DeleteInterfaces(ctx context.Context, ids []string) error
 }
+
+// LinkRepository : Link repository interface
+type LinkRepository interface {
+	Link(ctx context.Context) ([]*structs.Link, error)
+	LinksByInterfaceID(ctx context.Context, s string) ([]*structs.Link, error)
+	LinksByNodeID(ctx context.Context, s string) ([]*structs.Link, error)
+	LinkByID(ctx context.Context, id string) (*structs.Link, error)
+	UpsertLink(ctx context.Context, i *structs.Link) error
+	DeleteLink(ctx context.Context, ids []string) error
+}

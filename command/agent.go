@@ -131,6 +131,7 @@ func (c *AgentCommand) parseFlags(flags *RootFlagSet, args []string) *agent.Conf
 
 	// Client-only options
 	flags.StringVar(&config.Client.StateDir, "state-dir", "", "")
+	flags.StringVar(&config.Client.WireguardPath, "wireguard-path", "", "")
 
 	// Server-only options
 	// --

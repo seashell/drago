@@ -9,8 +9,8 @@ import (
 
 func TestCreateInterface(t *testing.T) {
 	config := &Config{
-		InterfacePrefix: "drago",
-		WireguardPath:   "./wireguard",
+		InterfacesPrefix: "drago",
+		WireguardPath:    "./wireguard",
 	}
 
 	c, err := NewController(config)
@@ -18,20 +18,48 @@ func TestCreateInterface(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = c.CreateInterface(&structs.Interface{
-		Name:    "t1",
+	key, err := c.GenerateKey()
+	if err != nil {
+		t.Error()
+	}
+
+	err = c.CreateInterfaceWithKey(&structs.Interface{
+		Name:    "1234567890abcd",
 		Address: "192.168.2.1/24",
 		Peers:   []*structs.Peer{},
-	})
+	}, key)
 	if err != nil {
 		t.Error(err)
 	}
 }
 
-func TestDeleteAllInterfaces(t *testing.T) {
+func TestListInterfaces(t *testing.T) {
+
 	config := &Config{
-		InterfacePrefix: "drago",
-		WireguardPath:   "./wireguard",
+		InterfacesPrefix: "drago",
+		WireguardPath:    "./wireguard",
+	}
+
+	c, err := NewController(config)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	ifaces, err := c.Interfaces()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, i := range ifaces {
+		fmt.Printf("%s (%s)", i.Name, i.Address)
+	}
+}
+
+func TestDeleteAllInterfaces(t *testing.T) {
+	return
+	config := &Config{
+		InterfacesPrefix: "drago",
+		WireguardPath:    "./wireguard",
 	}
 
 	c, err := NewController(config)
@@ -43,24 +71,4 @@ func TestDeleteAllInterfaces(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-}
-
-func TestListInterfaces(t *testing.T) {
-
-	config := &Config{
-		InterfacePrefix: "drago",
-		WireguardPath:   "./wireguard",
-	}
-
-	c, err := NewController(config)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ifaces, err := c.ListInterfaces()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	fmt.Println(ifaces)
 }

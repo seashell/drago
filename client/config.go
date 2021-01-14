@@ -8,10 +8,10 @@ import (
 )
 
 const (
-	defaultLogLevel        = "DEBUG"
-	defaultStateDir        = "/etc/drago"
-	defaultWireguardPath   = "/home/wireguard"
-	defaultInterfacePrefix = "drago"
+	defaultLogLevel         = "DEBUG"
+	defaultStateDir         = "/etc/drago"
+	defaultWireguardPath    = ""
+	defaultInterfacesPrefix = "drago-"
 )
 
 // Config : Drago client configuration
@@ -19,6 +19,9 @@ type Config struct {
 
 	// DevMode indicates whether the client is running in development mode.
 	DevMode bool
+
+	// Name is used to specify the name of the client node.
+	Name string
 
 	// Version is the version of the Drago client.
 	Version *version.VersionInfo
@@ -38,27 +41,32 @@ type Config struct {
 	// StateDir is the directory to store our state in.
 	StateDir string
 
-	// InterfacePrefix is the string prepended to the name of all WireGuard
+	// InterfacesPrefix is the string prepended to the name of all WireGuard
 	// interfaces created by Drago.
-	InterfacePrefix string
+	InterfacesPrefix string
 
 	// ReconcileInterval is the interval between two reconciliation cycles.
 	ReconcileInterval time.Duration
 
 	// WireguardPath is path to the WireGuard binary.
 	WireguardPath string
+
+	// Meta contains client metadata
+	Meta map[string]string
 }
 
 // DefaultConfig returns the default configuration.
 func DefaultConfig() *Config {
 	return &Config{
+		Name:              "",
 		Version:           version.GetVersion(),
 		LogLevel:          defaultLogLevel,
 		Servers:           []string{"localhost:8081"},
 		StateDir:          defaultStateDir,
-		InterfacePrefix:   defaultInterfacePrefix,
+		InterfacesPrefix:  defaultInterfacesPrefix,
 		ReconcileInterval: 5 * time.Second,
 		WireguardPath:     defaultWireguardPath,
+		Meta:              map[string]string{},
 	}
 }
 
@@ -66,6 +74,9 @@ func DefaultConfig() *Config {
 func (c *Config) Merge(b *Config) *Config {
 	result := *c
 
+	if b.Name != "" {
+		result.Name = b.Name
+	}
 	if b.Logger != nil {
 		result.Logger = b.Logger
 	}
@@ -78,14 +89,17 @@ func (c *Config) Merge(b *Config) *Config {
 	if b.StateDir != "" {
 		result.StateDir = b.StateDir
 	}
-	if b.InterfacePrefix != "" {
-		result.InterfacePrefix = b.InterfacePrefix
+	if b.InterfacesPrefix != "" {
+		result.InterfacesPrefix = b.InterfacesPrefix
 	}
 	if b.ReconcileInterval != 0 {
 		result.ReconcileInterval = b.ReconcileInterval
 	}
 	if b.WireguardPath != "" {
 		result.WireguardPath = b.WireguardPath
+	}
+	if b.Meta != nil {
+		result.Meta = b.Meta
 	}
 
 	return &result

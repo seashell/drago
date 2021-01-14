@@ -6,8 +6,10 @@ import (
 
 // NetworkInterfaceController provides network configuration capabilities.
 type NetworkInterfaceController interface {
-	CreateInterface(iface *structs.Interface) error
-	ListInterfaces() ([]*structs.Interface, error)
-	DeleteInterface(name string) error
+	GenerateKey() (string, error)
+	CreateInterfaceWithKey(iface *structs.Interface, k string) error
+	Interfaces() ([]*structs.Interface, error)
+	DeleteInterfaceByAlias(s string) error
+	DeleteInterfaceByName(s string) error
 	DeleteAllInterfaces() error
 }

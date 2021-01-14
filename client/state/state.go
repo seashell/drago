@@ -6,14 +6,11 @@ import (
 
 // Repository :
 type Repository interface {
-	// Name of implementation.
 	Name() string
-
 	Interfaces() ([]*structs.Interface, error)
 	UpsertInterface(*structs.Interface) error
-	InterfaceByName(s string) ([]*structs.Interface, error)
+	DeleteInterfaces(id []string) error
 
-	Peers() ([]*structs.Peer, error)
-	PeerByPublicKey(s string) ([]*structs.Peer, error)
-	UpsertPeer(*structs.Peer) error
+	InterfaceKeyByID(id string) (string, error)
+	UpsertInterfaceKey(id string, key string) error
 }

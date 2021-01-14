@@ -129,6 +129,7 @@ func (s *NodeService) Register(args *structs.NodeRegisterRequest, out *structs.N
 	if err != nil {
 		s.logger.Debugf("registering a new node with id %s!", n.ID)
 		n.CreatedAt = time.Now()
+		n.ModifyIndex = 0
 	} else {
 		s.logger.Debugf("node %s already registered.", n.ID)
 		if old != nil {
@@ -140,6 +141,7 @@ func (s *NodeService) Register(args *structs.NodeRegisterRequest, out *structs.N
 	}
 
 	n.UpdatedAt = time.Now()
+	n.ModifyIndex++
 
 	err = s.state.UpsertNode(ctx, n)
 	if err != nil {
@@ -175,6 +177,7 @@ func (s *NodeService) UpdateStatus(args *structs.NodeUpdateStatusRequest, out *s
 	}
 
 	n.Status = args.Status
+
 	n.UpdatedAt = time.Now()
 
 	err = s.state.UpsertNode(ctx, n)
@@ -219,7 +222,21 @@ func (s *NodeService) GetInterfaces(args *structs.NodeSpecificRequest, out *stru
 	return nil
 }
 
-func (s *NodeService) GetPeers(args *structs.NodeSpecificRequest, out *structs.NodePeersResponse) error {
+func (s *NodeService) UpdateInterfaces(args *structs.InterfaceUpdateRequest, out *structs.GenericResponse) error {
+
+	ctx := context.TODO()
+
+	// Check if authorized
+	if s.config.ACL.Enabled {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", "", NodeWrite); err != nil {
+			return structs.ErrPermissionDenied
+		}
+	}
+
+	for _, iface := range args.Interfaces {
+		fmt.Println("updating iface ", iface.ID)
+	}
+
 	return nil
 }
 
@@ -268,5 +285,17 @@ func (s *NodeService) ListNodes(args *structs.NodeListRequest, out *structs.Node
 		out.Items = append(out.Items, n.Stub())
 	}
 
+	return nil
+}
+
+// JoinNetwork : connects a node to a network
+func (s *NetworkService) JoinNetwork(args *structs.GenericRequest, out *structs.GenericResponse) error {
+	// ctx := context.TODO()
+	return nil
+}
+
+// LeaveNetwork : disconnects a node from a network
+func (s *NetworkService) LeaveNetwork(args *structs.GenericRequest, out *structs.GenericResponse) error {
+	// ctx := context.TODO()
 	return nil
 }

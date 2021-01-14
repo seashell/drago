@@ -16,7 +16,7 @@ import (
 	structs "github.com/seashell/drago/drago/structs"
 	log "github.com/seashell/drago/pkg/log"
 	rpc "github.com/seashell/drago/pkg/rpc"
-	"github.com/seashell/drago/pkg/uuid"
+	uuid "github.com/seashell/drago/pkg/uuid"
 )
 
 var (
@@ -37,7 +37,7 @@ type Client struct {
 
 	state state.Repository
 
-	niController     *nic.Controller
+	niController     nic.NetworkInterfaceController
 	niControllerLock sync.Mutex
 
 	node     *structs.Node
@@ -62,14 +62,9 @@ func New(config *Config) (*Client, error) {
 		shutdownCh: make(chan struct{}),
 	}
 
-	err := c.setupFilesystem()
+	err := c.setupState()
 	if err != nil {
-		return nil, fmt.Errorf("error setting up the filesystem: %v", err)
-	}
-
-	err = c.setupRepository()
-	if err != nil {
-		return nil, fmt.Errorf("error setting up application: %v", err)
+		return nil, fmt.Errorf("error setting up client state: %v", err)
 	}
 
 	err = c.setupNode()
@@ -79,14 +74,19 @@ func New(config *Config) (*Client, error) {
 
 	// Setup the network controller
 	nc, err := nic.NewController(&nic.Config{
-		InterfacePrefix: "drago",
-		WireguardPath:   c.config.WireguardPath,
+		InterfacesPrefix: c.config.InterfacesPrefix,
+		WireguardPath:    c.config.WireguardPath,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("error setting network controller: %v", err)
 
 	}
 	c.niController = nc
+
+	err = c.setupInterfaces()
+	if err != nil {
+		return nil, fmt.Errorf("error setting up interfaces: %v", err)
+	}
 
 	// Start goroutine for registering the client and issuing periodic heartbeats
 	go c.registerAndHeartbeat()
@@ -119,44 +119,47 @@ func (c *Client) setupNode() error {
 		c.node = &structs.Node{}
 	}
 
-	id, err := c.getNodeID()
+	id, err := c.readOrGenerateNodeID()
 	if err != nil {
 		return fmt.Errorf("could not retrieve node ID: %v", err)
 	}
 
-	secret, err := c.getNodeSecretID()
+	secret, err := c.readOrGenerateNodeSecretID()
 	if err != nil {
 		return fmt.Errorf("could not retrieve node secret ID: %v", err)
 	}
 
 	c.node.ID = id
 	c.node.SecretID = secret
+
+	c.node.Name = c.config.Name
+	c.node.Meta = c.config.Meta
+
 	c.node.Status = structs.NodeStatusInit
 
 	if c.node.Name == "" {
-		c.node.Name, _ = os.Hostname()
+		if hostname, _ := os.Hostname(); hostname != "" {
+			c.node.Name = hostname
+		} else {
+			c.node.Name = c.node.ID
+		}
 	}
 	if c.node.Meta == nil {
 		c.node.Meta = make(map[string]string)
 	}
 
-	if c.node.Name == "" {
-		c.node.Name = c.node.ID
-	}
-	c.node.Status = structs.NodeStatusInit
-
 	return nil
 }
 
-func (c *Client) setupFilesystem() error {
+func (c *Client) setupState() error {
 
-	// Ensure the state dir exists
+	// Ensure the state dir exists. If it was not was specified,
+	// create a temporary directory to store the client state.
 	if c.config.StateDir != "" {
 		if err := os.MkdirAll(c.config.StateDir, 0700); err != nil {
 			return fmt.Errorf("failed to create state dir: %s", err)
 		}
 	} else {
-		// Otherwise make a temp directory to use.
 		tmp, err := c.createTempDir("DragoClient")
 		if err != nil {
 			return fmt.Errorf("failed to create tmp dir for storing state: %s", err)
@@ -166,16 +169,29 @@ func (c *Client) setupFilesystem() error {
 
 	c.logger.Infof("using state directory %s", c.config.StateDir)
 
-	return nil
-}
-
-func (c *Client) setupRepository() error {
-
 	repo, err := boltdb.NewStateRepository(path.Join(c.config.StateDir, "client.state"))
 	if err != nil {
 		return fmt.Errorf("failed to open state database: %v", err)
 	}
+
 	c.state = repo
+
+	return nil
+}
+
+func (c *Client) setupInterfaces() error {
+
+	current, err := c.niController.Interfaces()
+	if err != nil {
+		return fmt.Errorf("could not retrieve network interfaces from network controller: %v", err)
+	}
+
+	desired, err := c.state.Interfaces()
+	if err != nil {
+		return fmt.Errorf("could not retrieve network interfaces from state: %v", err)
+	}
+
+	c.reconcileInterfaces(current, desired)
 
 	return nil
 }
@@ -219,47 +235,126 @@ func (c *Client) registerAndHeartbeat() {
 	}
 }
 
-type interfacesUpdate struct {
-	interfaces []*structs.Interface
-}
-
 func (c *Client) run() {
 
-	c.logger.Debugf("running client node")
+	c.logger.Debugf("running node")
 
-	interfacesUpdateCh := make(chan *interfacesUpdate)
+	interfacesUpdateCh := make(chan []*structs.Interface)
 	go c.watchInterfaces(interfacesUpdateCh)
 
 	for {
 		select {
-		case update := <-interfacesUpdateCh:
+		case desired := <-interfacesUpdateCh:
 			c.shutdownLock.Lock()
 			if c.shutdown {
 				c.shutdownLock.Unlock()
 				return
 			}
 
-			c.applyInterfaceUpdate(update)
-			c.shutdownLock.Unlock()
+			current, err := c.state.Interfaces()
+			if err != nil {
+				c.logger.Errorf("could not read interfaces from state repository: %v", err)
+			}
 
+			c.reconcileInterfaces(current, desired)
+
+			c.shutdownLock.Unlock()
 		case <-c.shutdownCh:
 			return
 		}
 	}
 }
 
-func (c *Client) applyInterfaceUpdate(i interfacesUpdate) {
+func (c *Client) reconcileInterfaces(current, desired []*structs.Interface) {
 
-	c.interfacesLock.RLock()
-	existing := make(map[string]uint64, len(c.allocs))
-	for id, ar := range c.allocs {
-		existing[id] = ar.Alloc().AllocModifyIndex
+	currentMap := map[string]*structs.Interface{}
+	for _, i := range current {
+		currentMap[i.ID] = i
 	}
-	c.allocLock.RUnlock()
+
+	desiredMap := map[string]*structs.Interface{}
+	for _, i := range desired {
+		desiredMap[i.ID] = i
+	}
+
+	diff := interfacesDiff(currentMap, desiredMap)
+
+	c.logger.Debugf("interface updates: (created: %d, deleted: %d, updated: %d, unchanged: %d)",
+		len(diff.created), len(diff.deleted), len(diff.updated), len(diff.unchanged))
+
+	c.niControllerLock.Lock()
+	defer c.niControllerLock.Unlock()
+
+	// Delete old interfaces
+	for _, id := range diff.deleted {
+		if err := c.state.DeleteInterfaces([]string{id}); err != nil {
+			c.logger.Warnf("could not persist interface deletion to the state: %v", err)
+		}
+		if err := c.niController.DeleteInterfaceByAlias(id); err != nil {
+			c.logger.Warnf("could not delete interface: %v", err)
+		}
+	}
+
+	// Create a new interface from scratch
+	for _, id := range diff.created {
+
+		iface := desiredMap[id]
+
+		// Generate a new key for the interface
+		key, err := c.niController.GenerateKey()
+		if err != nil {
+			c.logger.Errorf("could not generate key for the new interface: %v", err)
+			continue
+		}
+
+		err = c.state.UpsertInterface(iface)
+		if err != nil {
+			c.logger.Warnf("could not persist interface: %v", err)
+			continue
+		}
+
+		err = c.state.UpsertInterfaceKey(iface.ID, key)
+		if err != nil {
+			c.logger.Warnf("could not persist interface key: %v", err)
+			continue
+		}
+
+		err = c.niController.CreateInterfaceWithKey(iface, key)
+		if err != nil {
+			c.logger.Warnf("could not create wireguard interface: %v", err)
+		}
+	}
+
+	// Update an existing interface
+	for _, id := range diff.updated {
+
+		iface := desiredMap[id]
+
+		err := c.state.UpsertInterface(iface)
+		if err != nil {
+			c.logger.Warnf("could not persist interface: %v", err)
+			continue
+		}
+
+		key, err := c.state.InterfaceKeyByID(iface.ID)
+		if err != nil {
+			c.logger.Errorf("could not retrieve key for the interface to be updated: %v", err)
+			continue
+		}
+
+		if err := c.niController.DeleteInterfaceByAlias(id); err != nil {
+			c.logger.Warnf("could not delete interface: %v", err)
+			continue
+		}
+
+		if err := c.niController.CreateInterfaceWithKey(iface, key); err != nil {
+			c.logger.Warnf("could not create wireguard interface: %v", err)
+		}
+	}
 
 }
 
-func (c *Client) watchInterfaces(ch chan *interfacesUpdate) {
+func (c *Client) watchInterfaces(ch chan []*structs.Interface) {
 
 	c.logger.Debugf("watching interfaces")
 
@@ -278,10 +373,8 @@ func (c *Client) watchInterfaces(ch chan *interfacesUpdate) {
 			case <-c.shutdownCh:
 				return
 			}
-		}
-
-		ch <- &interfacesUpdate{
-			interfaces: resp.Items,
+		} else {
+			ch <- resp.Items
 		}
 
 		retryCh := time.After(c.config.ReconcileInterval)
@@ -301,8 +394,6 @@ func (c *Client) tryToRegisterUntilSuccessful() {
 			Node: c.Node(),
 		}
 
-		c.logger.Infof("registering node...")
-
 		var err error
 		var resp structs.NodeUpdateResponse
 		if err = c.RPC("Node.Register", req, &resp); err == nil {
@@ -316,7 +407,7 @@ func (c *Client) tryToRegisterUntilSuccessful() {
 			return
 		}
 
-		c.logger.Errorf("error registering node: %v", err)
+		c.logger.Debugf("error registering node: %v", err)
 
 		retryCh := time.After(time.Duration(defaultRegistrationRetryInterval))
 
@@ -392,10 +483,9 @@ func (c *Client) RPC(method string, args interface{}, reply interface{}) error {
 	return nil
 }
 
-func (c *Client) getNodeID() (string, error) {
+func (c *Client) readOrGenerateNodeID() (string, error) {
 
 	id := uuid.Generate()
-
 	if c.config.DevMode {
 		return id, nil
 	}
@@ -410,13 +500,11 @@ func (c *Client) getNodeID() (string, error) {
 	return id, nil
 }
 
-func (c *Client) getNodeSecretID() (string, error) {
-
-	secret := uuid.Generate()
+func (c *Client) readOrGenerateNodeSecretID() (string, error) {
 
 	path := filepath.Join(c.config.StateDir, "secret-id")
 
-	secret, err := c.readFileLazy(path, secret)
+	secret, err := c.readFileLazy(path, uuid.Generate())
 	if err != nil {
 		return "", err
 	}
