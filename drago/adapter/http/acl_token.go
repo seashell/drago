@@ -54,7 +54,7 @@ func (h *ACLTokenHandler) handleGet(rw http.ResponseWriter, req *http.Request, t
 
 	args := structs.ACLTokenSpecificRequest{
 		QueryOptions: parseQueryOptions(req),
-		ID:           tokenID,
+		ACLTokenID:   tokenID,
 	}
 
 	var out structs.SingleACLTokenResponse
@@ -138,7 +138,7 @@ func (h *ACLTokenHandler) handleDelete(rw http.ResponseWriter, req *http.Request
 
 	args := structs.ACLTokenDeleteRequest{
 		WriteRequest: parseWriteRequestOptions(req),
-		IDs:          []string{tokenID},
+		ACLTokenIDs:  []string{tokenID},
 	}
 
 	var out structs.GenericResponse

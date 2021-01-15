@@ -49,7 +49,7 @@ func (h *InterfaceHandler) handleGet(rw http.ResponseWriter, req *http.Request, 
 
 	args := structs.NetworkSpecificRequest{
 		QueryOptions: parseQueryOptions(req),
-		ID:           ifaceID,
+		NetworkID:    ifaceID,
 	}
 
 	var out structs.SingleInterfaceResponse
@@ -110,7 +110,7 @@ func (h *InterfaceHandler) handleDelete(rw http.ResponseWriter, req *http.Reques
 
 	args := structs.InterfaceDeleteRequest{
 		WriteRequest: parseWriteRequestOptions(req),
-		IDs:          []string{ifaceID},
+		InterfaceIDs: []string{ifaceID},
 	}
 
 	var out structs.GenericResponse

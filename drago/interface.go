@@ -41,12 +41,12 @@ func (s *InterfaceService) GetInterface(args *structs.InterfaceSpecificRequest, 
 
 	// Check if authorized
 	if s.config.ACL.Enabled {
-		if err := s.authHandler.Authorize(ctx, args.AuthToken, "interface", args.ID, InterfaceRead); err != nil {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "interface", args.InterfaceID, InterfaceRead); err != nil {
 			return structs.ErrPermissionDenied
 		}
 	}
 
-	n, err := s.state.InterfaceByID(ctx, args.ID)
+	n, err := s.state.InterfaceByID(ctx, args.InterfaceID)
 	if err != nil {
 		return structs.ErrNotFound
 	}

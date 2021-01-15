@@ -10,6 +10,8 @@ import (
 	state "github.com/seashell/drago/drago/state"
 	structs "github.com/seashell/drago/drago/structs"
 	log "github.com/seashell/drago/pkg/log"
+	uuid "github.com/seashell/drago/pkg/uuid"
+	"github.com/shurcooL/go-goon"
 )
 
 const (
@@ -159,19 +161,19 @@ func (s *NodeService) UpdateStatus(args *structs.NodeUpdateStatusRequest, out *s
 
 	// Check if authorized
 	if s.config.ACL.Enabled {
-		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", args.ID, NodeWrite); err != nil {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", args.NodeID, NodeWrite); err != nil {
 			return structs.ErrPermissionDenied
 		}
 	}
 
-	if args.ID == "" {
+	if args.NodeID == "" {
 		return structs.ErrInvalidInput
 	}
 	if !structs.IsValidNodeStatus(args.Status) {
 		return structs.ErrInvalidInput
 	}
 
-	n, err := s.state.NodeByID(ctx, args.ID)
+	n, err := s.state.NodeByID(ctx, args.NodeID)
 	if err != nil {
 		return structs.ErrNotFound
 	}
@@ -199,16 +201,16 @@ func (s *NodeService) GetInterfaces(args *structs.NodeSpecificRequest, out *stru
 
 	// Check if authorized
 	if s.config.ACL.Enabled {
-		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", args.ID, NodeRead); err != nil {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", args.NodeID, NodeRead); err != nil {
 			return structs.ErrPermissionDenied
 		}
 	}
 
-	if args.ID == "" {
+	if args.NodeID == "" {
 		return structs.ErrInvalidInput
 	}
 
-	interfaces, err := s.state.InterfacesByNodeID(ctx, args.ID)
+	interfaces, err := s.state.InterfacesByNodeID(ctx, args.NodeID)
 	if err != nil {
 		return structs.ErrNotFound
 	}
@@ -222,7 +224,7 @@ func (s *NodeService) GetInterfaces(args *structs.NodeSpecificRequest, out *stru
 	return nil
 }
 
-func (s *NodeService) UpdateInterfaces(args *structs.InterfaceUpdateRequest, out *structs.GenericResponse) error {
+func (s *NodeService) UpdateInterfaces(args *structs.NodeInterfaceUpdateRequest, out *structs.GenericResponse) error {
 
 	ctx := context.TODO()
 
@@ -233,11 +235,14 @@ func (s *NodeService) UpdateInterfaces(args *structs.InterfaceUpdateRequest, out
 		}
 	}
 
-	for _, iface := range args.Interfaces {
-		fmt.Println("updating iface ", iface.ID)
+	_, err := s.state.NodeByID(ctx, args.NodeID)
+	if err != nil {
+		return structs.ErrNotFound
 	}
 
-	return nil
+	goon.Dump("interfaces to update", args.Interfaces)
+
+	return structs.ErrInvalidInput
 }
 
 // GetNode returns a Node entity by ID
@@ -247,12 +252,12 @@ func (s *NodeService) GetNode(args *structs.NodeSpecificRequest, out *structs.Si
 
 	// Check if authorized
 	if s.config.ACL.Enabled {
-		if err := s.authHandler.Authorize(ctx, args.AuthToken, "network", args.ID, NodeRead); err != nil {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "network", args.NodeID, NodeRead); err != nil {
 			return structs.ErrPermissionDenied
 		}
 	}
 
-	n, err := s.state.NodeByID(ctx, args.ID)
+	n, err := s.state.NodeByID(ctx, args.NodeID)
 	if err != nil {
 		return structs.ErrNotFound
 	}
@@ -289,13 +294,99 @@ func (s *NodeService) ListNodes(args *structs.NodeListRequest, out *structs.Node
 }
 
 // JoinNetwork : connects a node to a network
-func (s *NetworkService) JoinNetwork(args *structs.GenericRequest, out *structs.GenericResponse) error {
-	// ctx := context.TODO()
+func (s *NetworkService) JoinNetwork(args *structs.NodeJoinNetworkRequest, out *structs.GenericResponse) error {
+
+	ctx := context.TODO()
+
+	// Check if authorized
+	if s.config.ACL.Enabled {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", args.NodeID, NodeList); err != nil {
+			return structs.ErrPermissionDenied
+		}
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "network", args.NetworkID, NodeList); err != nil {
+			return structs.ErrPermissionDenied
+		}
+	}
+
+	network, err := s.state.NetworkByID(ctx, args.NodeID)
+	if err != nil {
+		return structs.ErrNotFound // network not found
+	}
+
+	node, err := s.state.NodeByID(ctx, args.NodeID)
+	if err != nil {
+		return structs.ErrNotFound // node not found
+	}
+
+	interfaces, err := s.state.InterfacesByNodeID(ctx, node.ID)
+	if err != nil {
+		return structs.ErrInternal // error getting node interfaces
+	}
+
+	// Check whether node has already joined the network
+	for _, iface := range interfaces {
+		if iface.NetworkID == network.ID {
+			return fmt.Errorf("Network already joined")
+		}
+	}
+
+	iface := &structs.Interface{
+		ID:          uuid.Generate(),
+		NodeID:      node.ID,
+		NetworkID:   network.ID,
+		Address:     "",                // to be set if leasing plugin is loaded and enabled
+		Peers:       []*structs.Peer{}, // to be set if meshing plugin is loaded and enabled
+		ModifyIndex: 0,
+		CreatedAt:   time.Now(),
+		UpdatedAt:   time.Now(),
+	}
+
+	err = s.state.UpsertInterface(ctx, iface)
+	if err != nil {
+		return structs.ErrInternal // could not create interface
+	}
+
 	return nil
 }
 
 // LeaveNetwork : disconnects a node from a network
-func (s *NetworkService) LeaveNetwork(args *structs.GenericRequest, out *structs.GenericResponse) error {
-	// ctx := context.TODO()
+func (s *NetworkService) LeaveNetwork(args *structs.NodeLeaveNetworkRequest, out *structs.GenericResponse) error {
+
+	ctx := context.TODO()
+
+	// Check if authorized
+	if s.config.ACL.Enabled {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", args.NodeID, NodeList); err != nil {
+			return structs.ErrPermissionDenied
+		}
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "network", args.NetworkID, NodeList); err != nil {
+			return structs.ErrPermissionDenied
+		}
+	}
+
+	network, err := s.state.NetworkByID(ctx, args.NodeID)
+	if err != nil {
+		return structs.ErrNotFound // network not found
+	}
+
+	node, err := s.state.NodeByID(ctx, args.NodeID)
+	if err != nil {
+		return structs.ErrNotFound // node not found
+	}
+
+	interfaces, err := s.state.InterfacesByNodeID(ctx, node.ID)
+	if err != nil {
+		return structs.ErrInternal // error getting node interfaces
+	}
+
+	// Check whether node is in the network
+	for _, iface := range interfaces {
+		if iface.NetworkID == network.ID {
+			if err := s.state.DeleteInterfaces(ctx, []string{iface.ID}); err != nil {
+				return structs.ErrInternal
+			}
+		}
+	}
+
 	return nil
 }

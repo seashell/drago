@@ -76,7 +76,7 @@ type NetworkListStub struct {
 
 // NetworkSpecificRequest :
 type NetworkSpecificRequest struct {
-	ID string
+	NetworkID string
 
 	QueryOptions
 }
@@ -97,7 +97,7 @@ type NetworkUpsertRequest struct {
 
 // NetworkDeleteRequest :
 type NetworkDeleteRequest struct {
-	IDs []string
+	NetworkIDs []string
 
 	WriteRequest
 }

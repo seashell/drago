@@ -24,11 +24,11 @@ func (s *ACLService) GetToken(args *structs.ACLTokenSpecificRequest, out *struct
 	ctx := context.TODO()
 
 	// Check if authorized
-	if err := s.authHandler.Authorize(ctx, args.AuthToken, "token", args.ID, ACLTokenRead); err != nil {
+	if err := s.authHandler.Authorize(ctx, args.AuthToken, "token", args.ACLTokenID, ACLTokenRead); err != nil {
 		return structs.ErrPermissionDenied
 	}
 
-	t, err := s.state.ACLTokenByID(ctx, args.ID)
+	t, err := s.state.ACLTokenByID(ctx, args.ACLTokenID)
 	if err != nil {
 		return structs.ErrNotFound
 	}
@@ -100,7 +100,7 @@ func (s *ACLService) DeleteToken(args *structs.ACLTokenDeleteRequest, out *struc
 		return structs.ErrPermissionDenied
 	}
 
-	err := s.state.DeleteACLTokens(ctx, args.IDs)
+	err := s.state.DeleteACLTokens(ctx, args.ACLTokenIDs)
 	if err != nil {
 		return structs.ErrInternal
 	}

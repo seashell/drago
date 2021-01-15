@@ -95,7 +95,7 @@ type InterfaceListStub struct {
 
 // InterfaceSpecificRequest :
 type InterfaceSpecificRequest struct {
-	ID string
+	InterfaceID string
 
 	QueryOptions
 }
@@ -116,7 +116,7 @@ type InterfaceUpsertRequest struct {
 
 // InterfaceDeleteRequest :
 type InterfaceDeleteRequest struct {
-	IDs []string
+	InterfaceIDs []string
 
 	WriteRequest
 }
@@ -136,26 +136,18 @@ type InterfaceListResponse struct {
 	Response
 }
 
-// InterfaceUpdateRequest :
-type InterfaceUpdateRequest struct {
-	Interfaces []*Interface
-
-	WriteRequest
-}
-
-type Peer struct {
-	ID                  string
-	PublicKey           string
-	Address             string
-	Port                int
-	AllowedIPs          []string
-	PersistentKeepalive int
-}
-
 type Link struct {
 	ID                  string
 	FromInterfaceID     string
 	ToInterfaceID       string
+	AllowedIPs          []string
+	PersistentKeepalive int
+}
+
+type Peer struct {
+	PublicKey           string
+	Address             string
+	Port                int
 	AllowedIPs          []string
 	PersistentKeepalive int
 }

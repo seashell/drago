@@ -49,7 +49,7 @@ func (h *NetworkHandler) handleGet(rw http.ResponseWriter, req *http.Request, ne
 
 	args := structs.NetworkSpecificRequest{
 		QueryOptions: parseQueryOptions(req),
-		ID:           networkID,
+		NetworkID:    networkID,
 	}
 
 	var out structs.SingleNetworkResponse
@@ -108,7 +108,7 @@ func (h *NetworkHandler) handleDelete(rw http.ResponseWriter, req *http.Request,
 
 	args := structs.NetworkDeleteRequest{
 		WriteRequest: parseWriteRequestOptions(req),
-		IDs:          []string{networkID},
+		NetworkIDs:   []string{networkID},
 	}
 
 	var out structs.GenericResponse

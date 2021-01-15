@@ -41,12 +41,12 @@ func (s *NetworkService) GetNetwork(args *structs.NetworkSpecificRequest, out *s
 
 	// Check if authorized
 	if s.config.ACL.Enabled {
-		if err := s.authHandler.Authorize(ctx, args.AuthToken, "network", args.ID, NetworkRead); err != nil {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "network", args.NetworkID, NetworkRead); err != nil {
 			return structs.ErrPermissionDenied
 		}
 	}
 
-	n, err := s.state.NetworkByID(ctx, args.ID)
+	n, err := s.state.NetworkByID(ctx, args.NetworkID)
 	if err != nil {
 		return structs.ErrNotFound
 	}
@@ -136,7 +136,7 @@ func (s *NetworkService) DeleteNetwork(args *structs.NetworkDeleteRequest, out *
 		}
 	}
 
-	err := s.state.DeleteNetworks(ctx, args.IDs)
+	err := s.state.DeleteNetworks(ctx, args.NetworkIDs)
 	if err != nil {
 		return structs.ErrInternal
 	}

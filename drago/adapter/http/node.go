@@ -47,7 +47,7 @@ func (h *NodeHandler) handleGet(rw http.ResponseWriter, req *http.Request, pathP
 
 	args := structs.NodeSpecificRequest{
 		QueryOptions: parseQueryOptions(req),
-		ID:           nodeID,
+		NodeID:       nodeID,
 	}
 
 	var out structs.SingleNodeResponse

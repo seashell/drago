@@ -100,7 +100,7 @@ type NodeListStub struct {
 
 // NodeSpecificRequest :
 type NodeSpecificRequest struct {
-	ID       string
+	NodeID   string
 	SecretID string
 
 	QueryOptions
@@ -155,7 +155,7 @@ func (r *NodeRegisterRequest) Validate() error {
 
 // NodeUpdateStatusRequest :
 type NodeUpdateStatusRequest struct {
-	ID     string
+	NodeID string
 	Status string
 
 	WriteRequest
@@ -187,9 +187,26 @@ type NodeInterfacesResponse struct {
 	Response
 }
 
-// NodePeersResponse :
-type NodePeersResponse struct {
-	// Items []*Peer
+// NodeInterfaceUpdateRequest :
+type NodeInterfaceUpdateRequest struct {
+	NodeID     string
+	Interfaces []*Interface
 
-	Response
+	WriteRequest
+}
+
+// NodeJoinNetworkRequest :
+type NodeJoinNetworkRequest struct {
+	NodeID    string
+	NetworkID string
+
+	WriteRequest
+}
+
+// NodeLeaveNetworkRequest :
+type NodeLeaveNetworkRequest struct {
+	NodeID    string
+	NetworkID string
+
+	WriteRequest
 }

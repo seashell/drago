@@ -98,7 +98,7 @@ type ACLTokenListResponse struct {
 
 // ACLTokenSpecificRequest :
 type ACLTokenSpecificRequest struct {
-	ID string
+	ACLTokenID string
 
 	QueryOptions
 }
@@ -126,7 +126,7 @@ type ACLTokenUpsertResponse struct {
 
 // ACLTokenDeleteRequest :
 type ACLTokenDeleteRequest struct {
-	IDs []string
+	ACLTokenIDs []string
 
 	WriteRequest
 }
