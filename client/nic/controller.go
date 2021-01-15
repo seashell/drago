@@ -69,6 +69,29 @@ func (c *Controller) parseKey(s string) (wgtypes.Key, error) {
 	return k, nil
 }
 
+// InterfacesWithPublicKey returns a slice of all network interfaces managed by
+// the controller, together with their public key.
+func (c *Controller) InterfacesWithPublicKey(keyByID KeyResolverFunc) ([]*structs.Interface, error) {
+
+	ifaces, err := c.Interfaces()
+	if err != nil {
+		return nil, err
+	}
+
+	// For each Wireguard interface in the system, retrieve the private key
+	// used to configure it, set the public key computed from it on the struct.
+	for _, i := range ifaces {
+		pubkey := keyByID(i.ID)
+		k, err := c.parseKey(pubkey)
+		if err != nil {
+			return nil, err
+		}
+		i.PublicKey = k.PublicKey().String()
+	}
+
+	return ifaces, nil
+}
+
 // Interfaces returns a slice of all network interfaces managed by
 // the controller.
 func (c *Controller) Interfaces() ([]*structs.Interface, error) {

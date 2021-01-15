@@ -242,6 +242,8 @@ func (c *Client) run() {
 	interfacesUpdateCh := make(chan []*structs.Interface)
 	go c.watchInterfaces(interfacesUpdateCh)
 
+	go c.synchronizeInterfaces()
+
 	for {
 		select {
 		case desired := <-interfacesUpdateCh:
@@ -359,7 +361,7 @@ func (c *Client) watchInterfaces(ch chan []*structs.Interface) {
 	c.logger.Debugf("watching interfaces")
 
 	req := &structs.NodeSpecificRequest{
-		ID: c.NodeID(),
+		NodeID: c.NodeID(),
 	}
 
 	for {
@@ -375,6 +377,55 @@ func (c *Client) watchInterfaces(ch chan []*structs.Interface) {
 			}
 		} else {
 			ch <- resp.Items
+		}
+
+		retryCh := time.After(c.config.ReconcileInterval)
+		select {
+		case <-c.shutdownCh:
+			return
+		case <-retryCh:
+		}
+	}
+}
+
+func (c *Client) synchronizeInterfaces() {
+
+	c.logger.Debugf("syncing interfaces")
+
+	keyResolver := func(id string) string {
+		if key, err := c.state.InterfaceKeyByID(id); err == nil {
+			return key
+		}
+		c.logger.Warnf("could not retrieve key for interface %s", id)
+		return ""
+	}
+
+	interfaces, err := c.niController.InterfacesWithPublicKey(keyResolver)
+	if err != nil {
+		c.logger.Warnf("could not retrieve interfaces with public key from controller")
+	}
+
+	if interfaces == nil {
+		interfaces = []*structs.Interface{}
+	}
+
+	// TODO: build request
+	req := &structs.NodeInterfaceUpdateRequest{
+		NodeID:     c.NodeID(),
+		Interfaces: interfaces,
+	}
+
+	for {
+		var resp structs.GenericResponse
+		err := c.RPC("Node.UpdateInterfaces", req, &resp)
+		if err != nil {
+			c.logger.Debugf("error updating interfaces: %v", err)
+			retryCh := time.After(defaultReconciliationInterval)
+			select {
+			case <-retryCh:
+			case <-c.shutdownCh:
+				return
+			}
 		}
 
 		retryCh := time.After(c.config.ReconcileInterval)
@@ -422,7 +473,7 @@ func (c *Client) tryToRegisterUntilSuccessful() {
 func (c *Client) updateNodeStatus() error {
 
 	req := &structs.NodeUpdateStatusRequest{
-		ID:     c.NodeID(),
+		NodeID: c.NodeID(),
 		Status: structs.NodeStatusReady,
 	}
 

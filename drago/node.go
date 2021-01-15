@@ -11,7 +11,6 @@ import (
 	structs "github.com/seashell/drago/drago/structs"
 	log "github.com/seashell/drago/pkg/log"
 	uuid "github.com/seashell/drago/pkg/uuid"
-	"github.com/shurcooL/go-goon"
 )
 
 const (
@@ -235,12 +234,36 @@ func (s *NodeService) UpdateInterfaces(args *structs.NodeInterfaceUpdateRequest,
 		}
 	}
 
-	_, err := s.state.NodeByID(ctx, args.NodeID)
+	node, err := s.state.NodeByID(ctx, args.NodeID)
 	if err != nil {
 		return structs.ErrNotFound
 	}
 
-	goon.Dump("interfaces to update", args.Interfaces)
+	nodeInterfaces, err := s.state.InterfacesByNodeID(ctx, node.ID)
+	if err != nil {
+		return structs.ErrInternal
+	}
+
+	// Create a map for more efficient lookup
+	nodeInterfacesMap := map[string]*structs.Interface{}
+	for _, i := range nodeInterfaces {
+		nodeInterfacesMap[i.ID] = i
+	}
+
+	for _, i := range args.Interfaces {
+		old, found := nodeInterfacesMap[i.ID]
+		if !found {
+			return structs.ErrNotFound // Node does not contain interface being updated
+		}
+
+		i = old.Merge(i)
+		i.UpdatedAt = time.Now()
+
+		err := s.state.UpsertInterface(ctx, i)
+		if err != nil {
+			return structs.ErrInternal // Error updating interface
+		}
+	}
 
 	return structs.ErrInvalidInput
 }

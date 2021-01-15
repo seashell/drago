@@ -68,29 +68,31 @@ func (i *Interface) Validate() error {
 // Stub :
 func (i *Interface) Stub() *InterfaceListStub {
 	return &InterfaceListStub{
-		ID:          i.ID,
-		Name:        i.Name,
-		Address:     i.Address,
-		ListenPort:  i.ListenPort,
-		NodeID:      i.NodeID,
-		NetworkID:   i.NetworkID,
-		ModifyIndex: i.ModifyIndex,
-		CreatedAt:   i.CreatedAt,
-		UpdatedAt:   i.UpdatedAt,
+		ID:           i.ID,
+		Name:         i.Name,
+		Address:      i.Address,
+		ListenPort:   i.ListenPort,
+		NodeID:       i.NodeID,
+		NetworkID:    i.NetworkID,
+		ModifyIndex:  i.ModifyIndex,
+		HasPublicKey: i.PublicKey != "",
+		CreatedAt:    i.CreatedAt,
+		UpdatedAt:    i.UpdatedAt,
 	}
 }
 
 // InterfaceListStub :
 type InterfaceListStub struct {
-	ID          string
-	NodeID      string
-	NetworkID   string
-	Name        string
-	Address     string
-	ListenPort  uint16
-	ModifyIndex uint64
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID           string
+	NodeID       string
+	NetworkID    string
+	Name         string
+	Address      string
+	ListenPort   uint16
+	ModifyIndex  uint64
+	HasPublicKey bool
+	CreatedAt    time.Time
+	UpdatedAt    time.Time
 }
 
 // InterfaceSpecificRequest :

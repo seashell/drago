@@ -6,10 +6,9 @@ import (
 )
 
 const (
-	NodeStatusPreregistered = "preregistered"
-	NodeStatusInit          = "initializing"
-	NodeStatusReady         = "ready"
-	NodeStatusDown          = "down"
+	NodeStatusInit  = "initializing"
+	NodeStatusReady = "ready"
+	NodeStatusDown  = "down"
 )
 
 // Node :
