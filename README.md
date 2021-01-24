@@ -12,7 +12,8 @@ A flexible configuration manager for WireGuard networks
 
 <p align="center">
   <a href="https://goreportcard.com/report/github.com/seashell/drago"><img src="https://goreportcard.com/badge/github.com/seashell/drago" alt="Go report: A+"></a>
-  <img alt="GitHub" src="https://img.shields.io/github/license/seashell/drago">
+  <img alt="GitHub" src="https://img.shields.io/github/license/seashell/drago">  
+  <a href="https://gitter.im/seashell/drago"><img src="https://img.shields.io/badge/gitter-join%20chat-green?color=00cc99" alt="Gitter"></a>
 </p>
 
 Drago is a flexible configuration manager for WireGuard networks which is designed to make it simple to configure network overlays spanning heterogeneous hosts distributed across different clouds and physical locations.
