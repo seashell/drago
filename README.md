@@ -27,18 +27,33 @@ Drago is a flexible configuration manager for WireGuard networks which is design
 - Encrypted node-to-node communication
 - Support for multiple storage backends
 - Dynamic network configuration
+- Support for `wireguard-go`
 - Automatic key rotation
 - Extensible via REST API
 - Slick management dashboard
 - Automatic IP assignment
 
+## Status & Roadmap
+
+We are preparing a new release, which includes significant refactoring, and a bunch of new functionalities targeting production environments. More specifically, we are focusing on:
+
+- Replacing Postgres with Etcd as the primary storage backend. Etcd will be embedded in the Drago server, hence allowing operation in cluster mode;
+- Implementing an ACL system for fine-grained access control heavily inspired on that provided by Hashicorp Nomad;
+- Refactoring the client, more specifically the node registration and reconciliation mechanisms in order to make them more secure and robust;
+- We're working on supporting plugins (for IP leasing, meshing, discovery, anomaly detection, as well for integrating with other tools we're developing). The idea is to move all non-core functionality to a plugin. As it requires a bit more work, this is probably not going to be ready in the next version, though;
+- Improving the documentation;
+- Improving test coverage.
+
+Any feedback from the community is much appreciated, and so are feature requests.
+
 ## Use cases
-- Secure home automation, SSH access, etc
-- Establish secure VPNs for your company
+- Securely connect IoT devices
+- Build your own cloud with RaspberryPIs
+- Connect servers/services running on multiple cloud providers
 - Manage access to sensitive services deployed to private hosts
 - Expose development servers for debugging and demonstration purposes
-- Establish multi-cloud clusters with ease
-- Build your own cloud with RaspberryPIs
+- Secure home automation, SSH access, etc
+- Establish secure VPNs for your company
 
 ## Overview
 
@@ -139,18 +154,6 @@ sudo ./drago --config="./dist/client.yml"
 - Commit your changes (git commit -m 'Add some feature')
 - Push to the branch (git push origin my-new-feature)
 - Create new pull request
-
-
-## Roadmap
-- [x] Website
-- [ ] Code coverage
-- [x] Backend API for issuing volatile tokens
-- [ ] Integration with Hashicorp Vault
-- [ ] Integration with userspace WireGuard implementations such as `cloudflare/boringtun`
-- [ ] Integration with firewall tools for more sophisticated networking rules
-- [ ] Auto-join and auto-meshing modes
-- [x] Automatic IP assignment
-- [ ] Automatic discovery 
 
 ## License
 Drago is released under the Apache 2.0 license. See LICENSE.txt
