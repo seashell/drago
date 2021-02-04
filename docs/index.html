@@ -8,7 +8,7 @@
   <meta name="description" content="Flexible configuration manager for Wireguard networks">
   <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
   <script src="//unpkg.com/docsify-edit-on-github@1.0.1/index.js"></script>
-
+  <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/sidebar.min.css" />
 <link 
     rel="stylesheet"
     href="//cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/dist/style.min.css"
@@ -24,22 +24,26 @@
     const docBase = "."
     const docEditBase = "."
     window.$docsify = {
+       el: '#app',
        name: `
         <div class="sidebar-brand">
             <img src="assets/logos/dragopher.svg" alt="" class="sidebar-logo">
             <h3> Drago </h3>
         </div>`,
       repo: 'seashell/drago',
-      themeColor: 'red',
-      coverpage: false,
+      coverpage: true,
+      onlyCover: true,
       loadNavbar: true,
       loadSidebar: true,
+      alias: {
+      '/.*/_sidebar.md': '/_sidebar.md'
+      },
       notFoundPage: true,
       auto2top: true,
-      homepage: 'pages/home.md',
+      homepage: 'home.md',
       search: {
         paths: 'auto',
-        placeholder: 'Search',
+        placeholder: 'Search...',
         noData: 'No results.'
       },
       darklightTheme: {
@@ -59,21 +63,23 @@
                   },
                   formatUpdated: '{MM}/{DD} {HH}:{mm}',
             dark: {
-                accent: '#ffffff',
-                toogleBackground : '#ffffff',
+               'theme-color': '#333',    
+                accent: '#fff',
                 background: '#000000',
+                toogleBackground : '#ffffff',
                 textColor: '#b4b4b4',
+                codeThemeColor : '#0f0',
+                codeTypeColor : '#ffffff',
                 codeTextColor : '#ffffff',
-                codeBackgroudColor : '#0e2233',
+                codeBackgroudColor : '#111',
                 borderColor : '#444444',
                 blockQuoteColour : '#858585',
-                highlightColor : '#d22778',
                 sidebarSublink : '#b4b4b4',
-                codeTypeColor : '#ffffff',
-                coverBackground : '#091a28',
+                coverBackground : '#000',
                 toogleImage : 'url(https://cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/icons/sun.svg)'
             },
             light: {
+                "theme-color": '#333',
                 accent: '#000000',
                 toogleBackground : '#091a28',
                 background: '#ffffff',
@@ -82,8 +88,7 @@
                 codeBackgroudColor : '#f8f8f8',
                 borderColor : 'rgba(0, 0, 0, 0.07)',
                 blockQuoteColor : '#858585',
-                highlightColor : '#d22778',
-                sidebarSublink : '#b4b4b4',
+                sidebarSublink : '#000000',
                 codeTypeColor : '#091a28',
                 coverBackground : '#ffffff',
                 toogleImage : 'url(https://cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/icons/moon.svg)'
@@ -92,7 +97,7 @@
     }
   </script>
   <!-- Required: docsify + docsify-themeable -->
-  <script src="https://unpkg.com/docsify/lib/docsify.min.js"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify@4"></script>
   <script src="https://unpkg.com/docsify-themeable"></script>
 
   <!-- 6. Docsify Plugins -->
@@ -100,9 +105,11 @@
   <script src="//cdn.jsdelivr.net/npm/prismjs/components/prism-bash.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs/components/prism-hcl.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs/components/prism-markdown.min.js"></script>
-  <script src="https://unpkg.com/docsify-copy-code"></script>
+  <script src="//cdn.jsdelivr.net/npm/docsify-sidebar-collapse/dist/docsify-sidebar-collapse.min.js"></script>
+  <script src="https://unpkg.com/docsify-copy-code@2"></script>
   <script src="https://unpkg.com/docsify-pagination/dist/docsify-pagination.min.js"></script>
   <script src="https://unpkg.com/docsify/lib/plugins/zoom-image.min.js"></script>
+  <script src="https://unpkg.com/docsify-plugin-flexible-alerts"></script>
     <script 
         src="//cdn.jsdelivr.net/npm/docsify-darklight-theme@latest/dist/index.min.js"
         type="text/javascript">
