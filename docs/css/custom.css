@@ -100,6 +100,10 @@ section.cover .cover-main>p:last-child a:last-child:hover{
     stroke: var(--accent);
 }
 
+.search .matching-post {
+    border-color: var(--borderColor)!important;
+}
+
 /* ----------------- Edit on Github -----------------*/
 
 .github-corner .octo-body,.octo-arm {
@@ -108,9 +112,26 @@ section.cover .cover-main>p:last-child a:last-child:hover{
 
 /* ----------------- Darklight theme  -----------------*/
 
-
     @media only screen and (max-width: 768px) {
         #docsify-darklight-theme {
             visibility: hidden;
         }
     }
+
+/* ----------------- Code  -----------------*/
+
+code {
+    font-size: inherit!important;
+}
+
+td::before {
+    content: '' !important;
+}
+
+.docsify-copy-code-button span.success{
+    right: 60%!important;
+}
+
+.docsify-copy-code-button span.error{
+    right: 60%!important;
+}
