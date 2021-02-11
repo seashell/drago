@@ -10,7 +10,4 @@ type Repository interface {
 	Interfaces() ([]*structs.Interface, error)
 	UpsertInterface(*structs.Interface) error
 	DeleteInterfaces(id []string) error
-
-	InterfaceKeyByID(id string) (string, error)
-	UpsertInterfaceKey(id string, key string) error
 }
