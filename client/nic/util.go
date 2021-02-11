@@ -112,16 +112,34 @@ func linksByAlias(s string) ([]netlink.Link, error) {
 	return out, nil
 }
 
-func setLinkAddress(link netlink.Link, cidr string) error {
+func setLinkAddress(link netlink.Link, cidr *string) error {
 
-	addr, err := netlink.ParseAddr(cidr)
-	if err != nil {
-		return err
+	var err error
+	var addr *netlink.Addr
+
+	if cidr != nil && *cidr != "" {
+		addr, err = netlink.ParseAddr(*cidr)
+		if err != nil {
+			return err
+		}
 	}
 
-	err = netlink.AddrAdd(link, addr)
-	if err != nil {
-		return err
+	if addr != nil {
+		err = netlink.AddrReplace(link, addr)
+		if err != nil {
+			return err
+		}
+	} else {
+		addrs, err := netlink.AddrList(link, 0)
+		if err != nil {
+			return err
+		}
+		for _, addr := range addrs {
+			err = netlink.AddrDel(link, &addr)
+			if err != nil {
+				return err
+			}
+		}
 	}
 
 	return err

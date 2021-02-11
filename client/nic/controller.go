@@ -9,6 +9,7 @@ import (
 	"time"
 
 	structs "github.com/seashell/drago/drago/structs"
+	util "github.com/seashell/drago/pkg/util"
 	netlink "github.com/vishvananda/netlink"
 	wgctrl "golang.zx2c4.com/wireguard/wgctrl"
 	wgtypes "golang.zx2c4.com/wireguard/wgctrl/wgtypes"
@@ -52,46 +53,6 @@ func NewController(config *Config) (*Controller, error) {
 	return c, nil
 }
 
-// GenerateKey : generates a new 32-bytes key, and return it in base64 encoding.
-func (c *Controller) GenerateKey() (string, error) {
-	pk, err := wgtypes.GeneratePrivateKey()
-	if err != nil {
-		return "", err
-	}
-	return pk.String(), nil
-}
-
-func (c *Controller) parseKey(s string) (wgtypes.Key, error) {
-	k, err := wgtypes.ParseKey(s)
-	if err != nil {
-		return wgtypes.Key{}, err
-	}
-	return k, nil
-}
-
-// InterfacesWithPublicKey returns a slice of all network interfaces managed by
-// the controller, together with their public key.
-func (c *Controller) InterfacesWithPublicKey(keyByID KeyResolverFunc) ([]*structs.Interface, error) {
-
-	ifaces, err := c.Interfaces()
-	if err != nil {
-		return nil, err
-	}
-
-	// For each Wireguard interface in the system, retrieve the private key
-	// used to configure it, set the public key computed from it on the struct.
-	for _, i := range ifaces {
-		pubkey := keyByID(i.ID)
-		k, err := c.parseKey(pubkey)
-		if err != nil {
-			return nil, err
-		}
-		i.PublicKey = k.PublicKey().String()
-	}
-
-	return ifaces, nil
-}
-
 // Interfaces returns a slice of all network interfaces managed by
 // the controller.
 func (c *Controller) Interfaces() ([]*structs.Interface, error) {
@@ -104,10 +65,17 @@ func (c *Controller) Interfaces() ([]*structs.Interface, error) {
 	}
 
 	for _, l := range links {
+
+		dev, err := c.wg.Device(l.Attrs().Name)
+		if err != nil {
+			return nil, err
+		}
+
 		out = append(out, &structs.Interface{
-			ID:   l.Attrs().Alias,
-			Name: l.Attrs().Name,
-			// TODO: capture other information that might be useful e.g. for diagnosis
+			ID:        l.Attrs().Alias,
+			Name:      util.StrToPtr(l.Attrs().Name),
+			PublicKey: util.StrToPtr(dev.PrivateKey.PublicKey().String()),
+			// TODO: capture other information that might be useful e.g. for diagnosis (see l.Attrs().Statistics)
 		})
 	}
 
@@ -141,73 +109,23 @@ func (c *Controller) DeleteAllInterfaces() error {
 	return nil
 }
 
-// CreateInterfaceWithKey ...
-func (c *Controller) CreateInterfaceWithKey(iface *structs.Interface, s string) error {
-
-	key, err := c.parseKey(s)
-	if err != nil {
-		return fmt.Errorf("invalid key: %s", err.Error())
-	}
+// CreateInterface ...
+func (c *Controller) CreateInterface(iface *structs.Interface) error {
 
 	linkName, linkAlias := c.randomInterfaceName(), iface.ID
 
-	err = c.createLink(linkName, linkAlias)
+	err := c.createLink(linkName, linkAlias)
 	if err != nil {
 		return err
 	}
 
-	// Apply WireGuard configurations to the newly created link
-	config := wgtypes.Config{
-		PrivateKey:   &key,
-		ListenPort:   nil,
-		Peers:        []wgtypes.PeerConfig{},
-		ReplacePeers: true,
-	}
+	return c.UpdateInterface(iface)
 
-	if iface.ListenPort != 0 {
-		p := int(iface.ListenPort)
-		config.ListenPort = &p
-	}
+}
 
-	for _, peer := range iface.Peers {
-		p, err := c.newPeerConfig(peer)
-		if err != nil {
-			return err
-		}
-		config.Peers = append(config.Peers, *p)
-	}
-
-	link, err := netlink.LinkByAlias(linkAlias)
-	if err != nil {
-		return err
-	}
-
-	err = c.wg.ConfigureDevice(link.Attrs().Name, config)
-	if err != nil {
-		return err
-	}
-
-	// Assign IP address in CIDR format to the newly created link
-	err = setLinkAddress(link, iface.Address)
-	if err != nil {
-		return err
-	}
-
-	err = netlink.LinkSetUp(link)
-	if err != nil {
-		return err
-	}
-
-	idx := link.Attrs().Index
-	for _, peer := range config.Peers {
-		for _, ip := range peer.AllowedIPs {
-			if err = netlink.RouteAdd(&netlink.Route{LinkIndex: idx, Dst: &ip}); err != nil {
-				return err
-			}
-		}
-	}
-
-	return nil
+// UpdateInterface :
+func (c *Controller) UpdateInterface(iface *structs.Interface) error {
+	return c.configureLink(iface)
 }
 
 func (c *Controller) createLink(name string, alias string) error {
@@ -237,6 +155,69 @@ func (c *Controller) createLink(name string, alias string) error {
 	if err != nil {
 		return err
 	}
+
+	return nil
+}
+
+func (c *Controller) configureLink(iface *structs.Interface) error {
+
+	link, err := netlink.LinkByAlias(iface.ID)
+	if err != nil {
+		return err
+	}
+
+	dev, err := c.wg.Device(link.Attrs().Name)
+	if err != nil {
+		return err
+	}
+
+	key := dev.PrivateKey
+	if dev.PrivateKey.String() == "" {
+		key, err = wgtypes.GeneratePrivateKey()
+		if err != nil {
+			return fmt.Errorf("could not generate key for interface: %v", err)
+		}
+	}
+
+	config := wgtypes.Config{
+		PrivateKey:   &key,
+		ListenPort:   iface.ListenPort,
+		Peers:        []wgtypes.PeerConfig{},
+		ReplacePeers: true,
+	}
+
+	err = c.wg.ConfigureDevice(link.Attrs().Name, config)
+	if err != nil {
+		return err
+	}
+
+	// Assign IP address in CIDR format to the newly created link
+	err = setLinkAddress(link, iface.Address)
+	if err != nil {
+		return err
+	}
+
+	err = netlink.LinkSetUp(link)
+	if err != nil {
+		return err
+	}
+
+	// for _, peer := range iface.Peers {
+	// 	p, err := c.newPeerConfig(peer)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	config.Peers = append(config.Peers, *p)
+	// }
+
+	// idx := link.Attrs().Index
+	// for _, peer := range config.Peers {
+	// 	for _, ip := range peer.AllowedIPs {
+	// 		if err = netlink.RouteReplace(&netlink.Route{LinkIndex: idx, Dst: &ip}); err != nil {
+	// 			return err
+	// 		}
+	// 	}
+	// }
 
 	return nil
 }
