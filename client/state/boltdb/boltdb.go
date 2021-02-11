@@ -9,8 +9,7 @@ import (
 )
 
 var (
-	interfacesBucketName    = []byte("interfaces")
-	interfaceKeysBucketName = []byte("keys")
+	interfacesBucketName = []byte("interfaces")
 )
 
 // StateRepository ...
@@ -32,11 +31,6 @@ func NewStateRepository(path string) (*StateRepository, error) {
 			return err
 		}
 
-		_, err = tx.CreateBucketIfNotExists(interfaceKeysBucketName)
-		if err != nil {
-			return err
-		}
-
 		return nil
 	})
 
@@ -48,10 +42,12 @@ func NewStateRepository(path string) (*StateRepository, error) {
 
 }
 
+// Name :
 func (r *StateRepository) Name() string {
 	return "boltdb"
 }
 
+// Interfaces :
 func (r *StateRepository) Interfaces() ([]*structs.Interface, error) {
 
 	ifaces := []*structs.Interface{}
@@ -78,6 +74,7 @@ func (r *StateRepository) Interfaces() ([]*structs.Interface, error) {
 
 }
 
+// UpsertInterface :
 func (r *StateRepository) UpsertInterface(iface *structs.Interface) error {
 
 	err := r.db.Update(func(tx *bbolt.Tx) error {
@@ -88,6 +85,7 @@ func (r *StateRepository) UpsertInterface(iface *structs.Interface) error {
 	return err
 }
 
+// DeleteInterfaces :
 func (r *StateRepository) DeleteInterfaces(ids []string) error {
 
 	err := r.db.Update(func(tx *bbolt.Tx) error {
@@ -97,44 +95,7 @@ func (r *StateRepository) DeleteInterfaces(ids []string) error {
 				return err
 			}
 		}
-		b = tx.Bucket(interfaceKeysBucketName)
-		for _, id := range ids {
-			if err := b.Delete([]byte(id)); err != nil {
-				return err
-			}
-		}
 		return nil
-	})
-
-	return err
-}
-
-func (r *StateRepository) InterfaceKeyByID(id string) (string, error) {
-
-	key := ""
-
-	err := r.db.View(func(tx *bbolt.Tx) error {
-		b := tx.Bucket(interfaceKeysBucketName)
-
-		v := b.Get([]byte(id))
-
-		err := decode(v, &key)
-		if err != nil {
-			return err
-		}
-
-		return nil
-	})
-
-	return key, err
-
-}
-
-func (r *StateRepository) UpsertInterfaceKey(id, key string) error {
-
-	err := r.db.Update(func(tx *bbolt.Tx) error {
-		b := tx.Bucket(interfaceKeysBucketName)
-		return b.Put([]byte(id), encode(key))
 	})
 
 	return err
