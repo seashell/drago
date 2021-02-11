@@ -3,9 +3,7 @@ package rpc
 import (
 	"fmt"
 	"net"
-	"net/http"
 	"net/rpc"
-	"time"
 
 	log "github.com/seashell/drago/pkg/log"
 )
@@ -24,6 +22,7 @@ func NewServer(config *ServerConfig) (*Server, error) {
 
 	config = DefaultConfig().Merge(config)
 
+	// Use tls.Listen for serving with TLS
 	listener, err := net.Listen("tcp", config.BindAddress)
 	if err != nil {
 		return nil, fmt.Errorf("error starting rpc listener: %v", err)
@@ -41,23 +40,31 @@ func NewServer(config *ServerConfig) (*Server, error) {
 		server.rpcServer.RegisterName(name, receiver)
 	}
 
-	server.rpcServer.HandleHTTP(rpc.DefaultRPCPath, rpc.DefaultDebugPath)
-
-	httpServer := http.Server{
-		Addr:              server.listener.Addr().String(),
-		Handler:           server.rpcServer,
-		ReadTimeout:       1 * time.Second,
-		WriteTimeout:      1 * time.Second,
-		IdleTimeout:       3 * time.Second,
-		ReadHeaderTimeout: 2 * time.Second,
-	}
-
 	go func() {
-		defer close(server.listenerCh)
-		httpServer.Serve(server.listener)
+
+		for {
+			// TODO: Handle signals
+			select {
+			default:
+			}
+			// Handle connection or error
+			conn, err := listener.Accept()
+			if err != nil {
+				netErr, ok := err.(net.Error)
+				if ok && netErr.Timeout() && netErr.Temporary() {
+					continue
+				}
+			} else {
+				go func() {
+					cdc := NewMsgpackServerCodec(conn)
+					server.rpcServer.ServeCodec(cdc)
+					rpc.ServeConn(conn)
+				}()
+			}
+		}
 	}()
 
-	server.logger.Debugf("rpc server started at %s", httpServer.Addr)
+	server.logger.Debugf("rpc server started at %s", config.BindAddress)
 
 	return server, nil
 }
@@ -78,11 +85,14 @@ func NewClient(config *ClientConfig) (*Client, error) {
 		logger: config.Logger,
 	}
 
-	client, err := rpc.DialHTTP("tcp", config.Address)
+	// Use tls.Dial for connection with TLS
+	conn, err := net.Dial("tcp", config.Address)
 	if err != nil {
 		return nil, err
 	}
 
+	cdc := NewMsgpackClientCodec(conn)
+	client := rpc.NewClientWithCodec(cdc)
 	c.client = client
 
 	return c, nil
