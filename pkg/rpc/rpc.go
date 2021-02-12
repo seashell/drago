@@ -41,26 +41,16 @@ func NewServer(config *ServerConfig) (*Server, error) {
 	}
 
 	go func() {
-
 		for {
 			// TODO: Handle signals
 			select {
 			default:
 			}
-			// Handle connection or error
-			conn, err := listener.Accept()
-			if err != nil {
-				netErr, ok := err.(net.Error)
-				if ok && netErr.Timeout() && netErr.Temporary() {
-					continue
-				}
-			} else {
-				go func() {
-					cdc := NewMsgpackServerCodec(conn)
-					server.rpcServer.ServeCodec(cdc)
-					rpc.ServeConn(conn)
-				}()
-			}
+			conn, _ := listener.Accept()
+			cdc := NewMsgpackServerCodec(conn)
+			go func() {
+				server.rpcServer.ServeCodec(cdc)
+			}()
 		}
 	}()
 
@@ -92,8 +82,7 @@ func NewClient(config *ClientConfig) (*Client, error) {
 	}
 
 	cdc := NewMsgpackClientCodec(conn)
-	client := rpc.NewClientWithCodec(cdc)
-	c.client = client
+	c.client = rpc.NewClientWithCodec(cdc)
 
 	return c, nil
 }

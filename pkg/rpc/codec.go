@@ -3,7 +3,6 @@ package rpc
 import (
 	"bufio"
 	"io"
-	"log"
 	"net/rpc"
 
 	"github.com/vmihailenco/msgpack"
@@ -44,15 +43,22 @@ func (c *msgpackServerCodec) ReadRequestHeader(r *rpc.Request) error {
 }
 
 func (c *msgpackServerCodec) ReadRequestBody(body interface{}) error {
+	var err error
+
+	if body == nil {
+		body, err = c.dec.DecodeInterface()
+		return err
+	}
+
 	return c.dec.Decode(body)
 }
 
 func (c *msgpackServerCodec) WriteResponse(r *rpc.Response, body interface{}) (err error) {
+
 	if err = c.enc.Encode(r); err != nil {
 		if c.encBuf.Flush() == nil {
 			// Msgpack couldn't encode the header. Should not happen, so if it does,
 			// shut down the connection to signal that the connection is broken.
-			log.Println("rpc: msgpack error encoding response:", err)
 			c.Close()
 		}
 		return
@@ -61,7 +67,6 @@ func (c *msgpackServerCodec) WriteResponse(r *rpc.Response, body interface{}) (e
 		if c.encBuf.Flush() == nil {
 			// Was a msgpack problem encoding the body but the header has been written.
 			// Shut down the connection to signal that the connection is broken.
-			log.Println("rpc: msgpack error encoding body:", err)
 			c.Close()
 		}
 		return
@@ -99,6 +104,14 @@ func (c *msgpackClientCodec) ReadResponseHeader(r *rpc.Response) error {
 }
 
 func (c *msgpackClientCodec) ReadResponseBody(body interface{}) error {
+
+	var err error
+
+	if body == nil {
+		body, err = c.dec.DecodeInterface()
+		return err
+	}
+
 	return c.dec.Decode(body)
 }
 
