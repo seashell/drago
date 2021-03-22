@@ -119,7 +119,6 @@ export default {
       fontSize: 30,
       fontFamily: 'Raleway',
       fontWeight: 'bold',
-      lineHeight: '40px',
       color: colors.neutralDarkest,
     },
     subtitle: {

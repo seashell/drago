@@ -1,24 +1,17 @@
 const path = require('path')
 
-const { override, watchAll, useBabelRc, useEslintRc, addWebpackResolve } = require('customize-cra')
+const { override, useBabelRc, useEslintRc, addWebpackResolve } = require('customize-cra')
 
-const resolve = require('../webpack/resolve')
 const rewireStyledComponents = require('react-app-rewire-styled-components')
-
-const devServerConfig = () => config => ({
-  ...config,
-  host: '0.0.0.0',
-  port: '9999',
-  inline: true,
-  hot: true,
-})
+const resolve = require('../webpack/resolve')
 
 module.exports = {
   webpack: override(
     addWebpackResolve(resolve),
-    useBabelRc(path.resolve(__dirname, '..', '..', '.babelrc')),
-    useEslintRc(path.resolve(__dirname, '..', '..', '.eslintrc')),
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // useBabelRc(path.resolve(__dirname, '..', '..', '.babelrc')),
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    // useEslintRc(path.resolve(__dirname, '..', '..', '.eslintrc')),
     (config, env) => rewireStyledComponents(config, env, {})
   ),
-  // devServer: overrideDevServer(devServerConfig(), watchAll()),
 }

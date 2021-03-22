@@ -1,9 +1,9 @@
-import styled, { css } from 'styled-components'
-import { layout, space, color } from 'styled-system'
 import PropTypes from 'prop-types'
+import styled, { css } from 'styled-components'
+import { color, layout, space } from 'styled-system'
 
 const Separator = styled.span`
-  ${props =>
+  ${(props) =>
     props.vertical
       ? css`
           width: 1px;
@@ -25,7 +25,7 @@ Separator.propTypes = {
 
 Separator.defaultProps = {
   vertical: false,
-  bg: 'neutral',
+  bg: 'neutralLighter',
 }
 
 export default Separator

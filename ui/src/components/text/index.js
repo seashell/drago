@@ -1,11 +1,16 @@
 import styled from 'styled-components'
-import { textStyle, fontSize, space, layout, color } from 'styled-system'
+import { color, fontSize, fontWeight, layout, space, textAlign, textStyle } from 'styled-system'
 
 const Text = styled.div`
+  strong {
+    font-weight: bold;
+  }
   ${textStyle}
+  ${textAlign}
   ${space}
   ${layout}
   ${fontSize}
+  ${fontWeight}
   ${color}
 `
 

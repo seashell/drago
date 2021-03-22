@@ -13,7 +13,7 @@ const StyledLink = styled(Link)`
   align-items: center;
 
   svg {
-    fill: ${props => props.theme.colors.primary};
+    fill: ${(props) => props.theme.colors.primary};
     opacity: 0.3;
   }
   &:hover {
@@ -25,7 +25,7 @@ const StyledLink = styled(Link)`
   ${colorStyle}
 `
 
-const Brand = props => (
+const Brand = (props) => (
   <StyledLink to="">
     <Logo width={56} height={56} {...props} />
   </StyledLink>

@@ -5,11 +5,11 @@
         "paths": {
         "_components/*": ["components/*"],
         "_containers/*": ["containers/*"],
+        "_modals/*": ["modals/*"],
         "_views/*": ["views/*"],
         "_graphql/*": ["graphql/*"],
         "_utils/*": ["utils/*"],
-        "_assets/*": ["assets/*"],
-        "_hocs/*": ["hocs/*"]
+        "_assets/*": ["assets/*"]        
         }
     },
     "exclude": ["node_modules", "dist", "dist-server"]

@@ -10,13 +10,13 @@ export const Container = styled.div`
   display: flex;
 
   align-items: center;
-  justify-content: space-between;  
-  
-  border-bottom: 1px solid ${props => props.theme.colors.neutralLighter};
+  justify-content: space-between;
+
+  border-bottom: 1px solid ${(props) => props.theme.colors.neutralLighter};
   position: fixed;
 
-  top:0;
-  right:0;
+  top: 0;
+  right: 0;
   left: 0;
 
   z-index: 199;
@@ -42,7 +42,7 @@ const StyledLink = styled(Link)`
   }
 `
 
-const Header = props => (
+const Header = (props) => (
   <Container {...props}>
     <Brand />
     <Flex>

@@ -3,7 +3,7 @@ import { Router } from '@reach/router'
 
 import Tokens from './tokens'
 
-const SettingsRouter = props => (
+const SettingsRouter = (props) => (
   <Router {...props}>
     <Tokens path="/tokens" />
   </Router>
