@@ -6,27 +6,22 @@ import (
 	"testing"
 
 	drago "github.com/seashell/drago/drago"
+	mock "github.com/seashell/drago/drago/mock"
 	inmem "github.com/seashell/drago/drago/state/inmem"
 	structs "github.com/seashell/drago/drago/structs"
-	"github.com/seashell/drago/pkg/uuid"
-	"github.com/shurcooL/go-goon"
+	uuid "github.com/seashell/drago/pkg/uuid"
 )
 
-type MockAuthHandler struct{}
-
-func (h *MockAuthHandler) Authorize() error {
-	return nil
-}
-
-var mockConfig = &drago.Config{}
+var config = &drago.Config{}
 
 func TestACLBootstrap(t *testing.T) {
 
 	ctx := context.TODO()
 
-	authHandler := &MockAuthHandler{}
+	authHandler := &mock.AuthHandler{}
+
 	state := inmem.NewStateRepository(nil)
-	service := drago.NewACLService(mockConfig, state, authHandler)
+	service := drago.NewACLService(config, state, authHandler)
 
 	t.Run("Once", func(t *testing.T) {
 		var out structs.ACLTokenUpsertResponse
@@ -52,9 +47,10 @@ func TestACLTokens(t *testing.T) {
 
 	ctx := context.TODO()
 
-	authHandler := &MockAuthHandler{}
+	authHandler := &mock.AuthHandler{}
+
 	state := inmem.NewStateRepository(nil)
-	service := drago.NewACLService(mockConfig, state, authHandler)
+	service := drago.NewACLService(config, state, authHandler)
 
 	var out structs.ACLTokenUpsertResponse
 
@@ -128,9 +124,10 @@ func TestACLAuthorization(t *testing.T) {
 
 	ctx := context.TODO()
 
-	authHandler := &MockAuthHandler{}
+	authHandler := &mock.AuthHandler{}
+
 	state := inmem.NewStateRepository(nil)
-	service := drago.NewACLService(mockConfig, state, authHandler)
+	service := drago.NewACLService(config, state, authHandler)
 
 	// Create policies
 	state.UpsertACLPolicy(ctx, anonymousPolicy())
@@ -169,7 +166,6 @@ func TestACLAuthorization(t *testing.T) {
 			if err != nil {
 				t.Fatalf("failed to evaluate policies: %v", err)
 			}
-			goon.Dump(p)
 		}
 	})
 

@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"net/http"
 	"os"
 	"time"
 
@@ -10,46 +11,52 @@ import (
 
 // Config contains configurations for the Drago agent
 type Config struct {
+
+	// StaticFS contains UI bundle to be server by the Drago agent.
+	StaticFS http.FileSystem
+
 	// UI defines whether or not Drago's web UI will be served
-	// by the agent
-	UI bool `hcl:"ui"`
+	// by the agent. Defaults to true.
+	UI bool `hcl:"ui,optional"`
 
-	// Name is used to identify individual agents
-	Name string `hcl:"name"`
+	// Name is used to identify individual agents.
+	Name string `hcl:"name,optional"`
 
-	// DataDir is the directory to store our state in
-	DataDir string `hcl:"data_dir"`
+	// DataDir is the directory to store our state in.
+	// If not specified, this defaults to /etc/drago.
+	DataDir string `hcl:"data_dir,optional"`
 
-	// PluginDir is the directory where plugins are loaded from
-	PluginDir string `hcl:"plugin_dir"`
+	// PluginDir is the directory where plugins are loaded from.
+	// If not specified, this defaults to <data_dir>/plugins.
+	PluginDir string `hcl:"plugin_dir,optional"`
 
 	// BindAddr is the address on which all of Drago's services will
 	// be bound. If not specified, this defaults to 127.0.0.1.
-	BindAddr string `hcl:"bind_addr"`
+	BindAddr string `hcl:"bind_addr,optional"`
 
 	// AdvertiseAddrs is a struct containing the addresses advertised
 	// for each of Drago's network services in host:port format.
 	// It is optional, and all addresses default to the bind address
 	// with the default port corresponding to each service.
-	AdvertiseAddrs *AdvertiseAddrs `hcl:"advertise_addrs"`
+	AdvertiseAddrs *AdvertiseAddrs `hcl:"advertise_addrs,block"`
 
 	// LogLevel is the level of the logs to put out
-	LogLevel string `hcl:"log_level"`
+	LogLevel string `hcl:"log_level,optional"`
 
 	// Ports is used to control the network ports we bind to.
-	Ports *Ports `hcl:"ports"`
+	Ports *Ports `hcl:"ports,block"`
 
 	// Server contains all server-specific configurations
-	Server *ServerConfig `hcl:"server"`
+	Server *ServerConfig `hcl:"server,block"`
 
 	// Client contains all client-specific configurations
-	Client *ClientConfig `hcl:"client"`
+	Client *ClientConfig `hcl:"client,block"`
 
 	// ACL contains all ACL configurations
-	ACL *ACLConfig `hcl:"acl"`
+	ACL *ACLConfig `hcl:"acl,block"`
 
 	// DevMode is set by the --dev CLI flag.
-	DevMode bool `hcl:"-"`
+	DevMode bool
 
 	// Version information (set at compilation time)
 	Version *version.VersionInfo
@@ -64,6 +71,9 @@ func (c *Config) Merge(b *Config) *Config {
 
 	result := *c
 
+	if b.StaticFS != nil {
+		result.StaticFS = b.StaticFS
+	}
 	if b.UI {
 		result.UI = true
 	}
@@ -121,10 +131,7 @@ func (c *Config) Merge(b *Config) *Config {
 // ServerConfig contains configurations for the Drago server
 type ServerConfig struct {
 	// Enabled controls if the agent is a server
-	Enabled bool `hcl:"enabled"`
-
-	// DataDir is the directory where the state will be stored
-	DataDir string `hcl:"data_dir"`
+	Enabled bool `hcl:"enabled,optional"`
 }
 
 // Merge merges two ServerConfig structs, returning the result
@@ -134,35 +141,32 @@ func (c *ServerConfig) Merge(b *ServerConfig) *ServerConfig {
 	if b.Enabled {
 		result.Enabled = true
 	}
-	if b.DataDir != "" {
-		result.DataDir = b.DataDir
-	}
 	return &result
 }
 
 // ClientConfig contains configurations for the Drago client
 type ClientConfig struct {
 	// Enabled controls if the agent is a client
-	Enabled bool `hcl:"enabled"`
+	Enabled bool `hcl:"enabled,optional"`
 
 	// Server is the address of a known Drago server in "host:port" format
-	Servers []string `hcl:"servers"`
+	Servers []string `hcl:"servers,optional"`
 
-	// StateDir is the directory where the client state will be kep
-	StateDir string `hcl:"data_dir"`
+	// StateDir is the directory where the client state will be kept
+	StateDir string `hcl:"state_dir,optional"`
 
 	// InterfacesPrefix is the prefix that will be added to all WireGuard
 	// interfaces managed by Drago
-	InterfacesPrefix string `hcl:"interfaces_prefix"`
+	InterfacesPrefix string `hcl:"interfaces_prefix,optional"`
 
 	// WireguardPath is the path to a userspace WireGuard binary, if available
-	WireguardPath string `hcl:"wireguard_path"`
+	WireguardPath string `hcl:"wireguard_path,optional"`
 
 	// Meta contains metadata about the client node
-	Meta map[string]string `hcl:"meta"`
+	Meta map[string]string `hcl:"meta,optional"`
 
 	// SyncInterval controls how frequently the client synchronizes its state
-	SyncIntervalSeconds time.Duration `hcl:"sync_interval"`
+	SyncInterval time.Duration `hcl:"sync_interval,optional"`
 }
 
 // Merge merges two ClientConfig structs, returning the result
@@ -184,8 +188,8 @@ func (c *ClientConfig) Merge(b *ClientConfig) *ClientConfig {
 	if b.InterfacesPrefix != "" {
 		result.InterfacesPrefix = b.InterfacesPrefix
 	}
-	if b.SyncIntervalSeconds != 0 {
-		result.SyncIntervalSeconds = b.SyncIntervalSeconds
+	if b.SyncInterval != 0 {
+		result.SyncInterval = b.SyncInterval
 	}
 	if b.Meta != nil {
 		result.Meta = b.Meta
@@ -197,27 +201,14 @@ func (c *ClientConfig) Merge(b *ClientConfig) *ClientConfig {
 // ACLConfig contains configuration for Drago's ACL
 type ACLConfig struct {
 	// Enabled controls if the ACLs are managed and enforced
-	Enabled bool `hcl:"enabled"`
-	// TokenTTL controls how long we cache ACL tokens. This controls
-	// how stale they can be when we are enforcing policies. Defaults
-	// to "30s". Reducing this impacts performance by forcing more
-	// frequent resolution.
-	TokenTTL    time.Duration
-	TokenTTLHCL string `hcl:"token_ttl" json:"-"`
+	Enabled bool `hcl:"enabled,optional"`
 }
 
 // Merge merges two ACLConfig structs, returning the result
 func (c *ACLConfig) Merge(b *ACLConfig) *ACLConfig {
 	result := *c
-
 	if b.Enabled {
 		result.Enabled = true
-	}
-	if b.TokenTTL != 0 {
-		result.TokenTTL = b.TokenTTL
-	}
-	if b.TokenTTLHCL != "" {
-		result.TokenTTLHCL = b.TokenTTLHCL
 	}
 	return &result
 }
@@ -225,8 +216,8 @@ func (c *ACLConfig) Merge(b *ACLConfig) *ACLConfig {
 // Ports encapsulates the various ports we bind to for network services. If any
 // are not specified then the defaults are used instead.
 type Ports struct {
-	HTTP int `hcl:"http"`
-	RPC  int `hcl:"rpc"`
+	HTTP int `hcl:"http,optional"`
+	RPC  int `hcl:"rpc,optional"`
 }
 
 // Merge merges two Ports structs, returning the result
@@ -247,8 +238,8 @@ func (c *Ports) Merge(b *Ports) *Ports {
 // its different network services. All are optional and default to BindAddr and
 // their default Port. Expected format is address:port.
 type AdvertiseAddrs struct {
-	Peer   string `hcl:"peer"`
-	Client string `hcl:"client"`
+	Peer   string `hcl:"peer,optional"`
+	Client string `hcl:"client,optional"`
 }
 
 // Merge merges two AdvertiseAddrs structs, returning the result
@@ -280,19 +271,17 @@ func DefaultConfig() *Config {
 		AdvertiseAddrs: &AdvertiseAddrs{},
 		Server: &ServerConfig{
 			Enabled: false,
-			DataDir: "/tmp/drago",
 		},
 		Client: &ClientConfig{
-			Enabled:             false,
-			Servers:             []string{"127.0.0.1:8081"},
-			Meta:                map[string]string{},
-			InterfacesPrefix:    "drago",
-			WireguardPath:       "",
-			SyncIntervalSeconds: 5,
+			Enabled:          false,
+			Servers:          []string{"127.0.0.1:8081"},
+			Meta:             map[string]string{},
+			InterfacesPrefix: "drago",
+			WireguardPath:    "",
+			SyncInterval:     5,
 		},
 		ACL: &ACLConfig{
-			Enabled:  false,
-			TokenTTL: 30 * time.Second,
+			Enabled: false,
 		},
 		Version: version.GetVersion(),
 	}

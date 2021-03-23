@@ -55,3 +55,11 @@ func NewError(base error, extra ...interface{}) error {
 func (e Error) Error() string {
 	return e.Message
 }
+
+func NewInternalError(msg string) error {
+	return NewError(ErrInternal, msg)
+}
+
+func NewInvalidInputError(msg string) error {
+	return NewError(ErrInvalidInput, msg)
+}

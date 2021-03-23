@@ -18,7 +18,7 @@ const (
 	NodeRead  = "read"
 	NodeWrite = "write"
 
-	defaultExpectedHeartbeatInterval = 3 * time.Second
+	defaultExpectedHeartbeatInterval = 10 * time.Second
 )
 
 type NodeService struct {
@@ -113,7 +113,7 @@ func (s *NodeService) Register(args *structs.NodeRegisterRequest, out *structs.N
 
 	err := args.Validate()
 	if err != nil {
-		return structs.ErrInvalidInput
+		return structs.NewInvalidInputError(err.Error())
 	}
 
 	n := args.Node
@@ -123,7 +123,7 @@ func (s *NodeService) Register(args *structs.NodeRegisterRequest, out *structs.N
 	}
 
 	if !structs.IsValidNodeStatus(n.Status) {
-		return structs.ErrInvalidInput
+		return structs.NewInvalidInputError(err.Error())
 	}
 
 	old, err := s.state.NodeByID(ctx, n.ID)
@@ -135,7 +135,7 @@ func (s *NodeService) Register(args *structs.NodeRegisterRequest, out *structs.N
 		s.logger.Debugf("node %s already registered.", n.ID)
 		if old != nil {
 			if args.Node.SecretID != old.SecretID {
-				return structs.ErrInvalidInput // node secret ID does not match
+				return structs.NewInvalidInputError("Node secret does not match")
 			}
 		}
 		n = old.Merge(n)
@@ -146,7 +146,7 @@ func (s *NodeService) Register(args *structs.NodeRegisterRequest, out *structs.N
 
 	err = s.state.UpsertNode(ctx, n)
 	if err != nil {
-		return structs.ErrInternal
+		return structs.NewInternalError(err.Error())
 	}
 
 	s.resetHeartbeatTimer(n.ID)
@@ -169,21 +169,25 @@ func (s *NodeService) UpdateStatus(args *structs.NodeUpdateStatusRequest, out *s
 		return structs.ErrInvalidInput
 	}
 	if !structs.IsValidNodeStatus(args.Status) {
-		return structs.ErrInvalidInput
+		return structs.NewInvalidInputError("Invalid node status")
 	}
 
 	n, err := s.state.NodeByID(ctx, args.NodeID)
 	if err != nil {
-		return structs.ErrNotFound
+		return structs.NewInternalError(err.Error())
 	}
 
 	n.Status = args.Status
+
+	if args.Meta != nil {
+		n.Meta = args.Meta
+	}
 
 	n.UpdatedAt = time.Now()
 
 	err = s.state.UpsertNode(ctx, n)
 	if err != nil {
-		return structs.ErrInternal
+		return structs.NewInternalError(err.Error())
 	}
 
 	out.Servers = []string{s.config.RPCAdvertiseAddr}
@@ -194,6 +198,7 @@ func (s *NodeService) UpdateStatus(args *structs.NodeUpdateStatusRequest, out *s
 	return nil
 }
 
+// GetInterfaces :
 func (s *NodeService) GetInterfaces(args *structs.NodeSpecificRequest, out *structs.NodeInterfacesResponse) error {
 
 	ctx := context.TODO()
@@ -206,7 +211,7 @@ func (s *NodeService) GetInterfaces(args *structs.NodeSpecificRequest, out *stru
 	}
 
 	if args.NodeID == "" {
-		return structs.ErrInvalidInput
+		return structs.NewInvalidInputError("Missing NodeID")
 	}
 
 	interfaces, err := s.state.InterfacesByNodeID(ctx, args.NodeID)
@@ -214,15 +219,57 @@ func (s *NodeService) GetInterfaces(args *structs.NodeSpecificRequest, out *stru
 		return structs.ErrNotFound
 	}
 
-	out.Items = nil
+	for _, iface := range interfaces {
 
-	for _, i := range interfaces {
-		out.Items = append(out.Items, i)
+		iface.Peers = []*structs.Peer{}
+
+		connections, err := s.state.ConnectionsByInterfaceID(ctx, iface.ID)
+		if err != nil {
+			s.logger.Warnf("couldn't get connections for interface %s", iface.ID)
+		}
+
+		for _, conn := range connections {
+
+			ifaceSettings := conn.PeerSettingsByInterfaceID(iface.ID)
+			peerSettings := conn.OtherPeerSettingsByInterfaceID(iface.ID)
+
+			if ifaceSettings == nil || peerSettings == nil {
+				s.logger.Warnf("couldn't get settings for connection")
+			}
+
+			peerIface, err := s.state.InterfaceByID(ctx, peerSettings.InterfaceID)
+			if err != nil {
+				s.logger.Warnf("couldn't get peer interface %s", peerSettings.InterfaceID)
+			}
+
+			peerNode, err := s.state.NodeByID(ctx, peerIface.NodeID)
+			if err != nil {
+				s.logger.Warnf("couldn't get peer node %s", peerIface.NodeID)
+			}
+
+			peer := &structs.Peer{
+				PublicKey:           peerIface.PublicKey,
+				Address:             peerNode.AdvertiseAddress,
+				Port:                peerIface.ListenPort,
+				AllowedIPs:          []string{},
+				PersistentKeepalive: conn.PersistentKeepalive,
+			}
+
+			if ifaceSettings.RoutingRules != nil {
+				peer.AllowedIPs = ifaceSettings.RoutingRules.AllowedIPs
+			}
+
+			iface.Peers = append(iface.Peers, peer)
+
+		}
 	}
+
+	out.Items = append(out.Items, interfaces...)
 
 	return nil
 }
 
+// UpdateInterfaces :
 func (s *NodeService) UpdateInterfaces(args *structs.NodeInterfaceUpdateRequest, out *structs.GenericResponse) error {
 
 	ctx := context.TODO()
@@ -241,7 +288,7 @@ func (s *NodeService) UpdateInterfaces(args *structs.NodeInterfaceUpdateRequest,
 
 	nodeInterfaces, err := s.state.InterfacesByNodeID(ctx, node.ID)
 	if err != nil {
-		return structs.ErrInternal
+		return structs.NewInternalError(err.Error())
 	}
 
 	// Create a map for more efficient lookup
@@ -253,7 +300,7 @@ func (s *NodeService) UpdateInterfaces(args *structs.NodeInterfaceUpdateRequest,
 	for _, i := range args.Interfaces {
 		old, found := nodeInterfacesMap[i.ID]
 		if !found {
-			return structs.ErrNotFound // Node does not contain interface being updated
+			return structs.NewInternalError("Interface does not belong to node")
 		}
 
 		i = old.Merge(i)
@@ -261,11 +308,11 @@ func (s *NodeService) UpdateInterfaces(args *structs.NodeInterfaceUpdateRequest,
 
 		err := s.state.UpsertInterface(ctx, i)
 		if err != nil {
-			return structs.ErrInternal // Error updating interface
+			return structs.NewInternalError("Can't update interface")
 		}
 	}
 
-	return structs.ErrInvalidInput
+	return nil
 }
 
 // GetNode returns a Node entity by ID
@@ -304,7 +351,7 @@ func (s *NodeService) ListNodes(args *structs.NodeListRequest, out *structs.Node
 
 	networks, err := s.state.Nodes(ctx)
 	if err != nil {
-		return structs.ErrInternal
+		return structs.NewInternalError(err.Error())
 	}
 
 	out.Items = nil
@@ -323,15 +370,15 @@ func (s *NetworkService) JoinNetwork(args *structs.NodeJoinNetworkRequest, out *
 
 	// Check if authorized
 	if s.config.ACL.Enabled {
-		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", args.NodeID, NodeList); err != nil {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", args.NodeID, NodeWrite); err != nil {
 			return structs.ErrPermissionDenied
 		}
-		if err := s.authHandler.Authorize(ctx, args.AuthToken, "network", args.NetworkID, NodeList); err != nil {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "network", args.NetworkID, NetworkWrite); err != nil {
 			return structs.ErrPermissionDenied
 		}
 	}
 
-	network, err := s.state.NetworkByID(ctx, args.NodeID)
+	network, err := s.state.NetworkByID(ctx, args.NetworkID)
 	if err != nil {
 		return structs.ErrNotFound // network not found
 	}
@@ -343,13 +390,13 @@ func (s *NetworkService) JoinNetwork(args *structs.NodeJoinNetworkRequest, out *
 
 	interfaces, err := s.state.InterfacesByNodeID(ctx, node.ID)
 	if err != nil {
-		return structs.ErrInternal // error getting node interfaces
+		return structs.NewInternalError(err.Error())
 	}
 
 	// Check whether node has already joined the network
 	for _, iface := range interfaces {
 		if iface.NetworkID == network.ID {
-			return fmt.Errorf("Network already joined")
+			return structs.NewInternalError("Network already joined")
 		}
 	}
 
@@ -357,8 +404,9 @@ func (s *NetworkService) JoinNetwork(args *structs.NodeJoinNetworkRequest, out *
 		ID:          uuid.Generate(),
 		NodeID:      node.ID,
 		NetworkID:   network.ID,
-		Address:     "",                // to be set if leasing plugin is loaded and enabled
-		Peers:       []*structs.Peer{}, // to be set if meshing plugin is loaded and enabled
+		Name:        nil,               // Setting name is responsibility of the client node
+		Address:     nil,               // TODO: set with leasing plugin if it is loaded and enabled
+		Peers:       []*structs.Peer{}, // TODO: set with meshing plugin if it is loaded and enabled
 		ModifyIndex: 0,
 		CreatedAt:   time.Now(),
 		UpdatedAt:   time.Now(),
@@ -366,7 +414,19 @@ func (s *NetworkService) JoinNetwork(args *structs.NodeJoinNetworkRequest, out *
 
 	err = s.state.UpsertInterface(ctx, iface)
 	if err != nil {
-		return structs.ErrInternal // could not create interface
+		return structs.NewInternalError("Can't create interface")
+	}
+
+	node.UpsertInterface(iface.ID)
+	err = s.state.UpsertNode(ctx, node)
+	if err != nil {
+		return structs.NewInternalError("Can't add interface to node")
+	}
+
+	network.UpsertInterface(iface.ID)
+	err = s.state.UpsertNetwork(ctx, network)
+	if err != nil {
+		return structs.NewInternalError("Can't add interface to network")
 	}
 
 	return nil
@@ -389,24 +449,35 @@ func (s *NetworkService) LeaveNetwork(args *structs.NodeLeaveNetworkRequest, out
 
 	network, err := s.state.NetworkByID(ctx, args.NodeID)
 	if err != nil {
-		return structs.ErrNotFound // network not found
+		return structs.NewInternalError("Network does not exist")
 	}
 
 	node, err := s.state.NodeByID(ctx, args.NodeID)
 	if err != nil {
-		return structs.ErrNotFound // node not found
+		return structs.NewInternalError("Node does not exist")
 	}
 
 	interfaces, err := s.state.InterfacesByNodeID(ctx, node.ID)
 	if err != nil {
-		return structs.ErrInternal // error getting node interfaces
+		return structs.NewInternalError("Can't retrieve node interfaces")
 	}
 
 	// Check whether node is in the network
 	for _, iface := range interfaces {
 		if iface.NetworkID == network.ID {
+
+			network.RemoveInterface(iface.ID)
+			if err := s.state.UpsertNetwork(ctx, network); err != nil {
+				return structs.NewInternalError("Can't update network")
+			}
+
+			node.RemoveInterface(iface.ID)
+			if err := s.state.UpsertNode(ctx, node); err != nil {
+				return structs.NewInternalError("Can't update node")
+			}
+
 			if err := s.state.DeleteInterfaces(ctx, []string{iface.ID}); err != nil {
-				return structs.ErrInternal
+				return structs.NewInternalError("Can't delete interface")
 			}
 		}
 	}

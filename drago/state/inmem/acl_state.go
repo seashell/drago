@@ -11,7 +11,7 @@ import (
 // ACLState :
 func (r *StateRepository) ACLState(ctx context.Context) (*structs.ACLState, error) {
 	key := aclStateKey()
-	if v, found := r.kv[key]; found {
+	if v, found := r.kv.Get(key); found {
 		return v.(*structs.ACLState), nil
 	}
 	return nil, errors.New("not found")
@@ -20,7 +20,7 @@ func (r *StateRepository) ACLState(ctx context.Context) (*structs.ACLState, erro
 // ACLSetState :
 func (r *StateRepository) ACLSetState(ctx context.Context, s *structs.ACLState) error {
 	key := aclStateKey()
-	r.kv[key] = s
+	r.kv.Set(key, s)
 	return nil
 }
 

@@ -59,6 +59,7 @@ func (r *StateRepository) ACLPolicyByName(ctx context.Context, name string) (*st
 // UpsertACLPolicy :
 func (r *StateRepository) UpsertACLPolicy(ctx context.Context, p *structs.ACLPolicy) error {
 	key := resourceKey(resourceTypeACLPolicy, p.Name)
+
 	_, err := r.client.Put(ctx, key, encodeValue(p))
 	if err != nil {
 		return err

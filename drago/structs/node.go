@@ -13,15 +13,22 @@ const (
 
 // Node :
 type Node struct {
-	ID          string
-	SecretID    string
-	Name        string
-	Address     string
-	Status      string
-	ModifyIndex uint64
-	Meta        map[string]string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID               string
+	SecretID         string
+	Name             string
+	AdvertiseAddress *string
+	Status           string
+	Interfaces       []string
+	Connections      []string
+	ModifyIndex      uint64
+	Meta             map[string]string
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
+
+	// Underlying struct for efficiently adding/removing interfaces and connections.
+	// Always use the lazyInterfacesMap() and lazyConnectionsMap() methods for accessing them.
+	interfacesMap  map[string]struct{}
+	connectionsMap map[string]struct{}
 }
 
 // Validate validates a structs.Node object
@@ -65,6 +72,12 @@ func (n *Node) Merge(in *Node) *Node {
 	if in.Name != "" {
 		result.Name = in.Name
 	}
+	if in.AdvertiseAddress != nil {
+		result.AdvertiseAddress = in.AdvertiseAddress
+	}
+	if in.Interfaces != nil {
+		result.Interfaces = in.Interfaces
+	}
 	if in.Status != "" {
 		result.Status = in.Status
 	}
@@ -75,26 +88,104 @@ func (n *Node) Merge(in *Node) *Node {
 	return &result
 }
 
+// If the node's interfacesMap was already initialized, return it.
+// Otherwise initialize and synchronize it with the node interfaces slice.
+func (n *Node) lazyInterfacesMap() map[string]struct{} {
+
+	if n.interfacesMap != nil {
+		return n.interfacesMap
+	}
+
+	n.interfacesMap = map[string]struct{}{}
+	for _, iface := range n.Interfaces {
+		n.interfacesMap[iface] = struct{}{}
+	}
+	return n.interfacesMap
+}
+
+// UpsertInterface :
+func (n *Node) UpsertInterface(id string) {
+	n.lazyInterfacesMap()[id] = struct{}{}
+	tmp := n.Interfaces[:0]
+	for k := range n.interfacesMap {
+		tmp = append(tmp, k)
+	}
+	n.Interfaces = tmp
+}
+
+// RemoveInterface :
+func (n *Node) RemoveInterface(id string) {
+
+	delete(n.lazyInterfacesMap(), id)
+	tmp := n.Interfaces[:0]
+	for k := range n.interfacesMap {
+		tmp = append(tmp, k)
+	}
+	n.Interfaces = tmp
+}
+
+// If the node's connectionsMap was already initialized, return it.
+// Otherwise initialize and synchronize it with the node connections slice.
+func (n *Node) lazyConnectionsMap() map[string]struct{} {
+
+	if n.connectionsMap != nil {
+		return n.connectionsMap
+	}
+
+	n.connectionsMap = map[string]struct{}{}
+	for _, conn := range n.Connections {
+		n.connectionsMap[conn] = struct{}{}
+	}
+	return n.connectionsMap
+}
+
+// UpsertConnection :
+func (n *Node) UpsertConnection(id string) {
+	n.lazyConnectionsMap()[id] = struct{}{}
+	tmp := n.Connections[:0]
+	for k := range n.connectionsMap {
+		tmp = append(tmp, k)
+	}
+	n.Connections = tmp
+}
+
+// RemoveConnection :
+func (n *Node) RemoveConnection(id string) {
+
+	delete(n.lazyConnectionsMap(), id)
+	tmp := n.Connections[:0]
+	for k := range n.connectionsMap {
+		tmp = append(tmp, k)
+	}
+	n.Connections = tmp
+}
+
 // Stub :
 func (n *Node) Stub() *NodeListStub {
 	return &NodeListStub{
-		ID:          n.ID,
-		Name:        n.Name,
-		Status:      n.Status,
-		ModifyIndex: n.ModifyIndex,
-		CreatedAt:   n.CreatedAt,
-		UpdatedAt:   n.UpdatedAt,
+		ID:               n.ID,
+		Name:             n.Name,
+		AdvertiseAddress: n.AdvertiseAddress,
+		Status:           n.Status,
+		InterfacesCount:  len(n.Interfaces),
+		ConnectionsCount: len(n.Connections),
+		ModifyIndex:      n.ModifyIndex,
+		CreatedAt:        n.CreatedAt,
+		UpdatedAt:        n.UpdatedAt,
 	}
 }
 
 // NodeListStub :
 type NodeListStub struct {
-	ID          string
-	Name        string
-	Status      string
-	ModifyIndex uint64
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID               string
+	Name             string
+	AdvertiseAddress *string
+	Status           string
+	InterfacesCount  int
+	ConnectionsCount int
+	ModifyIndex      uint64
+	CreatedAt        time.Time
+	UpdatedAt        time.Time
 }
 
 // NodeSpecificRequest :
@@ -156,7 +247,7 @@ func (r *NodeRegisterRequest) Validate() error {
 type NodeUpdateStatusRequest struct {
 	NodeID string
 	Status string
-
+	Meta   map[string]string
 	WriteRequest
 }
 

@@ -2,23 +2,82 @@ package command
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"strconv"
 	"strings"
 
 	"github.com/caarlos0/env"
 	"github.com/dimiro1/banner"
+	"github.com/hashicorp/hcl/v2/hclsimple"
 	"github.com/joho/godotenv"
 	agent "github.com/seashell/drago/agent"
 	cli "github.com/seashell/drago/pkg/cli"
 	log "github.com/seashell/drago/pkg/log"
-	"github.com/seashell/drago/pkg/log/simple"
+	simple "github.com/seashell/drago/pkg/log/simple"
 )
 
 // AgentCommand :
 type AgentCommand struct {
-	UI cli.UI
+	config *agent.Config
+	agent  *agent.Agent
+	logger log.Logger
+
+	UI       cli.UI
+	StaticFS http.FileSystem
+
+	Command
+
+	// Parsed flags
+	dev           bool
+	servers       string
+	envs          manyStrings
+	configs       manyStrings
+	meta          manyStrings
+	node          string
+	bind          string
+	dataDir       string
+	logLevel      string
+	pluginDir     string
+	server        bool
+	client        bool
+	stateDir      string
+	wireguardPath string
+	aclEnabled    bool
+}
+
+func (c *AgentCommand) FlagSet() *flag.FlagSet {
+
+	flags := c.Command.FlagSet(c.Name())
+
+	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
+
+	// General options (available in both client and server modes)
+	flags.Var(&c.configs, "config", "")
+	flags.StringVar(&c.bind, "bind", "", "")
+	flags.StringVar(&c.node, "node", "", "")
+	flags.BoolVar(&c.dev, "dev", false, "")
+	flags.StringVar(&c.dataDir, "data-dir", "", "")
+	flags.StringVar(&c.logLevel, "log-level", "", "")
+	flags.StringVar(&c.pluginDir, "plugin-dir", "", "")
+	flags.Var(&c.envs, "env", "")
+
+	// Server-only options
+	flags.BoolVar(&c.server, "server", false, "")
+
+	// Client-only options
+	flags.Var(&c.meta, "meta", "")
+	flags.BoolVar(&c.client, "client", false, "")
+	flags.StringVar(&c.servers, "servers", "", "")
+	flags.StringVar(&c.stateDir, "state-dir", "", "")
+	flags.StringVar(&c.wireguardPath, "wireguard-path", "", "")
+
+	// ACL options
+	flags.BoolVar(&c.aclEnabled, "acl-enabled", false, "")
+
+	return flags
 }
 
 // Name :
@@ -34,65 +93,144 @@ func (c *AgentCommand) Synopsis() string {
 // Run :
 func (c *AgentCommand) Run(ctx context.Context, args []string) int {
 
-	displayBanner()
+	printBanner()
 
-	config := c.parseConfig(args)
-
-	// logger, err := logrus.NewLoggerAdapter(logrus.Config{
-	// 	LoggerOptions: log.LoggerOptions{
-	// 		Level:  config.LogLevel,
-	// 		Prefix: "agent: ",
-	// 	},
-	// })
-
-	// logger, err := zap.NewLoggerAdapter(zap.Config{
-	// 	LoggerOptions: log.LoggerOptions{
-	// 		Level:  config.LogLevel,
-	// 		Prefix: "agent: ",
-	// 	},
-	// })
-
-	logger, err := simple.NewLoggerAdapter(simple.Config{
-		LoggerOptions: log.LoggerOptions{
-			Level:  config.LogLevel,
-			Prefix: "agent: ",
-		},
-	})
-
+	err := c.parseConfig(args)
 	if err != nil {
+		c.UI.Error(fmt.Sprintf("Invalid input: %s", err.Error()))
+		os.Exit(1)
+	}
+
+	if err := c.setupLogger(); err != nil {
 		c.UI.Error(err.Error())
 		return 1
 	}
 
 	c.UI.Output("==> Starting Drago agent...")
 
-	// Create DataDir and other subdirectories if they do not exist
-	if _, err := os.Stat(config.DataDir); os.IsNotExist(err) {
-		os.Mkdir(config.DataDir, 0755)
+	if err = c.setupDirectories(); err != nil {
+		c.UI.Error("Error setting up data directories")
 	}
 
-	c.printConfig(config)
+	c.printConfig()
 
-	agent, err := agent.New(config, logger)
-	if err != nil {
-		c.UI.Error(fmt.Sprintf("Error starting agent: %s\n", err.Error()))
+	if err = c.setupAgent(); err != nil {
+		c.UI.Error(fmt.Sprintf("Error setting up agent: %s\n", err.Error()))
 		return 1
 	}
 
 	<-ctx.Done()
 
-	agent.Shutdown()
+	fmt.Println("SHUTDOWN")
+
+	c.agent.Shutdown()
 
 	return 0
 }
 
-func (c *AgentCommand) parseConfig(args []string) *agent.Config {
+// Help :
+func (c *AgentCommand) Help() string {
+	h := `
+Usage: drago agent [options]
+	
+  Starts the Drago agent and runs until an interrupt is received.
+  The agent may be a client and/or server.
+  
+  The Drago agent's configuration primarily comes from the config
+  files used, but a subset of the options may also be passed directly
+  as CLI arguments.
 
-	flags := FlagSet(c.Name())
+General Options (clients and servers):
+` + GlobalOptions() + `
 
-	configFromFlags := c.parseFlags(flags, args)
-	configFromFile := c.parseConfigFiles(flags.configPaths...)
-	configFromEnv := c.parseEnv(flags.envPaths...)
+  -bind=<addr>
+    The address the agent will bind to for all of its various network
+    services. The individual services that run bind to individual
+    ports on this address. Defaults to the loopback 127.0.0.1.
+
+  -config=<path>
+    Path to a HCL file containing valid Drago configurations.
+    Overrides the DRAGO_CONFIG_PATH environment variable if set.
+
+  -data-dir=<path>
+    The data directory where all state will be persisted. On Drago 
+    clients this is used to store local network configurations, whereas
+    on server nodes, the data dir is also used to keep the desired state
+    for all the managed networks. Overrides the DRAGO_DATA_DIRenvironment
+    variable if set.
+
+  -node=<name>
+    The name of the local agent, use to identify the node. If not provided,
+    defaults to the hostname of the machine.
+
+  -dev
+    Start the agent in development mode. This enables a pre-configured
+    dual-role agent (client + server) which is useful for developing
+    or testing Drago. No other configuration is required to start the
+    agent in this mode.
+
+  -log-level=<level>
+    The logging level Drago should log at. Valid values are INFO, WARN,
+    DEBUG, ERROR, FATAL. Overrides the DRAGO_LOG_LEVEL environment variable
+    if set.
+
+  -plugin-dir=<path>
+    The plugin directory is used to discover Drago plugins. If not specified,
+    the plugin directory defaults to be that of <data-dir>/plugins/.
+
+Server Options:
+
+  -server
+    Enable server mode for the agent.
+
+Client Options:
+
+  -client
+    Enable client mode for the agent. Client mode enables a given node to be
+    evaluated for allocations. If client mode is not enabled, no work will be
+    scheduled to the agent.
+
+  -state-dir
+    The directory used to store state and other persistent data. If not
+    specified a subdirectory under the "-data-dir" will be used.
+  
+  -servers
+    A comma-separated list of known server addresses to connect to in
+    "host:port" format.
+
+  -meta
+    User-specified metadata in KEY=VALUE format to associate with the node.
+	Repeat the meta flag for each key/value pair to be added.
+
+ACL Options:
+
+  -acl-enabled
+    Specifies whether the agent should enable ACLs.
+
+`
+	return strings.TrimSpace(h)
+}
+
+func (c *AgentCommand) setupAgent() error {
+
+	c.config.StaticFS = c.StaticFS
+
+	agent, err := agent.New(c.config, c.logger)
+	if err != nil {
+		return err
+	}
+
+	c.agent = agent
+
+	return nil
+}
+
+func (c *AgentCommand) parseConfig(args []string) error {
+
+	configFromFlags := c.parseFlags(args)
+
+	configFromFile := c.parseConfigFiles(c.configs...)
+	configFromEnv := c.parseEnv(c.envs...)
 
 	config := agent.DefaultConfig()
 
@@ -101,47 +239,62 @@ func (c *AgentCommand) parseConfig(args []string) *agent.Config {
 	config = config.Merge(configFromFlags)
 
 	if err := config.Validate(); err != nil {
-		c.UI.Error(fmt.Sprintf("Invalid input: %s", err.Error()))
-		os.Exit(1)
+		return err
 	}
 
-	return config
+	c.config = config
+
+	return nil
 }
 
-func (c *AgentCommand) parseFlags(flags *RootFlagSet, args []string) *agent.Config {
+func (c *AgentCommand) parseFlags(args []string) *agent.Config {
 
-	flags.Usage = func() {
-		c.UI.Output("\n" + c.Help() + "\n")
-	}
+	flags := c.FlagSet()
 
 	config := agent.EmptyConfig()
-
-	var devMode bool
-
-	// Agent mode
-	flags.BoolVar(&devMode, "dev", false, "")
-	flags.BoolVar(&config.Server.Enabled, "server", false, "")
-	flags.BoolVar(&config.Client.Enabled, "client", false, "")
-
-	// General options (available in both client and server modes)
-	flags.StringVar(&config.DataDir, "data-dir", "", "")
-	flags.StringVar(&config.BindAddr, "bind-addr", "", "")
-	flags.StringVar(&config.PluginDir, "plugin-dir", "", "")
-	flags.StringVar(&config.LogLevel, "log-level", "", "")
-
-	// Client-only options
-	flags.StringVar(&config.Client.StateDir, "state-dir", "", "")
-	flags.StringVar(&config.Client.WireguardPath, "wireguard-path", "", "")
-
-	// Server-only options
-	// --
-
-	// ACL options
-	flags.BoolVar(&config.ACL.Enabled, "acl-enabled", false, "")
 
 	if err := flags.Parse(args); err != nil {
 		c.UI.Error("==> Error: " + err.Error() + "\n")
 		os.Exit(1)
+	}
+
+	config.DevMode = c.dev
+	config.Server.Enabled = c.server
+	config.Client.Enabled = c.client
+
+	config.Name = c.node
+	config.BindAddr = c.bind
+	config.DataDir = c.dataDir
+	config.LogLevel = c.logLevel
+	config.PluginDir = c.pluginDir
+
+	config.Client.StateDir = c.stateDir
+	config.Client.WireguardPath = c.wireguardPath
+
+	config.ACL.Enabled = c.aclEnabled
+
+	if config.DevMode {
+		config.Server.Enabled = true
+		config.Client.Enabled = true
+		config.DataDir = "/tmp/drago"
+		config.LogLevel = "DEBUG"
+	}
+
+	if c.servers != "" {
+		config.Client.Servers = strings.Split(c.servers, ",")
+	}
+
+	metaLength := len(c.meta)
+	if metaLength != 0 {
+		config.Client.Meta = make(map[string]string, metaLength)
+		for _, kv := range c.meta {
+			parts := strings.SplitN(kv, "=", 2)
+			if len(parts) != 2 {
+				c.UI.Error(fmt.Sprintf("Error parsing Client.Meta value: %v", kv))
+				return nil
+			}
+			config.Client.Meta[parts[0]] = parts[1]
+		}
 	}
 
 	return config
@@ -152,8 +305,14 @@ func (c *AgentCommand) parseConfigFiles(paths ...string) *agent.Config {
 	config := agent.EmptyConfig()
 
 	if len(paths) > 0 {
-		// TODO : Load configurations from HCL files
 		c.UI.Info(fmt.Sprintf("==> Loading configurations from: %v", paths))
+		for _, s := range paths {
+			err := hclsimple.DecodeFile(s, nil, config)
+			if err != nil {
+				c.UI.Error("Failed to load configuration: " + err.Error())
+				os.Exit(0)
+			}
+		}
 	} else {
 		c.UI.Output("==> No configuration files loaded")
 	}
@@ -168,7 +327,7 @@ func (c *AgentCommand) parseEnv(paths ...string) *agent.Config {
 	if len(paths) > 0 {
 
 		c.UI.Info(fmt.Sprintf("==> Loading environment variables from: %v", paths))
-		c.UI.Warn(fmt.Sprintf("  - This will not override already existing variables!"))
+		c.UI.Warn("  - This will not override already existing variables!")
 
 		err := godotenv.Load(paths...)
 
@@ -183,7 +342,9 @@ func (c *AgentCommand) parseEnv(paths ...string) *agent.Config {
 	return config
 }
 
-func (c *AgentCommand) printConfig(config *agent.Config) {
+func (c *AgentCommand) printConfig() {
+
+	config := c.config
 
 	info := map[string]string{
 		"data dir":        config.DataDir,
@@ -208,40 +369,48 @@ func (c *AgentCommand) printConfig(config *agent.Config) {
 	c.UI.Output("")
 }
 
-// Help :
-func (c *AgentCommand) Help() string {
-	h := `
-Usage: drago agent [options]
-	
-  Starts the Drago agent and runs until an interrupt is received.
-  The agent may be a client and/or server.
-  
-  The Drago agent's configuration primarily comes from the config
-  files used, but a subset of the options may also be passed directly
-  as CLI arguments.
+func (c *AgentCommand) setupLogger() error {
 
-General Options:
-` + GlobalOptions() + `
+	// logger, err := logrus.NewLoggerAdapter(logrus.Config{
+	// 	LoggerOptions: log.LoggerOptions{
+	// 		Level:  c.config.LogLevel,
+	// 		Prefix: "agent: ",
+	// 	},
+	// })
 
-Agent Options:
+	// logger, err := zap.NewLoggerAdapter(zap.Config{
+	// 	LoggerOptions: log.LoggerOptions{
+	// 		Level:  c.config.LogLevel,
+	// 		Prefix: "agent: ",
+	// 	},
+	// })
 
-  --data-dir=<path>
-    The data directory where all state will be persisted. On Drago 
-    clients this is used to store local network configurations, whereas
-    on server nodes, the data dir is also used to keep the desired state
-	for all the managed networks. Overrides the DRAGO_DATA_DIRenvironment
-	variable if set.
+	logger, err := simple.NewLoggerAdapter(simple.Config{
+		LoggerOptions: log.LoggerOptions{
+			Level:  c.config.LogLevel,
+			Prefix: "agent: ",
+		},
+	})
 
-  --log-level=<level>
-    The logging level Drago should log at. Valid values are INFO, WARN, DEBUG, ERROR, FATAL.
-    Overrides the DRAGO_LOG_LEVEL environment variable if set.
-	
-`
-	return strings.TrimSpace(h)
+	if err != nil {
+		return err
+	}
+
+	c.logger = logger
+
+	return nil
+}
+
+// Create DataDir and other subdirectories if they do not exist
+func (c *AgentCommand) setupDirectories() error {
+	if _, err := os.Stat(c.config.DataDir); os.IsNotExist(err) {
+		os.Mkdir(c.config.DataDir, 0755)
+	}
+	return nil
 }
 
 // Prints an ASCII banner to the standard output
-func displayBanner() {
+func printBanner() {
 	banner.Init(os.Stdout, true, true, strings.NewReader(agent.Banner))
 }
 

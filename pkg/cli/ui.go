@@ -3,6 +3,8 @@ package cli
 import (
 	"fmt"
 	"io"
+
+	"github.com/fatih/color"
 )
 
 // UI is an interface for interacting with the terminal, or "interface"
@@ -42,7 +44,7 @@ func (u *SimpleUI) Error(message string) {
 	if u.ErrorWriter != nil {
 		w = u.ErrorWriter
 	}
-	fmt.Fprint(w, message, "\n")
+	color.New(color.FgRed).Fprint(w, message, "\n")
 }
 
 func (u *SimpleUI) Info(message string) {
@@ -54,5 +56,5 @@ func (u *SimpleUI) Output(message string) {
 }
 
 func (u *SimpleUI) Warn(message string) {
-	u.Error(message)
+	color.New(color.FgHiYellow).Fprint(u.Writer, message, "\n")
 }

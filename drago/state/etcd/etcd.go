@@ -1,6 +1,7 @@
 package etcd
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -8,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/seashell/drago/drago/state"
 	"github.com/seashell/drago/drago/structs/config"
 	"go.etcd.io/etcd/clientv3"
 	"go.etcd.io/etcd/embed"
@@ -17,9 +19,14 @@ const (
 	defaultNamespace = "default"
 	defaultPrefix    = "/registry"
 
-	resourceTypeACLPolicy = "policy"
-	resourceTypeACLToken  = "token"
-	resourceTypeNetwork   = "network"
+	resourceTypeACLPolicy  = "policy"
+	resourceTypeACLToken   = "token"
+	resourceTypeNetwork    = "network"
+	resourceTypeNode       = "node"
+	resourceTypeInterface  = "interface"
+	resourceTypeConnection = "connection"
+
+	transactionContextKey = "etcdtxn"
 )
 
 type Config struct {
@@ -58,6 +65,20 @@ func NewStateRepository(config *Config) (*StateRepository, error) {
 // Name returns the name identifying the state repository.
 func (r *StateRepository) Name() string {
 	return "etcd"
+}
+
+type transaction struct {
+	txn clientv3.Txn
+}
+
+func (t transaction) Commit() (interface{}, error) {
+	out, err := t.txn.Commit()
+	return out, err
+}
+
+// Transaction
+func (r *StateRepository) Transaction(ctx context.Context) state.Transaction {
+	return transaction{r.client.Txn(ctx)}
 }
 
 func (r *StateRepository) setupEtcdClient() error {

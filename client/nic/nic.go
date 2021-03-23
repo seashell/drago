@@ -13,3 +13,15 @@ type NetworkInterfaceController interface {
 	DeleteInterfaceByName(s string) error
 	DeleteAllInterfaces() error
 }
+
+type PrivateKeyStore interface {
+	KeyByID(id string) (*PrivateKey, error)
+	UpsertKey(key *PrivateKey) error
+	DeleteKey(id string) error
+}
+
+type PrivateKey struct {
+	ID        string
+	Key       string
+	CreatedAt int64
+}

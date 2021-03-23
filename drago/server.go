@@ -5,18 +5,13 @@ import (
 	"fmt"
 	"sync"
 
-	handler "github.com/seashell/drago/drago/adapter/http"
-	middleware "github.com/seashell/drago/drago/adapter/http/middleware"
 	auth "github.com/seashell/drago/drago/auth"
-	"github.com/seashell/drago/drago/mock"
 	state "github.com/seashell/drago/drago/state"
 	inmem "github.com/seashell/drago/drago/state/inmem"
 	structs "github.com/seashell/drago/drago/structs"
 	acl "github.com/seashell/drago/pkg/acl"
-	http "github.com/seashell/drago/pkg/http"
 	log "github.com/seashell/drago/pkg/log"
 	rpc "github.com/seashell/drago/pkg/rpc"
-	"github.com/shurcooL/go-goon"
 )
 
 var (
@@ -34,23 +29,19 @@ var (
 type Server struct {
 	config *Config
 
-	logger log.Logger
-
-	httpServer *http.Server
-	rpcServer  *rpc.Server
-
-	rpcClient *rpc.Client
-
-	state state.Repository
-
+	logger      log.Logger
+	rpcServer   *rpc.Server
+	rpcClient   *rpc.Client
+	state       state.Repository
 	authHandler auth.AuthorizationHandler
 
 	services struct {
-		ACL        *ACLService
-		Nodes      *NodeService
-		Networks   *NetworkService
-		Interfaces *InterfaceService
-		Status     *StatusService
+		ACL         *ACLService
+		Nodes       *NodeService
+		Networks    *NetworkService
+		Interfaces  *InterfaceService
+		Connections *ConnectionService
+		Status      *StatusService
 	}
 
 	shutdown     bool
@@ -85,17 +76,20 @@ func NewServer(config *Config) (*Server, error) {
 		s.logger.Errorf("Error setting up rpc server: %s", err.Error())
 	}
 
-	err = s.setupRPCClient()
-	if err != nil {
-		s.logger.Errorf("Error setting up rpc client: %s", err.Error())
-	}
-
-	err = s.setupHTTPServer()
-	if err != nil {
-		s.logger.Errorf("Error setting up http server: %s", err.Error())
-	}
-
 	return s, nil
+}
+
+// Stats is used to return statistics for the server
+func (s *Server) Stats() map[string]map[string]string {
+
+	stats := map[string]map[string]string{
+		"drago": {
+			"server": "true",
+			"peers":  "",
+		},
+	}
+
+	return stats
 }
 
 // Shutdown tears down the server
@@ -130,12 +124,10 @@ func (s *Server) setupApplication() error {
 		}
 	}
 
-	err := mock.PopulateWithData(s.state)
-	if err != nil {
-		return fmt.Errorf("failed to populate repository with mock data: %v", err)
-	}
-
-	fmt.Println("1")
+	// err := mock.PopulateRepository(s.state)
+	// if err != nil {
+	// 	return fmt.Errorf("failed to populate repository with mock data: %v", err)
+	// }
 
 	s.authHandler = auth.NewAuthorizationHandler(
 		s.config.ACL.Model,
@@ -152,6 +144,7 @@ func (s *Server) setupApplication() error {
 	s.services.ACL = NewACLService(s.config, s.logger, s.state, s.authHandler)
 	s.services.Networks = NewNetworkService(s.config, s.logger, s.state, s.authHandler)
 	s.services.Interfaces = NewInterfaceService(s.config, s.logger, s.state, s.authHandler)
+	s.services.Connections = NewConnectionService(s.config, s.logger, s.state, s.authHandler)
 
 	s.services.Status = NewStatusService(s.config, s.state, s.authHandler)
 
@@ -174,6 +167,16 @@ func (s *Server) setupACLModel() error {
 		Alias("read", ACLPolicyRead, ACLPolicyList).
 		Alias("write", ACLPolicyWrite, ACLPolicyRead, ACLPolicyList)
 
+	model.Resource("network").
+		Capabilities(NetworkWrite, NetworkRead, NetworkList).
+		Alias("read", NetworkRead, NetworkList).
+		Alias("write", NetworkWrite, NetworkRead, NetworkList)
+
+	model.Resource("node").
+		Capabilities(NodeWrite, NodeRead, NodeList).
+		Alias("read", NodeRead, NodeList).
+		Alias("write", NodeWrite, NodeRead, NodeList)
+
 	s.config.ACL.Model = model
 
 	return nil
@@ -185,8 +188,10 @@ func (s *Server) defaultACLPolicies() []*structs.ACLPolicy {
 		{
 			Name: "anonymous",
 			Rules: []*structs.ACLPolicyRule{
-				{"token", "*", []string{}},
-				{"policy", "*", []string{}},
+				{Resource: "token", Path: "*", Capabilities: []string{ACLTokenList}},
+				{Resource: "policy", Path: "*", Capabilities: []string{"read"}},
+				{Resource: "network", Path: "*", Capabilities: []string{"read"}},
+				{Resource: "node", Path: "*", Capabilities: []string{"read"}},
 			},
 		},
 		{
@@ -215,8 +220,6 @@ func (s *Server) secretResolver() acl.SecretResolverFunc {
 			}
 		}
 
-		goon.Dump(t)
-
 		return auth.NewToken(
 			t.Type == structs.ACLTokenTypeManagement,
 			t.Policies,
@@ -240,52 +243,18 @@ func (s *Server) policyResolver() acl.PolicyResolverFunc {
 	}
 }
 
-func (s *Server) setupHTTPServer() error {
-
-	config := &http.Config{
-		Logger:      s.logger,
-		BindAddress: fmt.Sprintf("%s:%d", s.config.BindAddr, s.config.Ports.HTTP),
-		Handlers: map[string]http.Handler{
-			"/api/nodes/":        handler.NewNodeHandler(s.rpcClient),
-			"/api/interfaces/":   handler.NewInterfaceHandler(s.rpcClient),
-			"/api/networks/":     handler.NewNetworkHandler(s.rpcClient),
-			"/api/acl/policies/": handler.NewACLPolicyHandler(s.rpcClient),
-			"/api/acl/tokens/":   handler.NewACLTokenHandler(s.rpcClient),
-			"/api/acl/":          handler.NewACLHandler(s.rpcClient),
-			"/status":            handler.NewStatusHandler(s.rpcClient),
-		},
-		Middleware: []http.Middleware{
-			middleware.CORS(),
-			middleware.Logging(s.logger),
-		},
-	}
-
-	if s.config.UI {
-		//config.Handlers["/ui/"] = handler.NewFilesystemHandlerAdapter(ui.Bundle)
-		config.Handlers["/"] = handler.NewFallthroughHandler("/ui/")
-	}
-
-	httpServer, err := http.NewServer(config)
-	if err != nil {
-		return err
-	}
-
-	s.httpServer = httpServer
-
-	return nil
-}
-
 func (s *Server) setupRPCServer() error {
 
 	config := &rpc.ServerConfig{
 		Logger:      s.logger,
 		BindAddress: fmt.Sprintf("%s:%d", s.config.BindAddr, s.config.Ports.RPC),
 		Receivers: map[string]interface{}{
-			"ACL":       s.services.ACL,
-			"Node":      s.services.Nodes,
-			"Interface": s.services.Interfaces,
-			"Network":   s.services.Networks,
-			"Status":    s.services.Status,
+			"ACL":        s.services.ACL,
+			"Node":       s.services.Nodes,
+			"Interface":  s.services.Interfaces,
+			"Connection": s.services.Connections,
+			"Network":    s.services.Networks,
+			"Status":     s.services.Status,
 		},
 	}
 
@@ -295,23 +264,6 @@ func (s *Server) setupRPCServer() error {
 	}
 
 	s.rpcServer = rpcServer
-
-	return nil
-}
-
-func (s *Server) setupRPCClient() error {
-
-	config := &rpc.ClientConfig{
-		Logger:  s.logger,
-		Address: fmt.Sprintf("%s:%d", s.config.BindAddr, s.config.Ports.RPC),
-	}
-
-	rpcClient, err := rpc.NewClient(config)
-	if err != nil {
-		return err
-	}
-
-	s.rpcClient = rpcClient
 
 	return nil
 }

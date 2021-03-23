@@ -16,9 +16,9 @@ const (
 func (r *StateRepository) Interfaces(ctx context.Context) ([]*structs.Interface, error) {
 	prefix := resourcePrefix(resourceTypeInterface)
 	items := []*structs.Interface{}
-	for k, v := range r.kv {
-		if strings.HasPrefix(k, prefix) {
-			if t, ok := v.(*structs.Interface); ok {
+	for el := range r.kv.Iter() {
+		if strings.HasPrefix(el.Key, prefix) {
+			if t, ok := el.Value.(*structs.Interface); ok {
 				items = append(items, t)
 			}
 		}
@@ -32,9 +32,9 @@ func (r *StateRepository) InterfacesByNodeID(ctx context.Context, s string) ([]*
 	res := []*structs.Interface{}
 
 	prefix := resourcePrefix(resourceTypeInterface)
-	for k, v := range r.kv {
-		if strings.HasPrefix(k, prefix) {
-			if iface, ok := v.(*structs.Interface); ok {
+	for el := range r.kv.Iter() {
+		if strings.HasPrefix(el.Key, prefix) {
+			if iface, ok := el.Value.(*structs.Interface); ok {
 				if iface.NodeID == s {
 					res = append(res, iface)
 				}
@@ -50,9 +50,9 @@ func (r *StateRepository) InterfacesByNetworkID(ctx context.Context, s string) (
 	res := []*structs.Interface{}
 
 	prefix := resourcePrefix(resourceTypeInterface)
-	for k, v := range r.kv {
-		if strings.HasPrefix(k, prefix) {
-			if iface, ok := v.(*structs.Interface); ok {
+	for el := range r.kv.Iter() {
+		if strings.HasPrefix(el.Key, prefix) {
+			if iface, ok := el.Value.(*structs.Interface); ok {
 				if iface.NetworkID == s {
 					res = append(res, iface)
 				}
@@ -65,7 +65,7 @@ func (r *StateRepository) InterfacesByNetworkID(ctx context.Context, s string) (
 // InterfaceByID ...
 func (r *StateRepository) InterfaceByID(ctx context.Context, id string) (*structs.Interface, error) {
 	key := resourceKey(resourceTypeInterface, id)
-	if v, found := r.kv[key]; found {
+	if v, found := r.kv.Get(key); found {
 		return v.(*structs.Interface), nil
 	}
 	return nil, errors.New("not found")
@@ -74,7 +74,7 @@ func (r *StateRepository) InterfaceByID(ctx context.Context, id string) (*struct
 // UpsertInterface :
 func (r *StateRepository) UpsertInterface(ctx context.Context, n *structs.Interface) error {
 	key := resourceKey(resourceTypeInterface, n.ID)
-	r.kv[key] = n
+	r.kv.Set(key, n)
 	return nil
 }
 
@@ -82,7 +82,7 @@ func (r *StateRepository) UpsertInterface(ctx context.Context, n *structs.Interf
 func (r *StateRepository) DeleteInterfaces(ctx context.Context, ids []string) error {
 	for _, id := range ids {
 		key := resourceKey(resourceTypeInterface, id)
-		delete(r.kv, key)
+		r.kv.Delete(key)
 	}
 	return nil
 }

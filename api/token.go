@@ -35,7 +35,7 @@ func (t *Tokens) Get(ctx context.Context) (*Token, error) {
 	return &Token{}, nil
 }
 
-func (t *Tokens) Create(ctx context.Context, req *structs.ACLTokenUpsertRequest) (*structs.SingleACLTokenResponse, error) {
+func (t *Tokens) Create(req *structs.ACLTokenUpsertRequest) (*structs.SingleACLTokenResponse, error) {
 
 	var resp structs.SingleACLTokenResponse
 	err := t.client.createResource(tokensPath, req, &resp)
@@ -46,11 +46,11 @@ func (t *Tokens) Create(ctx context.Context, req *structs.ACLTokenUpsertRequest)
 	return &resp, nil
 }
 
-func (t *Tokens) Update(ctx context.Context, token *Token) (*string, error) {
+func (t *Tokens) Update(token *Token) (*string, error) {
 	return nil, nil
 }
 
-func (t *Tokens) Delete(ctx context.Context, token *Token) error {
+func (t *Tokens) Delete(token *Token) error {
 	return nil
 }
 

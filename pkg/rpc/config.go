@@ -1,6 +1,8 @@
 package rpc
 
 import (
+	"time"
+
 	log "github.com/seashell/drago/pkg/log"
 )
 
@@ -42,11 +44,15 @@ type ClientConfig struct {
 
 	// URL of the Drago server (e.g. http://127.0.0.1:8081).
 	Address string
+
+	// Timeout when dialing.
+	DialTimeout time.Duration
 }
 
 func DefaultClientConfig() *ClientConfig {
 	return &ClientConfig{
-		Address: "0.0.0.0:8081",
+		Address:     "0.0.0.0:8081",
+		DialTimeout: 2 * time.Second,
 	}
 }
 
@@ -58,10 +64,8 @@ func (c *ClientConfig) Merge(b *ClientConfig) *ClientConfig {
 	if b.Logger != nil {
 		result.Logger = b.Logger
 	}
+	if b.DialTimeout != 0 {
+		result.DialTimeout = b.DialTimeout
+	}
 	return &result
-}
-
-// Call is used to make an RPC call to the server
-func (c *Client) Call(method string, args interface{}, reply interface{}) error {
-	return c.client.Call(method, args, reply)
 }

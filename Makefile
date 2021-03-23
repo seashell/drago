@@ -105,7 +105,6 @@ clean: ## Remove build artifacts
 	@rm -rf "$(PROJECT_ROOT)/build/"
 	@rm -rf "$(PROJECT_ROOT)/ui/build/"
 	@rm -rf "$(PROJECT_ROOT)/ui/node_modules/"
-	@rm -rf "$(PROJECT_ROOT)/ui/statik/"
 
 HELP_FORMAT="    \033[36m%-25s\033[0m %s\n"
 EG_FORMAT="    \033[36m%s\033[0m %s\n"

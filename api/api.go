@@ -156,6 +156,7 @@ func (c *Client) addQuery(filters map[string]string, req *http.Request) {
 }
 
 func (c *Client) doRequest(req *http.Request, receiver interface{}) error {
+
 	res, err := c.httpClient.Do(req)
 	if err != nil {
 		return err
@@ -164,8 +165,17 @@ func (c *Client) doRequest(req *http.Request, receiver interface{}) error {
 	defer res.Body.Close()
 
 	if ok := res.StatusCode >= 200 && res.StatusCode < 300; !ok {
-		resBody, _ := ioutil.ReadAll(res.Body)
-		return fmt.Errorf("%v: %v", res.Status, string(resBody))
+
+		err := CodedError{
+			Code: res.StatusCode,
+		}
+
+		if err := json.NewDecoder(res.Body).Decode(&err); err != nil {
+			resBody, _ := ioutil.ReadAll(res.Body)
+			return fmt.Errorf("%v (%v)", res.Status, string(resBody))
+		}
+
+		return err
 	}
 
 	if receiver != nil {

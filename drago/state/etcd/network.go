@@ -59,6 +59,7 @@ func (r *StateRepository) NetworkByID(ctx context.Context, id string) (*structs.
 // UpsertNetwork :
 func (r *StateRepository) UpsertNetwork(ctx context.Context, n *structs.Network) error {
 	key := resourceKey(resourceTypeNetwork, n.ID)
+
 	_, err := r.client.Put(ctx, key, encodeValue(n))
 	if err != nil {
 		return err

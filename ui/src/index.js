@@ -10,6 +10,7 @@ import App from '_views/app'
 import NotFound from '_views/not-found'
 import * as serviceWorker from './serviceWorker'
 import { GlobalStyles, themes } from './styles'
+import './assets/fonts/index.css'
 
 const theme = 'light'
 

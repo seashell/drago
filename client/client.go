@@ -10,12 +10,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/seashell/drago/agent/conn"
 	nic "github.com/seashell/drago/client/nic"
 	state "github.com/seashell/drago/client/state"
 	boltdb "github.com/seashell/drago/client/state/boltdb"
 	structs "github.com/seashell/drago/drago/structs"
 	log "github.com/seashell/drago/pkg/log"
-	rpc "github.com/seashell/drago/pkg/rpc"
 	uuid "github.com/seashell/drago/pkg/uuid"
 )
 
@@ -24,7 +24,7 @@ var (
 	defaultReconciliationRetryInterval = 5 * time.Second
 	defaultReconciliationInterval      = 2 * time.Second
 	defaultFirstHeartbeatDelay         = 1 * time.Second
-	defaultHeartbeatInterval           = 1 * time.Second
+	defaultHeartbeatInterval           = 5 * time.Second
 )
 
 // Client is the Drago client
@@ -33,7 +33,7 @@ type Client struct {
 
 	logger log.Logger
 
-	rpc *rpc.Client
+	rpc conn.RPCConnection
 
 	state state.Repository
 
@@ -50,7 +50,7 @@ type Client struct {
 
 // New is used to create a new Drago client from the
 // configuration, potentially returning an error
-func New(config *Config) (*Client, error) {
+func New(conn conn.RPCConnection, config *Config) (*Client, error) {
 
 	rand.Seed(time.Now().Unix())
 
@@ -58,40 +58,29 @@ func New(config *Config) (*Client, error) {
 
 	c := &Client{
 		config:     config,
+		rpc:        conn,
 		logger:     config.Logger.WithName("client"),
 		shutdownCh: make(chan struct{}),
 	}
 
-	err := c.setupState()
-	if err != nil {
+	if err := c.setupState(); err != nil {
 		return nil, fmt.Errorf("error setting up client state: %v", err)
 	}
 
-	err = c.setupNode()
-	if err != nil {
+	if err := c.setupNode(); err != nil {
 		return nil, fmt.Errorf("error setting up node: %v", err)
 	}
 
-	// Setup the network controller
-	nc, err := nic.NewController(&nic.Config{
-		InterfacesPrefix: c.config.InterfacesPrefix,
-		WireguardPath:    c.config.WireguardPath,
-	})
-	if err != nil {
-		return nil, fmt.Errorf("error setting network controller: %v", err)
-
+	if err := c.setupNetworkController(); err != nil {
+		return nil, fmt.Errorf("error setting up network controller: %v", err)
 	}
-	c.niController = nc
 
-	err = c.setupInterfaces()
-	if err != nil {
+	if err := c.setupInterfaces(); err != nil {
 		return nil, fmt.Errorf("error setting up interfaces: %v", err)
 	}
 
-	// Start goroutine for registering the client and issuing periodic heartbeats
 	go c.registerAndHeartbeat()
 
-	// Start goroutine for reconciling the client state
 	go c.run()
 
 	c.logger.Infof("started client node %s", c.NodeID())
@@ -111,6 +100,18 @@ func (c *Client) NodeID() string {
 // NodeSecretID returns the node secret ID for the given client
 func (c *Client) NodeSecretID() string {
 	return c.node.ID
+}
+
+// Stats is used to return statistics for the server
+func (c *Client) Stats() map[string]map[string]string {
+
+	stats := map[string]map[string]string{
+		"client": {
+			"node_id": c.NodeID(),
+		},
+	}
+
+	return stats
 }
 
 func (c *Client) setupNode() error {
@@ -179,6 +180,22 @@ func (c *Client) setupState() error {
 	return nil
 }
 
+func (c *Client) setupNetworkController() error {
+
+	nc, err := nic.NewController(&nic.Config{
+		InterfacesPrefix: c.config.InterfacesPrefix,
+		WireguardPath:    c.config.WireguardPath,
+		KeyStore:         c.state, // TODO: improve how we store private keys (do we really need to store them?)
+	})
+	if err != nil {
+		return err
+	}
+
+	c.niController = nc
+
+	return nil
+}
+
 func (c *Client) setupInterfaces() error {
 
 	current, err := c.niController.Interfaces()
@@ -196,21 +213,6 @@ func (c *Client) setupInterfaces() error {
 	return nil
 }
 
-func (c *Client) setupRPCClient() error {
-
-	rpcClient, err := rpc.NewClient(&rpc.ClientConfig{
-		Logger:  c.logger,
-		Address: c.config.Servers[0],
-	})
-	if err != nil {
-		return err
-	}
-
-	c.rpc = rpcClient
-
-	return nil
-}
-
 func (c *Client) registerAndHeartbeat() {
 
 	c.tryToRegisterUntilSuccessful()
@@ -223,6 +225,8 @@ func (c *Client) registerAndHeartbeat() {
 		case <-c.shutdownCh:
 			return
 		}
+
+		c.logger.Debugf("heartbeating (client -> server)")
 
 		if err := c.updateNodeStatus(); err != nil {
 			c.logger.Debugf("error updating node status: %v", err)
@@ -302,26 +306,13 @@ func (c *Client) reconcileInterfaces(current, desired []*structs.Interface) {
 
 		iface := desiredMap[id]
 
-		// Generate a new key for the interface
-		key, err := c.niController.GenerateKey()
-		if err != nil {
-			c.logger.Errorf("could not generate key for the new interface: %v", err)
-			continue
-		}
-
-		err = c.state.UpsertInterface(iface)
+		err := c.state.UpsertInterface(iface)
 		if err != nil {
 			c.logger.Warnf("could not persist interface: %v", err)
 			continue
 		}
 
-		err = c.state.UpsertInterfaceKey(iface.ID, key)
-		if err != nil {
-			c.logger.Warnf("could not persist interface key: %v", err)
-			continue
-		}
-
-		err = c.niController.CreateInterfaceWithKey(iface, key)
+		err = c.niController.CreateInterface(iface)
 		if err != nil {
 			c.logger.Warnf("could not create wireguard interface: %v", err)
 		}
@@ -338,19 +329,8 @@ func (c *Client) reconcileInterfaces(current, desired []*structs.Interface) {
 			continue
 		}
 
-		key, err := c.state.InterfaceKeyByID(iface.ID)
-		if err != nil {
-			c.logger.Errorf("could not retrieve key for the interface to be updated: %v", err)
-			continue
-		}
-
-		if err := c.niController.DeleteInterfaceByAlias(id); err != nil {
-			c.logger.Warnf("could not delete interface: %v", err)
-			continue
-		}
-
-		if err := c.niController.CreateInterfaceWithKey(iface, key); err != nil {
-			c.logger.Warnf("could not create wireguard interface: %v", err)
+		if err := c.niController.UpdateInterface(iface); err != nil {
+			c.logger.Warnf("could not update wireguard interface: %v", err)
 		}
 	}
 
@@ -358,13 +338,14 @@ func (c *Client) reconcileInterfaces(current, desired []*structs.Interface) {
 
 func (c *Client) watchInterfaces(ch chan []*structs.Interface) {
 
-	c.logger.Debugf("watching interfaces")
-
 	req := &structs.NodeSpecificRequest{
 		NodeID: c.NodeID(),
 	}
 
 	for {
+
+		c.logger.Debugf("updating interface configuration (server -> client)")
+
 		var resp structs.NodeInterfacesResponse
 		err := c.RPC("Node.GetInterfaces", req, &resp)
 		if err != nil {
@@ -390,45 +371,36 @@ func (c *Client) watchInterfaces(ch chan []*structs.Interface) {
 
 func (c *Client) synchronizeInterfaces() {
 
-	c.logger.Debugf("syncing interfaces")
-
-	keyResolver := func(id string) string {
-		if key, err := c.state.InterfaceKeyByID(id); err == nil {
-			return key
-		}
-		c.logger.Warnf("could not retrieve key for interface %s", id)
-		return ""
-	}
-
-	interfaces, err := c.niController.InterfacesWithPublicKey(keyResolver)
-	if err != nil {
-		c.logger.Warnf("could not retrieve interfaces with public key from controller")
-	}
-
-	if interfaces == nil {
-		interfaces = []*structs.Interface{}
-	}
-
-	// TODO: build request
-	req := &structs.NodeInterfaceUpdateRequest{
-		NodeID:     c.NodeID(),
-		Interfaces: interfaces,
-	}
-
 	for {
+
+		c.logger.Debugf("updating interface status (client -> server)")
+
+		interfaces, err := c.niController.Interfaces()
+		if err != nil {
+			c.logger.Warnf("could not retrieve interfaces with public key from controller")
+		}
+
+		if interfaces == nil {
+			interfaces = []*structs.Interface{}
+		}
+
+		req := &structs.NodeInterfaceUpdateRequest{
+			NodeID:     c.NodeID(),
+			Interfaces: interfaces,
+		}
+
 		var resp structs.GenericResponse
-		err := c.RPC("Node.UpdateInterfaces", req, &resp)
+		err = c.RPC("Node.UpdateInterfaces", req, &resp)
 		if err != nil {
 			c.logger.Debugf("error updating interfaces: %v", err)
-			retryCh := time.After(defaultReconciliationInterval)
+			retryCh := time.After(randomDuration(defaultReconciliationInterval, 0*time.Second))
 			select {
 			case <-retryCh:
 			case <-c.shutdownCh:
 				return
 			}
 		}
-
-		retryCh := time.After(c.config.ReconcileInterval)
+		retryCh := time.After(randomDuration(defaultReconciliationInterval, 0*time.Second))
 		select {
 		case <-c.shutdownCh:
 			return
@@ -441,6 +413,8 @@ func (c *Client) tryToRegisterUntilSuccessful() {
 
 	for {
 
+		c.logger.Debugf("registering node (client -> server)")
+
 		req := &structs.NodeRegisterRequest{
 			Node: c.Node(),
 		}
@@ -448,8 +422,6 @@ func (c *Client) tryToRegisterUntilSuccessful() {
 		var err error
 		var resp structs.NodeUpdateResponse
 		if err = c.RPC("Node.Register", req, &resp); err == nil {
-
-			c.logger.Infof("node successfully registered")
 
 			c.nodeLock.Lock()
 			c.node.Status = structs.NodeStatusReady
@@ -460,7 +432,7 @@ func (c *Client) tryToRegisterUntilSuccessful() {
 
 		c.logger.Debugf("error registering node: %v", err)
 
-		retryCh := time.After(time.Duration(defaultRegistrationRetryInterval))
+		retryCh := time.After(randomDuration(defaultRegistrationRetryInterval, 0*time.Second))
 
 		select {
 		case <-retryCh:
@@ -472,9 +444,12 @@ func (c *Client) tryToRegisterUntilSuccessful() {
 
 func (c *Client) updateNodeStatus() error {
 
+	c.logger.Debugf("updating node status (client -> server)")
+
 	req := &structs.NodeUpdateStatusRequest{
 		NodeID: c.NodeID(),
 		Status: structs.NodeStatusReady,
+		Meta:   c.node.Meta,
 	}
 
 	var err error
@@ -484,6 +459,10 @@ func (c *Client) updateNodeStatus() error {
 	}
 
 	return nil
+}
+
+func (c *Client) RPC(method string, args interface{}, reply interface{}) error {
+	return c.rpc.Call(method, args, reply)
 }
 
 // Shutdown is used to tear down the client
@@ -515,25 +494,6 @@ func (c *Client) createTempDir(pattern string) (string, error) {
 	return p, nil
 }
 
-// RPC calls a RPC method on a remote server using the clients RPC client, establishing
-// the connection if it's being used for the first time, of if it has been disconnected.
-func (c *Client) RPC(method string, args interface{}, reply interface{}) error {
-
-	if c.rpc == nil {
-		err := c.setupRPCClient()
-		if err != nil {
-			return err
-		}
-	}
-
-	if err := c.rpc.Call(method, args, reply); err != nil {
-		c.rpc = nil
-		return err
-	}
-
-	return nil
-}
-
 func (c *Client) readOrGenerateNodeID() (string, error) {
 
 	id := uuid.Generate()
@@ -561,4 +521,10 @@ func (c *Client) readOrGenerateNodeSecretID() (string, error) {
 	}
 
 	return secret, nil
+}
+
+// Generates a random duration in the interval [mean-delta, mean+delta]
+func randomDuration(mean time.Duration, delta time.Duration) time.Duration {
+	t := mean.Milliseconds() + int64((rand.Float32()-0.5)*float32(delta.Milliseconds()))
+	return time.Duration(t * int64(time.Millisecond))
 }

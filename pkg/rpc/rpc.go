@@ -76,7 +76,7 @@ func NewClient(config *ClientConfig) (*Client, error) {
 	}
 
 	// Use tls.Dial for connection with TLS
-	conn, err := net.Dial("tcp", config.Address)
+	conn, err := net.DialTimeout("tcp", config.Address, config.DialTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -85,4 +85,9 @@ func NewClient(config *ClientConfig) (*Client, error) {
 	c.client = rpc.NewClientWithCodec(cdc)
 
 	return c, nil
+}
+
+// Call is used to make an RPC call to the server
+func (c *Client) Call(method string, args interface{}, reply interface{}) error {
+	return c.client.Call(method, args, reply)
 }

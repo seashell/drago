@@ -17,9 +17,9 @@ func (r *StateRepository) ACLPolicies(ctx context.Context) ([]*structs.ACLPolicy
 	prefix := resourcePrefix(resourceTypePolicy)
 
 	items := []*structs.ACLPolicy{}
-	for k, v := range r.kv {
-		if strings.HasPrefix(k, prefix) {
-			if t, ok := v.(*structs.ACLPolicy); ok {
+	for el := range r.kv.Iter() {
+		if strings.HasPrefix(el.Key, prefix) {
+			if t, ok := el.Value.(*structs.ACLPolicy); ok {
 				items = append(items, t)
 			}
 		}
@@ -31,7 +31,7 @@ func (r *StateRepository) ACLPolicies(ctx context.Context) ([]*structs.ACLPolicy
 // ACLPolicyByName :
 func (r *StateRepository) ACLPolicyByName(ctx context.Context, name string) (*structs.ACLPolicy, error) {
 	key := resourceKey(resourceTypePolicy, name)
-	if v, found := r.kv[key]; found {
+	if v, found := r.kv.Get(key); found {
 		return v.(*structs.ACLPolicy), nil
 	}
 	return nil, errors.New("not found")
@@ -40,7 +40,7 @@ func (r *StateRepository) ACLPolicyByName(ctx context.Context, name string) (*st
 // UpsertACLPolicy :
 func (r *StateRepository) UpsertACLPolicy(ctx context.Context, p *structs.ACLPolicy) error {
 	key := resourceKey(resourceTypePolicy, p.Name)
-	r.kv[key] = p
+	r.kv.Set(key, p)
 	return nil
 }
 
@@ -48,7 +48,7 @@ func (r *StateRepository) UpsertACLPolicy(ctx context.Context, p *structs.ACLPol
 func (r *StateRepository) DeleteACLPolicies(ctx context.Context, names []string) error {
 	for _, name := range names {
 		key := resourceKey(resourceTypePolicy, name)
-		delete(r.kv, key)
+		r.kv.Delete((key))
 	}
 	return nil
 }

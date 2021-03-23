@@ -1,10 +1,13 @@
-//go:generate go generate github.com/seashell/drago/ui
+//go:generate yarn --cwd ./ui build
 
 package main
 
 import (
 	"context"
+	"embed"
 	"fmt"
+	"io/fs"
+	"net/http"
 	"os"
 	"os/signal"
 	"runtime"
@@ -14,6 +17,9 @@ import (
 	cli "github.com/seashell/drago/pkg/cli"
 	version "github.com/seashell/drago/version"
 )
+
+//go:embed ui/build/*
+var uiefs embed.FS
 
 // Credits to https://github.com/pulumi/pulumi/blob/master/pkg/cmd/pulumi/main.go
 func panicHandler() {
@@ -80,10 +86,19 @@ func setupCLI() *cli.CLI {
 		ErrorWriter: os.Stderr,
 	}
 
+	subfs, err := fs.Sub(uiefs, "ui/build")
+	if err != nil {
+		panic(err)
+	}
+
+	uifs := http.FS(subfs)
+
 	cli := cli.New(&cli.Config{
 		Name: "drago",
 		Commands: map[string]cli.Command{
-			"agent": &command.AgentCommand{UI: ui},
+			"agent":       &command.AgentCommand{UI: ui, StaticFS: uifs},
+			"node":        &command.NodeCommand{UI: ui},
+			"node status": &command.NodeStatusCommand{UI: ui},
 		},
 		Version: version.GetVersion().VersionNumber(),
 	})

@@ -98,7 +98,7 @@ func (s *NetworkService) UpsertNetwork(args *structs.NetworkUpsertRequest, out *
 
 	err := n.Validate()
 	if err != nil {
-		return structs.ErrInvalidInput
+		return structs.NewInvalidInputError(err.Error())
 	}
 
 	if n.ID == "" {
@@ -136,8 +136,39 @@ func (s *NetworkService) DeleteNetwork(args *structs.NetworkDeleteRequest, out *
 		}
 	}
 
-	err := s.state.DeleteNetworks(ctx, args.NetworkIDs)
-	if err != nil {
+	for _, id := range args.NetworkIDs {
+
+		interfaces, err := s.state.InterfacesByNetworkID(ctx, id)
+		if err != nil {
+			return structs.NewInternalError(err.Error())
+		}
+
+		connections, err := s.state.ConnectionsByNetworkID(ctx, id)
+		if err != nil {
+			return structs.NewInternalError(err.Error())
+		}
+
+		connectionIDs := []string{}
+		interfaceIDs := []string{}
+
+		for _, iface := range interfaces {
+			interfaceIDs = append(interfaceIDs, iface.ID)
+		}
+
+		for _, conn := range connections {
+			connectionIDs = append(connectionIDs, conn.ID)
+		}
+
+		if err := s.state.DeleteInterfaces(ctx, interfaceIDs); err != nil {
+			return structs.NewInternalError(err.Error())
+		}
+
+		if err := s.state.DeleteConnections(ctx, connectionIDs); err != nil {
+			return structs.NewInternalError(err.Error())
+		}
+	}
+
+	if err := s.state.DeleteNetworks(ctx, args.NetworkIDs); err != nil {
 		return structs.ErrInternal
 	}
 

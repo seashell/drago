@@ -29,6 +29,10 @@ type Config struct {
 	// WireguardPath is the path to a userspace Wireguard binary. In case
 	// it is not defined, Drago will try to use the kernel module.
 	WireguardPath string
+
+	// KeyStore is an implementation of the KeyStore interface, used by the
+	// Controller to cache private keys for each interface.
+	KeyStore PrivateKeyStore
 }
 
 // Controller : network interface controller.
@@ -43,6 +47,10 @@ func NewController(config *Config) (*Controller, error) {
 	wg, err := wgctrl.New()
 	if err != nil {
 		return nil, err
+	}
+
+	if config.KeyStore == nil {
+		panic("must provide a key store")
 	}
 
 	c := &Controller{
@@ -166,24 +174,49 @@ func (c *Controller) configureLink(iface *structs.Interface) error {
 		return err
 	}
 
-	dev, err := c.wg.Device(link.Attrs().Name)
+	err = netlink.LinkSetDown(link)
 	if err != nil {
 		return err
 	}
 
-	key := dev.PrivateKey
-	if dev.PrivateKey.String() == "" {
-		key, err = wgtypes.GeneratePrivateKey()
+	// Create a new private key for this interface.
+	// If a private key has already been created, use it.
+	// TODO: implement an expiration/rotation strategy.
+	key, err := c.config.KeyStore.KeyByID(iface.ID)
+	if err != nil {
+		wgKey, err := wgtypes.GeneratePrivateKey()
 		if err != nil {
-			return fmt.Errorf("could not generate key for interface: %v", err)
+			return fmt.Errorf("could not generate private key: %v", err)
+		}
+		key = &PrivateKey{
+			ID:        iface.ID,
+			Key:       wgKey.String(),
+			CreatedAt: time.Now().Unix(),
+		}
+		err = c.config.KeyStore.UpsertKey(key)
+		if err != nil {
+			return fmt.Errorf("could not persist private key: %v", err)
 		}
 	}
 
+	wgKey, err := wgtypes.ParseKey(key.Key)
+	if err != nil {
+		return fmt.Errorf("could not parse private key: %v", err)
+	}
+
 	config := wgtypes.Config{
-		PrivateKey:   &key,
+		PrivateKey:   &wgKey,
 		ListenPort:   iface.ListenPort,
 		Peers:        []wgtypes.PeerConfig{},
 		ReplacePeers: true,
+	}
+
+	for _, peer := range iface.Peers {
+		peerConfig, err := c.newPeerConfig(peer)
+		if err != nil {
+			return err
+		}
+		config.Peers = append(config.Peers, *peerConfig)
 	}
 
 	err = c.wg.ConfigureDevice(link.Attrs().Name, config)
@@ -202,22 +235,13 @@ func (c *Controller) configureLink(iface *structs.Interface) error {
 		return err
 	}
 
-	// for _, peer := range iface.Peers {
-	// 	p, err := c.newPeerConfig(peer)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-	// 	config.Peers = append(config.Peers, *p)
-	// }
-
-	// idx := link.Attrs().Index
-	// for _, peer := range config.Peers {
-	// 	for _, ip := range peer.AllowedIPs {
-	// 		if err = netlink.RouteReplace(&netlink.Route{LinkIndex: idx, Dst: &ip}); err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
+	for _, peerConfig := range config.Peers {
+		for _, ip := range peerConfig.AllowedIPs {
+			if err = netlink.RouteReplace(&netlink.Route{LinkIndex: link.Attrs().Index, Dst: &ip}); err != nil {
+				return err
+			}
+		}
+	}
 
 	return nil
 }
@@ -237,9 +261,9 @@ func (c *Controller) newPeerConfig(peer *structs.Peer) (*wgtypes.PeerConfig, err
 		PersistentKeepaliveInterval: nil,
 	}
 
-	if peer.PublicKey != "" {
+	if peer.PublicKey != nil {
 		var key wgtypes.Key
-		if key, err = wgtypes.ParseKey(peer.PublicKey); err != nil {
+		if key, err = wgtypes.ParseKey(*peer.PublicKey); err != nil {
 			return nil, err
 		}
 		config.PublicKey = key
@@ -253,15 +277,19 @@ func (c *Controller) newPeerConfig(peer *structs.Peer) (*wgtypes.PeerConfig, err
 		config.AllowedIPs = append(config.AllowedIPs, *parsed)
 	}
 
-	if peer.PersistentKeepalive != 0 {
-		pk := time.Duration(peer.PersistentKeepalive) * time.Second
+	if peer.PersistentKeepalive != nil {
+		pk := time.Duration(*peer.PersistentKeepalive) * time.Second
 		config.PersistentKeepaliveInterval = &pk
 	}
 
-	if peer.Address != "" {
+	if peer.Address != nil {
+		port := 51820 // TODO: should we use this or the zero value by default?
+		if peer.Port != nil {
+			port = *peer.Port
+		}
 		config.Endpoint = &net.UDPAddr{
-			IP:   net.ParseIP(peer.Address),
-			Port: peer.Port,
+			IP:   net.ParseIP(*peer.Address),
+			Port: port,
 		}
 	}
 

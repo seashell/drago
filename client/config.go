@@ -9,7 +9,7 @@ import (
 
 const (
 	defaultLogLevel         = "DEBUG"
-	defaultStateDir         = "/etc/drago"
+	defaultStateDir         = "/tmp/drago"
 	defaultWireguardPath    = ""
 	defaultInterfacesPrefix = "drago-"
 )

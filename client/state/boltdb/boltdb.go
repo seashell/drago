@@ -2,14 +2,17 @@ package boltdb
 
 import (
 	"encoding/json"
+	"fmt"
 
+	"github.com/seashell/drago/client/nic"
 	"github.com/seashell/drago/drago/structs"
 	"go.etcd.io/bbolt"
 	bolt "go.etcd.io/bbolt"
 )
 
 var (
-	interfacesBucketName = []byte("interfaces")
+	interfacesBucketName  = []byte("interfaces")
+	privateKeysBucketName = []byte("keys")
 )
 
 // StateRepository ...
@@ -26,8 +29,11 @@ func NewStateRepository(path string) (*StateRepository, error) {
 
 	err = db.Update(func(tx *bbolt.Tx) error {
 
-		_, err := tx.CreateBucketIfNotExists(interfacesBucketName)
-		if err != nil {
+		if _, err := tx.CreateBucketIfNotExists(interfacesBucketName); err != nil {
+			return err
+		}
+
+		if _, err := tx.CreateBucketIfNotExists(privateKeysBucketName); err != nil {
 			return err
 		}
 
@@ -98,6 +104,40 @@ func (r *StateRepository) DeleteInterfaces(ids []string) error {
 		return nil
 	})
 
+	return err
+}
+
+func (r *StateRepository) KeyByID(id string) (*nic.PrivateKey, error) {
+
+	var key *nic.PrivateKey
+
+	err := r.db.View(func(tx *bbolt.Tx) error {
+		v := tx.Bucket(privateKeysBucketName).Get([]byte(id))
+		if v != nil {
+			if err := decode(v, &key); err != nil {
+				return err
+			}
+			return nil
+		}
+		return fmt.Errorf("not found")
+	})
+
+	return key, err
+}
+
+func (r *StateRepository) UpsertKey(key *nic.PrivateKey) error {
+	err := r.db.Update(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(privateKeysBucketName)
+		return b.Put([]byte(key.ID), encode(key))
+	})
+	return err
+}
+
+func (r *StateRepository) DeleteKey(id string) error {
+	err := r.db.View(func(tx *bbolt.Tx) error {
+		b := tx.Bucket(privateKeysBucketName)
+		return b.Delete([]byte(id))
+	})
 	return err
 }
 

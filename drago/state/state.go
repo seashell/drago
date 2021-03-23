@@ -6,9 +6,15 @@ import (
 	"github.com/seashell/drago/drago/structs"
 )
 
+// Transaction :
+type Transaction interface {
+	Commit() (interface{}, error)
+}
+
 // Repository :
 type Repository interface {
 	Name() string
+	Transaction(ctx context.Context) Transaction
 
 	ACLTokenRepository
 	ACLPolicyRepository
@@ -17,6 +23,7 @@ type Repository interface {
 
 	NetworkRepository
 	InterfaceRepository
+	ConnectionRepository
 
 	ACLState(ctx context.Context) (*structs.ACLState, error)
 	ACLSetState(ctx context.Context, state *structs.ACLState) error
@@ -67,12 +74,14 @@ type InterfaceRepository interface {
 	DeleteInterfaces(ctx context.Context, ids []string) error
 }
 
-// LinkRepository : Link repository interface
-type LinkRepository interface {
-	Link(ctx context.Context) ([]*structs.Link, error)
-	LinksByInterfaceID(ctx context.Context, s string) ([]*structs.Link, error)
-	LinksByNodeID(ctx context.Context, s string) ([]*structs.Link, error)
-	LinkByID(ctx context.Context, id string) (*structs.Link, error)
-	UpsertLink(ctx context.Context, i *structs.Link) error
-	DeleteLink(ctx context.Context, ids []string) error
+// ConnectionRepository : Connection repository interface
+type ConnectionRepository interface {
+	Connections(ctx context.Context) ([]*structs.Connection, error)
+	ConnectionsByNetworkID(ctx context.Context, s string) ([]*structs.Connection, error)
+	ConnectionsByNodeID(ctx context.Context, s string) ([]*structs.Connection, error)
+	ConnectionsByInterfaceID(ctx context.Context, s string) ([]*structs.Connection, error)
+	ConnectionByInterfaceIDs(ctx context.Context, a, b string) (*structs.Connection, error)
+	ConnectionByID(ctx context.Context, id string) (*structs.Connection, error)
+	UpsertConnection(ctx context.Context, i *structs.Connection) error
+	DeleteConnections(ctx context.Context, ids []string) error
 }
