@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	api "github.com/seashell/drago/api"
-	"github.com/seashell/drago/drago/structs"
+	structs "github.com/seashell/drago/drago/structs"
 )
 
 // Returns the node ID of the local agent, in case it is a client.
@@ -27,4 +27,11 @@ func localAgentNodeID(api *api.Client) (string, error) {
 	}
 
 	return nodeID, nil
+}
+
+func valueOrPlaceholder(s *string, p string) string {
+	if s != nil {
+		return *s
+	}
+	return p
 }

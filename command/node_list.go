@@ -13,8 +13,8 @@ import (
 	cli "github.com/seashell/drago/pkg/cli"
 )
 
-// NodeStatusCommand :
-type NodeStatusCommand struct {
+// NodeListCommand :
+type NodeListCommand struct {
 	UI cli.UI
 
 	// Parsed flags
@@ -24,7 +24,7 @@ type NodeStatusCommand struct {
 	Command
 }
 
-func (c *NodeStatusCommand) FlagSet() *flag.FlagSet {
+func (c *NodeListCommand) FlagSet() *flag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -38,17 +38,17 @@ func (c *NodeStatusCommand) FlagSet() *flag.FlagSet {
 }
 
 // Name :
-func (c *NodeStatusCommand) Name() string {
+func (c *NodeListCommand) Name() string {
 	return "node status"
 }
 
 // Synopsis :
-func (c *NodeStatusCommand) Synopsis() string {
+func (c *NodeListCommand) Synopsis() string {
 	return "Display status information about nodes"
 }
 
 // Run :
-func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
+func (c *NodeListCommand) Run(ctx context.Context, args []string) int {
 
 	flags := c.FlagSet()
 
@@ -110,22 +110,18 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 }
 
 // Help :
-func (c *NodeStatusCommand) Help() string {
+func (c *NodeListCommand) Help() string {
 	h := `
-Usage: drago node status [options] <node>
+Usage: drago node list [options]
 
-  Display node status information.
-
-  If a node ID is passed, information for that specific node will be displayed.
-  If no node ID's are passed, then a short-hand list of all nodes will be displayed.
-  The -self flag is useful to quickly access the status of the local node.
+  List nodes registered on Drago.
 
   If ACLs are enabled, this option requires a token with the 'node:read' capability.
 
 General Options:
 ` + GlobalOptions() + `
 
-Node Status Options:
+Node List Options:
 
   -self
     Query the status of the local node.
@@ -137,7 +133,7 @@ Node Status Options:
 	return strings.TrimSpace(h)
 }
 
-func (c *NodeStatusCommand) formatNodeList(nodes []*structs.NodeListStub) string {
+func (c *NodeListCommand) formatNodeList(nodes []*structs.NodeListStub) string {
 
 	var b bytes.Buffer
 	fnodes := []interface{}{}
@@ -148,6 +144,7 @@ func (c *NodeStatusCommand) formatNodeList(nodes []*structs.NodeListStub) string
 		for _, node := range nodes {
 			fnodes = append(fnodes, map[string]string{
 				"ID":     node.ID,
+				"Name":   node.Name,
 				"Status": node.Status,
 			})
 		}
@@ -155,9 +152,9 @@ func (c *NodeStatusCommand) formatNodeList(nodes []*structs.NodeListStub) string
 			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
 		}
 	} else {
-		tbl := table.New("NODE ID", "STATUS").WithWriter(&b)
+		tbl := table.New("NODE ID", "NAME", "STATUS").WithWriter(&b)
 		for _, node := range nodes {
-			tbl.AddRow(node.ID, node.Status)
+			tbl.AddRow(node.ID, node.Name, node.Status)
 		}
 		tbl.Print()
 	}
@@ -165,7 +162,7 @@ func (c *NodeStatusCommand) formatNodeList(nodes []*structs.NodeListStub) string
 	return b.String()
 }
 
-func (c *NodeStatusCommand) formatNode(node *structs.Node) string {
+func (c *NodeListCommand) formatNode(node *structs.Node) string {
 
 	var b bytes.Buffer
 
@@ -175,6 +172,7 @@ func (c *NodeStatusCommand) formatNode(node *structs.Node) string {
 
 		fnode := map[string]string{
 			"ID":     node.ID,
+			"Name":   node.Name,
 			"Status": node.Status,
 		}
 
@@ -183,8 +181,8 @@ func (c *NodeStatusCommand) formatNode(node *structs.Node) string {
 		}
 
 	} else {
-		tbl := table.New("NODE ID", "STATUS").WithWriter(&b)
-		tbl.AddRow(node.ID, node.Status)
+		tbl := table.New("NODE ID", "NAME", "STATUS").WithWriter(&b)
+		tbl.AddRow(node.ID, node.Name, node.Status)
 		tbl.Print()
 	}
 

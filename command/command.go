@@ -48,7 +48,7 @@ func GlobalOptions() string {
   -address=<addr>
     The address of the Drago server.
     Overrides the DRAGO_ADDR environment variable if set.
-    Default = http://127.0.0.1:4646
+    Default = http://127.0.0.1:8080
 
   -token=<token>
     The token used to authenticate with the Drago server.

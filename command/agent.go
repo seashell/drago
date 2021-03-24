@@ -87,7 +87,7 @@ func (c *AgentCommand) Name() string {
 
 // Synopsis :
 func (c *AgentCommand) Synopsis() string {
-	return "Runs a drago agent"
+	return "Run a Drago agent"
 }
 
 // Run :

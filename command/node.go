@@ -35,9 +35,6 @@ Usage: drago node <subcommand> [options] [args]
   This command groups subcommands for interacting with nodes.
     
   Please see the individual subcommand help for detailed usage information.
-
-General Options:
-` + GlobalOptions() + `
 `
 	return strings.TrimSpace(h)
 }

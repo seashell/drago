@@ -52,7 +52,7 @@ func GetVersion() *VersionInfo {
 
 // VersionNumber:
 func (c *VersionInfo) VersionNumber() string {
-	version := fmt.Sprintf("%s", c.Version)
+	version := c.Version
 
 	if c.VersionPrerelease != "" {
 		version = fmt.Sprintf("%s-%s", version, c.VersionPrerelease)
@@ -69,7 +69,7 @@ func (c *VersionInfo) VersionNumber() string {
 func (c *VersionInfo) FullVersionNumber(rev bool) string {
 	var versionString bytes.Buffer
 
-	fmt.Fprintf(&versionString, "drago v%s", c.Version)
+	fmt.Fprintf(&versionString, "Drago v%s", c.Version)
 	if c.VersionPrerelease != "" {
 		fmt.Fprintf(&versionString, "-%s", c.VersionPrerelease)
 	}
