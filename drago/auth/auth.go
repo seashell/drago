@@ -39,9 +39,11 @@ func NewAuthorizationHandler(
 // Authorize checks whether or not the specified operation is authorized or
 // not on the targeted resource and path, potentially returning an error.
 func (h *authorizationHandler) Authorize(ctx context.Context, sub, res, path, op string) error {
+
 	acl, err := h.resolver.ResolveSecret(ctx, sub)
 	if err != nil {
 		return err
 	}
+
 	return acl.CheckAuthorized(ctx, res, path, op)
 }

@@ -69,9 +69,9 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	// Print status of multiple nodes
 	if len(args) == 0 && !c.self {
 
+		// Print status of multiple nodes
 		nodes, err := api.Nodes().List(&structs.QueryOptions{AuthToken: c.token})
 		if err != nil {
 			c.UI.Error(fmt.Sprintf("Error retrieving node status: %s", err))

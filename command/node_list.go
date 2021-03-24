@@ -69,7 +69,6 @@ func (c *NodeListCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	// Print status of multiple nodes
 	if len(args) == 0 && !c.self {
 
 		nodes, err := api.Nodes().List(&structs.QueryOptions{AuthToken: c.token})

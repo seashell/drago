@@ -83,11 +83,11 @@ func parseWriteRequestOptions(req *http.Request) structs.WriteRequest {
 }
 
 func parseError(err error) error {
-	switch err {
-	case structs.ErrPermissionDenied:
-		return NewCodedError(403, "Forbidden", err)
-	case structs.ErrNotFound:
-		return NewCodedError(404, "Not found", err)
+	switch err.Error() {
+	case structs.ErrPermissionDenied.Error():
+		return NewCodedError(403, err.Error())
+	case structs.ErrNotFound.Error():
+		return NewCodedError(404, err.Error())
 	default:
 		return NewCodedError(500, err.Error())
 	}

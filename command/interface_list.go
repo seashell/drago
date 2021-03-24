@@ -55,8 +55,8 @@ func (c *InterfaceListCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) > 1 {
-		c.UI.Error("This command takes either one or no arguments")
+	if len(args) > 0 {
+		c.UI.Error("This command takes no arguments")
 		return 1
 	}
 
@@ -126,33 +126,6 @@ func (c *InterfaceListCommand) formatInterfaceList(interfaces []*structs.Interfa
 		for _, iface := range interfaces {
 			tbl.AddRow(iface.ID, valueOrPlaceholder(iface.Name, "N/A"), valueOrPlaceholder(iface.Address, "N/A"))
 		}
-		tbl.Print()
-	}
-
-	return b.String()
-}
-
-func (c *InterfaceListCommand) formatInterface(iface *structs.Interface) string {
-
-	var b bytes.Buffer
-
-	if c.json {
-		enc := json.NewEncoder(&b)
-		enc.SetIndent("", "    ")
-
-		finterface := map[string]string{
-			"ID":      iface.ID,
-			"Name":    valueOrPlaceholder(iface.Name, "N/A"),
-			"Address": valueOrPlaceholder(iface.Address, "N/A"),
-		}
-
-		if err := enc.Encode(finterface); err != nil {
-			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
-		}
-
-	} else {
-		tbl := table.New("INTERFACE ID", "NAME", "ADDRESS RANGE").WithWriter(&b)
-		tbl.AddRow(iface.ID, valueOrPlaceholder(iface.Name, "N/A"), valueOrPlaceholder(iface.Address, "N/A"))
 		tbl.Print()
 	}
 

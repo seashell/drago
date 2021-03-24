@@ -55,8 +55,8 @@ func (c *NetworkListCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) > 1 {
-		c.UI.Error("This command takes either one or no arguments")
+	if len(args) > 0 {
+		c.UI.Error("This command takes no arguments")
 		return 1
 	}
 

@@ -177,6 +177,16 @@ func (s *Server) setupACLModel() error {
 		Alias("read", NodeRead, NodeList).
 		Alias("write", NodeWrite, NodeRead, NodeList)
 
+	model.Resource("interface").
+		Capabilities(InterfaceWrite, InterfaceRead, InterfaceList).
+		Alias("read", InterfaceRead, InterfaceList).
+		Alias("write", InterfaceWrite, InterfaceRead, InterfaceList)
+
+	model.Resource("connection").
+		Capabilities(ConnectionWrite, ConnectionRead, ConnectionList).
+		Alias("read", ConnectionRead, ConnectionList).
+		Alias("write", ConnectionWrite, ConnectionRead, ConnectionList)
+
 	s.config.ACL.Model = model
 
 	return nil
@@ -186,17 +196,16 @@ func (s *Server) setupACLModel() error {
 func (s *Server) defaultACLPolicies() []*structs.ACLPolicy {
 	return []*structs.ACLPolicy{
 		{
-			Name: "anonymous",
+			Name:        "anonymous",
+			Description: "Default policy utilized when no access token is provided",
 			Rules: []*structs.ACLPolicyRule{
 				{Resource: "token", Path: "*", Capabilities: []string{ACLTokenList}},
-				{Resource: "policy", Path: "*", Capabilities: []string{"read"}},
-				{Resource: "network", Path: "*", Capabilities: []string{"read"}},
-				{Resource: "node", Path: "*", Capabilities: []string{"read"}},
+				{Resource: "policy", Path: "*", Capabilities: []string{ACLPolicyList}},
+				{Resource: "network", Path: "*", Capabilities: []string{NetworkList}},
+				{Resource: "node", Path: "*", Capabilities: []string{NodeList}},
+				{Resource: "interface", Path: "*", Capabilities: []string{InterfaceList}},
+				{Resource: "connection", Path: "*", Capabilities: []string{ConnectionList}},
 			},
-		},
-		{
-			Name:  "manager",
-			Rules: []*structs.ACLPolicyRule{},
 		},
 	}
 }

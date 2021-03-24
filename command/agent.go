@@ -93,6 +93,18 @@ func (c *AgentCommand) Synopsis() string {
 // Run :
 func (c *AgentCommand) Run(ctx context.Context, args []string) int {
 
+	flags := c.FlagSet()
+
+	if err := flags.Parse(args); err != nil {
+		c.UI.Error("==> Error: " + err.Error() + "\n")
+		os.Exit(1)
+	}
+
+	if !c.server && !c.client && !c.dev {
+		c.UI.Output("==> Must specify either client, server or dev mode for the agent.")
+		os.Exit(1)
+	}
+
 	printBanner()
 
 	err := c.parseConfig(args)
@@ -120,8 +132,6 @@ func (c *AgentCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	<-ctx.Done()
-
-	fmt.Println("SHUTDOWN")
 
 	c.agent.Shutdown()
 
@@ -249,14 +259,7 @@ func (c *AgentCommand) parseConfig(args []string) error {
 
 func (c *AgentCommand) parseFlags(args []string) *agent.Config {
 
-	flags := c.FlagSet()
-
 	config := agent.EmptyConfig()
-
-	if err := flags.Parse(args); err != nil {
-		c.UI.Error("==> Error: " + err.Error() + "\n")
-		os.Exit(1)
-	}
 
 	config.DevMode = c.dev
 	config.Server.Enabled = c.server
@@ -354,6 +357,7 @@ func (c *AgentCommand) printConfig() {
 		"client":          strconv.FormatBool(config.Client.Enabled),
 		"server":          strconv.FormatBool(config.Server.Enabled),
 		"version":         config.Version.VersionNumber(),
+		"acl enabled":     strconv.FormatBool(config.ACL.Enabled),
 	}
 
 	padding := 18

@@ -117,6 +117,14 @@ func (c *Config) Merge(b *Config) *Config {
 		result.Server = result.Server.Merge(b.Server)
 	}
 
+	// Apply the ACL config
+	if result.ACL == nil && b.ACL != nil {
+		acl := *b.ACL
+		result.ACL = &acl
+	} else if b.ACL != nil {
+		result.ACL = result.ACL.Merge(b.ACL)
+	}
+
 	// Apply the advertise addrs config
 	if result.AdvertiseAddrs == nil && b.AdvertiseAddrs != nil {
 		advertise := *b.AdvertiseAddrs

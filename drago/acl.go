@@ -92,6 +92,10 @@ func (s *ACLService) ResolveToken(args *structs.ResolveACLTokenRequest, out *str
 		return err
 	}
 
+	if t == nil {
+		t = AnonymousACLToken
+	}
+
 	out.ACLToken = t
 
 	return nil

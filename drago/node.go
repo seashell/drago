@@ -344,7 +344,7 @@ func (s *NodeService) ListNodes(args *structs.NodeListRequest, out *structs.Node
 
 	// Check if authorized
 	if s.config.ACL.Enabled {
-		if err := s.authHandler.Authorize(ctx, args.AuthToken, "network", "", NodeList); err != nil {
+		if err := s.authHandler.Authorize(ctx, args.AuthToken, "node", "", NodeList); err != nil {
 			return structs.ErrPermissionDenied
 		}
 	}

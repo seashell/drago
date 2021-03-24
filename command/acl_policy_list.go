@@ -13,8 +13,8 @@ import (
 	cli "github.com/seashell/drago/pkg/cli"
 )
 
-// ConnectionListCommand :
-type ConnectionListCommand struct {
+// ACLPolicyListCommand :
+type ACLPolicyListCommand struct {
 	UI cli.UI
 
 	// Parsed flags
@@ -23,7 +23,7 @@ type ConnectionListCommand struct {
 	Command
 }
 
-func (c *ConnectionListCommand) FlagSet() *flag.FlagSet {
+func (c *ACLPolicyListCommand) FlagSet() *flag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -36,17 +36,17 @@ func (c *ConnectionListCommand) FlagSet() *flag.FlagSet {
 }
 
 // Name :
-func (c *ConnectionListCommand) Name() string {
-	return "connection list"
+func (c *ACLPolicyListCommand) Name() string {
+	return "acl policy list"
 }
 
 // Synopsis :
-func (c *ConnectionListCommand) Synopsis() string {
-	return "Display a list of connections"
+func (c *ACLPolicyListCommand) Synopsis() string {
+	return "List ACL policies"
 }
 
 // Run :
-func (c *ConnectionListCommand) Run(ctx context.Context, args []string) int {
+func (c *ACLPolicyListCommand) Run(ctx context.Context, args []string) int {
 
 	flags := c.FlagSet()
 
@@ -67,62 +67,61 @@ func (c *ConnectionListCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	connections, err := api.Connections().List(&structs.QueryOptions{AuthToken: c.token})
+	policies, err := api.ACLPolicies().List(&structs.QueryOptions{AuthToken: c.token})
 	if err != nil {
-		c.UI.Error(fmt.Sprintf("Error retrieving connections: %s", err))
+		c.UI.Error(fmt.Sprintf("Error retrieving ACL policies: %s", err))
 		return 1
 	}
 
-	if len(connections) == 0 {
+	if len(policies) == 0 {
 		return 0
 	}
 
-	c.UI.Output(c.formatConnectionList(connections))
+	c.UI.Output(c.formatPolicyList(policies))
 
 	return 0
 }
 
 // Help :
-func (c *ConnectionListCommand) Help() string {
+func (c *ACLPolicyListCommand) Help() string {
 	h := `
-Usage: drago connection list [options]
+Usage: drago acl policy list [options]
 
-  Lists connections managed by Drago.
-
-  If ACLs are enabled, this option requires a token with the 'connection:read' capability.
+  List existing ACL policies.
 
 General Options:
 ` + GlobalOptions() + `
 
-Connection List Options:
+ACL Policy List Options:
 
   -json=<bool>
     Enable JSON output.
 
-`
+ `
 	return strings.TrimSpace(h)
 }
 
-func (c *ConnectionListCommand) formatConnectionList(connections []*structs.ConnectionListStub) string {
+func (c *ACLPolicyListCommand) formatPolicyList(policies []*structs.ACLPolicyListStub) string {
 
 	var b bytes.Buffer
-	fconnections := []interface{}{}
+	fpolicies := []interface{}{}
 
 	if c.json {
 		enc := json.NewEncoder(&b)
 		enc.SetIndent("", "    ")
-		for _, conn := range connections {
-			fconnections = append(fconnections, map[string]string{
-				"ID": conn.ID,
+		for _, policy := range policies {
+			fpolicies = append(fpolicies, map[string]string{
+				"Name":        policy.Name,
+				"Description": policy.Description,
 			})
 		}
-		if err := enc.Encode(fconnections); err != nil {
+		if err := enc.Encode(fpolicies); err != nil {
 			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
 		}
 	} else {
-		tbl := table.New("CONNECTION ID").WithWriter(&b)
-		for _, conn := range connections {
-			tbl.AddRow(conn.ID)
+		tbl := table.New("POLICY NAME", "DESCRIPTION").WithWriter(&b)
+		for _, policy := range policies {
+			tbl.AddRow(policy.Name, policy.Description)
 		}
 		tbl.Print()
 	}
