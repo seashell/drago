@@ -69,8 +69,15 @@ Drago is meant to be simple, and provide a solid foundation for higher-level fun
 Usage: drago [--version] [--help] <command> [<args>]
 
 Available commands:
-    agent    Runs a Drago agent
-    node     Interact with Drago nodes
+    acl           Interact with ACL policies and tokens
+    agent         Run a Drago agent
+    connection    Interact with connections
+    interface     Interact with interfaces
+    network       Interact with networks
+    node          Interact with nodes
+    ui            Open the Drago web UI
+    version       Prints the Drago version
+    
 ```
 
 ## Development
