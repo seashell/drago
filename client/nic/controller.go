@@ -1,11 +1,13 @@
 package nic
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
 	"net"
 	"os/exec"
+	"strings"
 	"time"
 
 	structs "github.com/seashell/drago/drago/structs"
@@ -144,11 +146,27 @@ func (c *Controller) createLink(name string, alias string) error {
 	// Create a new WireGuard interface. If a path to a valid userspace WireGuard binary
 	// was specified in the configurations, use if. Otherwise, create the interface manually.
 	if c.config.WireguardPath != "" {
-		err := exec.Command(c.config.WireguardPath, name).Run()
+
+		wgt, err := wgImplementationType(c.config.WireguardPath)
 		if err != nil {
+			return err
+		}
+
+		var cmd *exec.Cmd
+
+		switch wgt {
+		case "wireguard-go":
+			cmd = exec.Command(c.config.WireguardPath, name)
+		case "boringtun":
+			cmd = exec.Command(c.config.WireguardPath, name, "--disable-drop-privileges", "root")
+		}
+
+		if err := cmd.Run(); err != nil {
 			return fmt.Errorf("can't create network interface with specified wireguard binary: %s", err.Error())
 		}
+
 	} else {
+		fmt.Println("USING KERNELSPACE WIREGUARD")
 		if err := netlink.LinkAdd(&netlink.Wireguard{LinkAttrs: attrs}); err != nil {
 			return fmt.Errorf("can't create network interface : %s", err.Error())
 		}
@@ -302,4 +320,24 @@ func (c *Controller) randomInterfaceName() string {
 		panic(fmt.Errorf("failed to read random bytes: %v", err))
 	}
 	return c.config.InterfacesPrefix + "-" + hex.EncodeToString(buf)
+}
+
+func wgImplementationType(path string) (string, error) {
+
+	var out bytes.Buffer
+
+	cmd := exec.Command(path, "--version")
+	cmd.Stdout = &out
+
+	if err := cmd.Run(); err != nil {
+		return "", err
+	}
+
+	if strings.Contains(out.String(), "wireguard-go") {
+		return "wireguard-go", nil
+	} else if strings.Contains(out.String(), "boringtun") {
+		return "boringtun", nil
+	}
+
+	return "", fmt.Errorf("unknown wireguard implementation")
 }

@@ -27,6 +27,7 @@ Drago is a flexible configuration manager for WireGuard which is designed to mak
 - Slick management dashboard
 - Encrypted node-to-node communication
 - Support for multiple storage backends
+- Support for userspace WireGuard implementations
 - Dynamic network configuration
 - Automatic key rotation
 - Extensible via REST API
@@ -158,9 +159,9 @@ Run the following to get a comprehensive list of build options:
 - [ ] Code coverage
 - [x] Backend API for issuing volatile tokens
 - [ ] Integration with Hashicorp Vault
-- [ ] Integration with userspace WireGuard implementations
+- [x] Integration with userspace WireGuard implementations
   - [x]  `WireGuard/wireguard-go`
-  - [ ]  `cloudflare/boringtun`
+  - [x]  `cloudflare/boringtun`
 - [ ] Integration with firewall tools for more sophisticated networking rules
 - [ ] Auto-join and auto-meshing modes
 - [x] Automatic IP assignment

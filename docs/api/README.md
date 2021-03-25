@@ -30,7 +30,7 @@ Here is an example using curl:
 ```bash
 $ curl \
     --header "X-Drago-Token: aa534e09-6a07-0a45-2295-a7f77063d429" \
-    https://localhost:4646/api/nodes
+    https://localhost:8080/api/nodes
 ```
 
 ## Formatted JSON Output
