@@ -19,6 +19,7 @@
 - Single-binary, lightweight
 - Encrypted node-to-node communication
 - Dynamic network configuration
+- Support for userspace WireGuard implementations
 - Extensible via REST API
 - Slick management dashboard
 

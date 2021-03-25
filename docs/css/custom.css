@@ -61,6 +61,8 @@ section.cover .cover-main>p:last-child a:last-child:hover{
 
 .sidebar-nav ul li.folder p {
     margin-left: 4px;
+    font-weight: 400;
+    font-size: 14px !important;
 }
 
 .sidebar-nav ul li.folder::before {
