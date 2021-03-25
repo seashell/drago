@@ -21,7 +21,7 @@ func (c *Client) Agent() *Agent {
 }
 
 // Self :
-func (t *Agent) Self(opts *structs.QueryOptions) (*structs.Agent, error) {
+func (t *Agent) Self() (*structs.Agent, error) {
 
 	var agent *structs.Agent
 	err := t.client.getResource(path.Join(agentPath, "self"), "", &agent)

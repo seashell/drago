@@ -17,6 +17,7 @@ type ACLTokenCreateCommand struct {
 	UI cli.UI
 
 	// Parsed flags
+	json      bool
 	tname     string
 	ttype     string
 	tpolicies manyStrings
@@ -31,9 +32,10 @@ func (c *ACLTokenCreateCommand) FlagSet() *flag.FlagSet {
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
+	flags.BoolVar(&c.json, "json", false, "")
 	flags.StringVar(&c.tname, "name", "", "")
 	flags.StringVar(&c.ttype, "type", "", "")
-	flags.Var(&c.tpolicies, "type", "")
+	flags.Var(&c.tpolicies, "policy", "")
 
 	return flags
 }
@@ -70,15 +72,13 @@ func (c *ACLTokenCreateCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	t := &structs.ACLToken{
+	token, err := api.ACLTokens().Create(&structs.ACLToken{
 		Name:     c.tname,
 		Type:     c.ttype,
 		Policies: c.tpolicies,
-	}
-
-	token, err := api.ACLTokens().Create(t, &structs.QueryOptions{AuthToken: c.token})
+	})
 	if err != nil {
-		c.UI.Error(fmt.Sprintf("Error retrieving ACL token: %s", err))
+		c.UI.Error(fmt.Sprintf("Error creating ACL token: %s", err))
 		return 1
 	}
 
@@ -90,11 +90,9 @@ func (c *ACLTokenCreateCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLTokenCreateCommand) Help() string {
 	h := `
-Usage: drago acl token info <name> [options]
+Usage: drago acl token create <name> [options]
 
-  Display information on an existing ACL token.
-
-  Use the -json flag to see a detailed list of the rules associated with the token.
+  Create is used to issue a new ACL token. Requires a management token.
 
 General Options:
 ` + GlobalOptions() + `
@@ -107,8 +105,11 @@ ACL Token Create Options:
   -type="client"
     Sets the type of token. Must be one of "client" (default), or "management".
 
-  -policy="string"
+  -policy=""
     Specifies a policy to associate with client tokens.
+
+  -json=<bool>
+    Enable JSON output.
 
  `
 	return strings.TrimSpace(h)
@@ -133,5 +134,11 @@ func (c *ACLTokenCreateCommand) formatToken(token *structs.ACLToken) string {
 		c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
 	}
 
-	return b.String()
+	s := b.String()
+
+	if c.json {
+		return s
+	}
+
+	return cleanJSONString(s)
 }

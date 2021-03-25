@@ -21,17 +21,17 @@ func (c *Client) ACLPolicies() *ACLPolicies {
 }
 
 // Create :
-func (p *ACLPolicies) Upsert(token *structs.ACLToken, opts *structs.QueryOptions) (*structs.ACLToken, error) {
+func (p *ACLPolicies) Upsert(token *structs.ACLToken) (*structs.ACLToken, error) {
 	return nil, nil
 }
 
 // Delete :
-func (p *ACLPolicies) Delete(id string, opts *structs.QueryOptions) (*structs.ACLPolicy, error) {
+func (p *ACLPolicies) Delete(id string) (*structs.ACLPolicy, error) {
 	return nil, nil
 }
 
 // Get :
-func (p *ACLPolicies) Get(name string, opts *structs.QueryOptions) (*structs.ACLPolicy, error) {
+func (p *ACLPolicies) Get(name string) (*structs.ACLPolicy, error) {
 
 	var policy *structs.ACLPolicy
 	err := p.client.getResource(aclPoliciesPath, name, &policy)
@@ -43,7 +43,7 @@ func (p *ACLPolicies) Get(name string, opts *structs.QueryOptions) (*structs.ACL
 }
 
 // List :
-func (p *ACLPolicies) List(opts *structs.QueryOptions) ([]*structs.ACLPolicyListStub, error) {
+func (p *ACLPolicies) List() ([]*structs.ACLPolicyListStub, error) {
 
 	var items []*structs.ACLPolicyListStub
 	err := p.client.listResources(path.Join(aclPoliciesPath, "/"), nil, &items)

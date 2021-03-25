@@ -7,13 +7,14 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"path"
 
 	"github.com/hashicorp/go-cleanhttp"
 )
 
 // Client provides a client to the Drago API
 type Client struct {
-	config     Config
+	config     *Config
 	httpClient *http.Client
 }
 
@@ -27,24 +28,21 @@ func NewClient(config *Config) (*Client, error) {
 	}
 
 	client := &Client{
-		config:     *config,
+		config:     config,
 		httpClient: cleanhttp.DefaultClient(),
 	}
 
 	return client, nil
 }
 
-func (c *Client) getResource(path string, id string, receiver interface{}) error {
+func (c *Client) getResource(p string, id string, receiver interface{}) error {
 
 	u, err := url.Parse(c.config.Address)
 	if err != nil {
 		return err
 	}
 
-	u.Path += path
-	if len(id) > 0 {
-		u.Path += "/" + id
-	}
+	u.Path += path.Join(p, id)
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {
@@ -56,14 +54,14 @@ func (c *Client) getResource(path string, id string, receiver interface{}) error
 	return c.doRequest(req, receiver)
 }
 
-func (c *Client) createResource(path string, sender interface{}, receiver interface{}) error {
+func (c *Client) createResource(p string, sender interface{}, receiver interface{}) error {
 
 	u, err := url.Parse(c.config.Address)
 	if err != nil {
 		return err
 	}
 
-	u.Path += path
+	u.Path += p + "/"
 
 	b := &bytes.Buffer{}
 	json.NewEncoder(b).Encode(sender)
@@ -78,20 +76,19 @@ func (c *Client) createResource(path string, sender interface{}, receiver interf
 	return c.doRequest(req, receiver)
 }
 
-func (c *Client) updateResource(id, path string, sender interface{}, receiver interface{}) error {
+func (c *Client) updateResource(id, p string, sender interface{}, receiver interface{}) error {
 
-	base, err := url.Parse(c.config.Address)
+	u, err := url.Parse(c.config.Address)
 	if err != nil {
 		return err
 	}
 
-	base.Path += path
-	base.Path += "/" + id
+	u.Path += path.Join(p, id)
 
 	b := &bytes.Buffer{}
 	json.NewEncoder(b).Encode(sender)
 
-	req, err := http.NewRequest("PATCH", base.String(), b)
+	req, err := http.NewRequest("PATCH", u.String(), b)
 	if err != nil {
 		return err
 	}
@@ -100,15 +97,14 @@ func (c *Client) updateResource(id, path string, sender interface{}, receiver in
 	return c.doRequest(req, receiver)
 }
 
-func (c *Client) deleteResource(id, path string, receiver interface{}) error {
+func (c *Client) deleteResource(id, p string, receiver interface{}) error {
 
 	u, err := url.Parse(c.config.Address)
 	if err != nil {
 		return err
 	}
 
-	u.Path += path
-	u.Path += "/" + id
+	u.Path += path.Join(p, id)
 
 	req, err := http.NewRequest("DELETE", u.String(), nil)
 	if err != nil {
@@ -116,16 +112,18 @@ func (c *Client) deleteResource(id, path string, receiver interface{}) error {
 	}
 
 	c.addHeaders(req)
+
 	return c.doRequest(req, receiver)
 }
 
-func (c *Client) listResources(path string, filters map[string]string, receiver interface{}) error {
+func (c *Client) listResources(p string, filters map[string]string, receiver interface{}) error {
+
 	u, err := url.Parse(c.config.Address)
 	if err != nil {
 		return err
 	}
 
-	u.Path += path
+	u.Path += p
 
 	req, err := http.NewRequest("GET", u.String(), nil)
 	if err != nil {

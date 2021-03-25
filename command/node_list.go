@@ -71,7 +71,7 @@ func (c *NodeListCommand) Run(ctx context.Context, args []string) int {
 
 	if len(args) == 0 && !c.self {
 
-		nodes, err := api.Nodes().List(&structs.QueryOptions{AuthToken: c.token})
+		nodes, err := api.Nodes().List()
 		if err != nil {
 			c.UI.Error(fmt.Sprintf("Error retrieving node status: %s", err))
 			return 1
@@ -97,7 +97,7 @@ func (c *NodeListCommand) Run(ctx context.Context, args []string) int {
 		}
 	}
 
-	node, err := api.Nodes().Get(nodeID, &structs.QueryOptions{AuthToken: c.token})
+	node, err := api.Nodes().Get(nodeID)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving node status: %s", err))
 		return 1

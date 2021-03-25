@@ -72,13 +72,13 @@ Usage: drago [--version] [--help] <command> [<args>]
 Available commands:
     acl           Interact with ACL policies and tokens
     agent         Run a Drago agent
+    agent-info    Display status information about the local agent
     connection    Interact with connections
     interface     Interact with interfaces
     network       Interact with networks
     node          Interact with nodes
     ui            Open the Drago web UI
-    version       Prints the Drago version
-    
+    version       Print the Drago version
 ```
 
 ## Development
@@ -140,7 +140,6 @@ $ make dev
 Run the following to get a comprehensive list of build options:
  ```
  $ make help
-
  ```
 
 ## Contributing

@@ -21,7 +21,7 @@ func (c *Client) Interfaces() *Interfaces {
 }
 
 // Get :
-func (n *Interfaces) Get(id string, opts *structs.QueryOptions) (*structs.Interface, error) {
+func (n *Interfaces) Get(id string) (*structs.Interface, error) {
 
 	var iface *structs.Interface
 	err := n.client.getResource(interfacesPath, id, &iface)
@@ -33,7 +33,7 @@ func (n *Interfaces) Get(id string, opts *structs.QueryOptions) (*structs.Interf
 }
 
 // List :
-func (n *Interfaces) List(opts *structs.QueryOptions) ([]*structs.InterfaceListStub, error) {
+func (n *Interfaces) List() ([]*structs.InterfaceListStub, error) {
 
 	var items []*structs.InterfaceListStub
 	err := n.client.listResources(path.Join(interfacesPath, "/"), nil, &items)

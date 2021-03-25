@@ -256,9 +256,9 @@ func (a *Agent) setupHTTPServer() error {
 			"/api/interfaces/":   handler.NewInterfaceHandler(a.rpcConn),
 			"/api/connections/":  handler.NewConnectionHandler(a.rpcConn),
 			"/api/networks/":     handler.NewNetworkHandler(a.rpcConn),
-			"/api/acl/policies/": handler.NewACLPolicyHandler(a.rpcConn),
-			"/api/acl/tokens/":   handler.NewACLTokenHandler(a.rpcConn),
 			"/api/acl/":          handler.NewACLHandler(a.rpcConn),
+			"/api/acl/tokens/":   handler.NewACLTokenHandler(a.rpcConn),
+			"/api/acl/policies/": handler.NewACLPolicyHandler(a.rpcConn),
 			"/status":            handler.NewStatusHandler(a.rpcConn),
 		},
 		Middleware: []http.Middleware{

@@ -85,7 +85,7 @@ func (s *Server) Stats() map[string]map[string]string {
 	stats := map[string]map[string]string{
 		"drago": {
 			"server": "true",
-			"peers":  "",
+			"peers":  "[]",
 		},
 	}
 

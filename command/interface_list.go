@@ -67,7 +67,7 @@ func (c *InterfaceListCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	ifaces, err := api.Interfaces().List(&structs.QueryOptions{AuthToken: c.token})
+	ifaces, err := api.Interfaces().List()
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving interfaces: %s", err))
 		return 1

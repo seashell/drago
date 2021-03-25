@@ -2,16 +2,16 @@ package command
 
 import (
 	"fmt"
+	"strings"
 
 	api "github.com/seashell/drago/api"
-	structs "github.com/seashell/drago/drago/structs"
 )
 
 // Returns the node ID of the local agent, in case it is a client.
 // Otherwise, returns an error.
 func localAgentNodeID(api *api.Client) (string, error) {
 
-	self, err := api.Agent().Self(&structs.QueryOptions{})
+	self, err := api.Agent().Self()
 	if err != nil {
 		return "", fmt.Errorf("could not retrieve agent info: %s", err)
 	}
@@ -34,4 +34,30 @@ func valueOrPlaceholder(s *string, p string) string {
 		return *s
 	}
 	return p
+}
+
+// TODO: improve how we clean JSON strings
+func cleanJSONString(s string) string {
+
+	s = strings.TrimSpace(s)
+	s = strings.ReplaceAll(s, `""`, "N/A")
+	s = strings.ReplaceAll(s, `{}`, "\n      N/A")
+
+	s = strings.ReplaceAll(s, "    ", "  ")
+	s = strings.ReplaceAll(s, `,`, "")
+
+	s = strings.ReplaceAll(s, "{", "")
+	s = strings.ReplaceAll(s, "}", "")
+	s = strings.ReplaceAll(s, `"`, "")
+
+	s = strings.TrimLeftFunc(s, func(r rune) bool {
+		return r == '\n'
+	})
+
+	s = strings.TrimRightFunc(s, func(r rune) bool {
+		return r == '\n' || r == ' '
+	})
+
+	return s
+
 }

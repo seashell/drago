@@ -21,22 +21,44 @@ func (c *Client) ACLTokens() *ACLTokens {
 }
 
 // Create :
-func (t *ACLTokens) Create(token *structs.ACLToken, opts *structs.QueryOptions) (*structs.ACLToken, error) {
-	return nil, nil
+func (t *ACLTokens) Create(token *structs.ACLToken) (*structs.ACLToken, error) {
+
+	out := structs.ACLToken{}
+
+	err := t.client.createResource(aclTokensPath, token, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, nil
 }
 
 // Delete :
-func (t *ACLTokens) Delete(id string, opts *structs.QueryOptions) (*structs.ACLToken, error) {
-	return nil, nil
+func (t *ACLTokens) Delete(id string) error {
+
+	err := t.client.deleteResource(id, aclTokensPath, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Update :
-func (t *ACLTokens) Update(token *structs.ACLToken, opts *structs.QueryOptions) (*structs.ACLToken, error) {
-	return nil, nil
+func (t *ACLTokens) Update(token *structs.ACLToken) (*structs.ACLToken, error) {
+
+	out := structs.ACLToken{}
+
+	err := t.client.updateResource(token.ID, aclTokensPath, token, &out)
+	if err != nil {
+		return nil, err
+	}
+
+	return &out, nil
 }
 
 // Get :
-func (t *ACLTokens) Get(id string, opts *structs.QueryOptions) (*structs.ACLToken, error) {
+func (t *ACLTokens) Get(id string) (*structs.ACLToken, error) {
 
 	var token *structs.ACLToken
 	err := t.client.getResource(aclTokensPath, id, &token)
@@ -48,7 +70,7 @@ func (t *ACLTokens) Get(id string, opts *structs.QueryOptions) (*structs.ACLToke
 }
 
 // List :
-func (t *ACLTokens) List(opts *structs.QueryOptions) ([]*structs.ACLTokenListStub, error) {
+func (t *ACLTokens) List() ([]*structs.ACLTokenListStub, error) {
 
 	var items []*structs.ACLTokenListStub
 	err := t.client.listResources(path.Join(aclTokensPath, "/"), nil, &items)
@@ -60,7 +82,7 @@ func (t *ACLTokens) List(opts *structs.QueryOptions) ([]*structs.ACLTokenListStu
 }
 
 // Self :
-func (t *ACLTokens) Self(opts *structs.QueryOptions) (*structs.ACLToken, error) {
+func (t *ACLTokens) Self() (*structs.ACLToken, error) {
 
 	var token *structs.ACLToken
 	err := t.client.getResource(aclTokensPath, "self", &token)

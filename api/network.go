@@ -21,7 +21,7 @@ func (c *Client) Networks() *Networks {
 }
 
 // Get :
-func (n *Networks) Get(id string, opts *structs.QueryOptions) (*structs.Network, error) {
+func (n *Networks) Get(id string) (*structs.Network, error) {
 
 	var network *structs.Network
 	err := n.client.getResource(networksPath, id, &network)
@@ -33,7 +33,7 @@ func (n *Networks) Get(id string, opts *structs.QueryOptions) (*structs.Network,
 }
 
 // List :
-func (n *Networks) List(opts *structs.QueryOptions) ([]*structs.NetworkListStub, error) {
+func (n *Networks) List() ([]*structs.NetworkListStub, error) {
 
 	var items []*structs.NetworkListStub
 	err := n.client.listResources(path.Join(networksPath, "/"), nil, &items)

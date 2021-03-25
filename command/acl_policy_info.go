@@ -68,7 +68,7 @@ func (c *ACLPolicyInfoCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	policy, err := api.ACLPolicies().Get(args[0], &structs.QueryOptions{AuthToken: c.token})
+	policy, err := api.ACLPolicies().Get(args[0])
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving ACL policy: %s", err))
 		return 1

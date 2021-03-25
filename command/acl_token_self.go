@@ -68,7 +68,7 @@ func (c *ACLTokenSelfCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	token, err := api.ACLTokens().Self(&structs.QueryOptions{AuthToken: c.token})
+	token, err := api.ACLTokens().Self()
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving self ACL token: %s", err))
 		return 1

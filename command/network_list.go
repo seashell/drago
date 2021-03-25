@@ -67,7 +67,7 @@ func (c *NetworkListCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	networks, err := api.Networks().List(&structs.QueryOptions{AuthToken: c.token})
+	networks, err := api.Networks().List()
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving networks: %s", err))
 		return 1

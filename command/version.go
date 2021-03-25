@@ -20,7 +20,7 @@ func (c *VersionCommand) Name() string {
 
 // Synopsis :
 func (c *VersionCommand) Synopsis() string {
-	return "Prints the Drago version"
+	return "Print the Drago version"
 }
 
 // Run :

@@ -67,7 +67,7 @@ func (c *ConnectionListCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	connections, err := api.Connections().List(&structs.QueryOptions{AuthToken: c.token})
+	connections, err := api.Connections().List()
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving connections: %s", err))
 		return 1

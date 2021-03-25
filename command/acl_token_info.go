@@ -68,7 +68,7 @@ func (c *ACLTokenInfoCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	token, err := api.ACLTokens().Get(args[0], &structs.QueryOptions{AuthToken: c.token})
+	token, err := api.ACLTokens().Get(args[0])
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving ACL token: %s", err))
 		return 1
@@ -82,11 +82,9 @@ func (c *ACLTokenInfoCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLTokenInfoCommand) Help() string {
 	h := `
-Usage: drago acl token info <name> [options]
+Usage: drago acl token info <id> [options]
 
   Display information on an existing ACL token.
-
-  Use the -json flag to see a detailed list of the rules associated with the token.
 
 General Options:
 ` + GlobalOptions() + `

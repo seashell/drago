@@ -21,7 +21,7 @@ func (c *Client) Connections() *Connections {
 }
 
 // Get :
-func (n *Connections) Get(id string, opts *structs.QueryOptions) (*structs.Connection, error) {
+func (n *Connections) Get(id string) (*structs.Connection, error) {
 
 	var conn *structs.Connection
 	err := n.client.getResource(connectionsPath, id, &conn)
@@ -33,7 +33,7 @@ func (n *Connections) Get(id string, opts *structs.QueryOptions) (*structs.Conne
 }
 
 // List :
-func (n *Connections) List(opts *structs.QueryOptions) ([]*structs.ConnectionListStub, error) {
+func (n *Connections) List() ([]*structs.ConnectionListStub, error) {
 
 	var items []*structs.ConnectionListStub
 	err := n.client.listResources(path.Join(connectionsPath, "/"), nil, &items)

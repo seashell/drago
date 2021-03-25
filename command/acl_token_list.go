@@ -67,7 +67,7 @@ func (c *ACLTokenListCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	tokens, err := api.ACLTokens().List(&structs.QueryOptions{AuthToken: c.token})
+	tokens, err := api.ACLTokens().List()
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving ACL tokens: %s", err))
 		return 1

@@ -20,20 +20,8 @@ func (c *Client) Nodes() *Nodes {
 	return &Nodes{client: c}
 }
 
-// Register :
-func (t *Nodes) Register(req *structs.NodeRegisterRequest) (*structs.NodeUpdateResponse, error) {
-
-	var resp structs.NodeUpdateResponse
-	err := t.client.createResource(path.Join(nodesPath, "register"), req, &resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
-}
-
 // Get :
-func (t *Nodes) Get(id string, opts *structs.QueryOptions) (*structs.Node, error) {
+func (t *Nodes) Get(id string) (*structs.Node, error) {
 
 	var node *structs.Node
 	err := t.client.getResource(nodesPath, id, &node)
@@ -45,7 +33,7 @@ func (t *Nodes) Get(id string, opts *structs.QueryOptions) (*structs.Node, error
 }
 
 // List :
-func (t *Nodes) List(opts *structs.QueryOptions) ([]*structs.NodeListStub, error) {
+func (t *Nodes) List() ([]*structs.NodeListStub, error) {
 
 	var items []*structs.NodeListStub
 	err := t.client.listResources(path.Join(nodesPath, "/"), nil, &items)
@@ -54,28 +42,4 @@ func (t *Nodes) List(opts *structs.QueryOptions) ([]*structs.NodeListStub, error
 	}
 
 	return items, nil
-}
-
-// Update :
-func (t *Nodes) UpdateStatus(req *structs.NodeUpdateStatusRequest) (*structs.NodeUpdateResponse, error) {
-
-	var resp structs.NodeUpdateResponse
-	err := t.client.createResource(path.Join(nodesPath, req.NodeID, "status"), req, &resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
-}
-
-// GetNodeInterfaces :
-func (t *Nodes) GetNodeInterfaces(req *structs.NodeSpecificRequest) (*structs.NodeInterfacesResponse, error) {
-
-	var resp structs.NodeInterfacesResponse
-	err := t.client.listResources(path.Join(nodesPath, req.NodeID, "interfaces"), nil, &resp)
-	if err != nil {
-		return nil, err
-	}
-
-	return &resp, nil
 }
