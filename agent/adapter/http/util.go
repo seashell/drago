@@ -73,7 +73,12 @@ func trimPathPrefix(req *http.Request, prefix string) *http.Request {
 func parseQueryOptions(req *http.Request) structs.QueryOptions {
 	return structs.QueryOptions{
 		AuthToken: parseAuthToken(req),
+		Filters:   parseFilters(req),
 	}
+}
+
+func parseFilters(req *http.Request) structs.Filters {
+	return structs.Filters(req.URL.Query())
 }
 
 func parseWriteRequestOptions(req *http.Request) structs.WriteRequest {

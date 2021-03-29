@@ -217,6 +217,7 @@ const InterfaceCard = ({
                   Listen Port
                 </Text>
                 <NumberInput
+                  disabled
                   name="listenPort"
                   {...formik.getFieldProps('listenPort')}
                   placeholder="51820"

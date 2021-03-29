@@ -261,7 +261,7 @@ func (c *AgentCommand) parseFlags(args []string) *agent.Config {
 
 	config := agent.EmptyConfig()
 
-	config.DevMode = c.dev
+	config.DevMode = &c.dev
 	config.Server.Enabled = c.server
 	config.Client.Enabled = c.client
 
@@ -276,7 +276,7 @@ func (c *AgentCommand) parseFlags(args []string) *agent.Config {
 
 	config.ACL.Enabled = c.aclEnabled
 
-	if config.DevMode {
+	if *config.DevMode {
 		config.Server.Enabled = true
 		config.Client.Enabled = true
 		config.DataDir = "/tmp/drago"
@@ -426,15 +426,15 @@ func bindAddrsString(config *agent.Config) string {
 
 func advertiseAddrsString(config *agent.Config) string {
 
-	http := fmt.Sprintf("%s:%d", config.BindAddr, config.Ports.HTTP)
-	//if config.AdvertiseAddrs.Peer != "" {
-	//	http = fmt.Sprintf("%s", config.AdvertiseAddrs.HTTP)
-	//}
+	peer := config.BindAddr
+	if config.AdvertiseAddrs.Peer != "" {
+		peer = config.AdvertiseAddrs.Peer
+	}
 
-	rpc := fmt.Sprintf("%s:%d", config.BindAddr, config.Ports.RPC)
-	//if config.AdvertiseAddrs.HTTP != "" {
-	//	rpc = fmt.Sprintf("%s", config.AdvertiseAddrs.RPC)
-	//}
+	server := fmt.Sprintf("%s:%d", config.BindAddr, config.Ports.RPC)
+	if config.AdvertiseAddrs.Server != "" {
+		server = fmt.Sprintf("%s:%d", config.AdvertiseAddrs.Server, config.Ports.RPC)
+	}
 
-	return fmt.Sprintf("HTTP: %s; RPC: %s", http, rpc)
+	return fmt.Sprintf("Peer: %s; Server: %s", peer, server)
 }

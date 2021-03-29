@@ -82,9 +82,10 @@ func (c *Controller) Interfaces() ([]*structs.Interface, error) {
 		}
 
 		out = append(out, &structs.Interface{
-			ID:        l.Attrs().Alias,
-			Name:      util.StrToPtr(l.Attrs().Name),
-			PublicKey: util.StrToPtr(dev.PrivateKey.PublicKey().String()),
+			ID:         l.Attrs().Alias,
+			Name:       util.StrToPtr(l.Attrs().Name),
+			ListenPort: &dev.ListenPort,
+			PublicKey:  util.StrToPtr(dev.PrivateKey.PublicKey().String()),
 			// TODO: capture other information that might be useful e.g. for diagnosis (see l.Attrs().Statistics)
 		})
 	}

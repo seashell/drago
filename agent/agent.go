@@ -183,6 +183,7 @@ func (a *Agent) serverConfig() (*drago.Config, error) {
 	c := drago.DefaultConfig()
 
 	c.UI = a.config.UI
+	c.DevMode = *a.config.DevMode
 	c.BindAddr = a.config.BindAddr
 	c.DataDir = a.config.DataDir
 
@@ -233,6 +234,8 @@ func (a *Agent) clientConfig() (*client.Config, error) {
 
 	c.Servers = a.config.Client.Servers
 	c.StateDir = a.config.Client.StateDir
+
+	c.AdvertiseAddress = a.config.AdvertiseAddrs.Peer
 
 	c.WireguardPath = a.config.Client.WireguardPath
 	c.InterfacesPrefix = a.config.Client.InterfacesPrefix

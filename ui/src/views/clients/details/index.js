@@ -267,7 +267,7 @@ const ClientDetails = () => {
       ),
     []
   )
-
+  
   return (
     <Container pb="72px">
       <JoinNetworkModal
@@ -311,12 +311,13 @@ const ClientDetails = () => {
 
         <Box mr={4}>
           <Text textStyle="strong" fontSize="12px" mr={2}>
-            Address
+            Advertise Address
           </Text>
           <Text textStyle="detail" mr={3}>
-            {node.Address ? node.Address : 'N/A'}
+            {node.AdvertiseAddress ? node.AdvertiseAddress : 'N/A'}
           </Text>
         </Box>
+
       </Box>
 
       <Box alignItems="center" mt={4} mb={3}>

@@ -91,7 +91,7 @@ export const GET_NODE = gql`
     result: getNode(id: $id) @rest(type: "Node", path: "/api/nodes/{args.id}") {
       ID
       Name
-      Address
+      AdvertiseAddress
       Meta
       Status
       CreatedAt

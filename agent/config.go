@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/hcl/v2/hclsimple"
+	"github.com/seashell/drago/pkg/util"
 	"github.com/seashell/drago/version"
 )
 
@@ -38,7 +39,7 @@ type Config struct {
 	// for each of Drago's network services in host:port format.
 	// It is optional, and all addresses default to the bind address
 	// with the default port corresponding to each service.
-	AdvertiseAddrs *AdvertiseAddrs `hcl:"advertise_addrs,block"`
+	AdvertiseAddrs *AdvertiseAddrs `hcl:"advertise,block"`
 
 	// LogLevel is the level of the logs to put out
 	LogLevel string `hcl:"log_level,optional"`
@@ -56,7 +57,7 @@ type Config struct {
 	ACL *ACLConfig `hcl:"acl,block"`
 
 	// DevMode is set by the --dev CLI flag.
-	DevMode bool
+	DevMode *bool
 
 	// Version information (set at compilation time)
 	Version *version.VersionInfo
@@ -71,6 +72,9 @@ func (c *Config) Merge(b *Config) *Config {
 
 	result := *c
 
+	if b.DevMode != nil {
+		result.DevMode = b.DevMode
+	}
 	if b.StaticFS != nil {
 		result.StaticFS = b.StaticFS
 	}
@@ -242,12 +246,18 @@ func (c *Ports) Merge(b *Ports) *Ports {
 	return &result
 }
 
-// AdvertiseAddrs is used to control the addresses Drago advertises for
-// its different network services. All are optional and default to BindAddr and
-// their default Port. Expected format is address:port.
+// AdvertiseAddrs is used to control the addresses a Drago node advertises.
+// All are optional and default to BindAddr and their default Port.
+// Expected format is address:port.
 type AdvertiseAddrs struct {
-	Peer   string `hcl:"peer,optional"`
-	Client string `hcl:"client,optional"`
+	// Peer is the address advertised for the purpose
+	// of letting other nodes connect to this node. It
+	// will be used as the WireGuard's endpoint configuration.
+	Peer string `hcl:"peer,optional"`
+
+	// Server contains the address to be advertised for
+	// the purpose of clustering with other servers.
+	Server string `hcl:"server,optional"`
 }
 
 // Merge merges two AdvertiseAddrs structs, returning the result
@@ -257,8 +267,8 @@ func (c *AdvertiseAddrs) Merge(b *AdvertiseAddrs) *AdvertiseAddrs {
 	if b.Peer != "" {
 		result.Peer = b.Peer
 	}
-	if b.Client != "" {
-		result.Client = b.Client
+	if b.Server != "" {
+		result.Server = b.Server
 	}
 
 	return &result
@@ -269,6 +279,7 @@ func DefaultConfig() *Config {
 	return &Config{
 		LogLevel: "DEBUG",
 		UI:       true,
+		DevMode:  util.BoolToPtr(false),
 		Name:     "",
 		DataDir:  "/tmp/drago",
 		BindAddr: "0.0.0.0",

@@ -1,7 +1,5 @@
 package notification
 
-package main
-
 import (
 	"net/rpc"
 
@@ -19,7 +17,7 @@ type NotificationPlugin struct {
 	rpcServer *rpc.Server
 }
 
-// Config : 
+// Config :
 type Config struct {
 }
 

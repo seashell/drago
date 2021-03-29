@@ -18,7 +18,9 @@ type InterfaceListCommand struct {
 	UI cli.UI
 
 	// Parsed flags
-	json bool
+	json    bool
+	node    manyStrings
+	network manyStrings
 
 	Command
 }
@@ -31,6 +33,8 @@ func (c *InterfaceListCommand) FlagSet() *flag.FlagSet {
 
 	// General options
 	flags.BoolVar(&c.json, "json", false, "")
+	flags.Var(&c.node, "node", "")
+	flags.Var(&c.network, "network", "")
 
 	return flags
 }
@@ -67,7 +71,17 @@ func (c *InterfaceListCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	ifaces, err := api.Interfaces().List()
+	filters := map[string][]string{}
+
+	if len(c.network) > 0 {
+		filters["network"] = c.network
+	}
+
+	if len(c.node) > 0 {
+		filters["node"] = c.node
+	}
+
+	ifaces, err := api.Interfaces().List(filters)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving interfaces: %s", err))
 		return 1
@@ -98,6 +112,12 @@ Network List Options:
 
   -json=<bool>
     Enable JSON output.
+
+  -node=<id>
+    Filter results by node ID.
+
+  -network=<id>
+    Filter results by network ID.
 
  `
 	return strings.TrimSpace(h)

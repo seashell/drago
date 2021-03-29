@@ -21,6 +21,9 @@ type Config struct {
 	// UI enabled.
 	UI bool
 
+	// DevMode enabled.
+	DevMode bool
+
 	// Version is the version of the Drago server
 	Version *version.VersionInfo
 
@@ -62,6 +65,7 @@ type Ports struct {
 func DefaultConfig() *Config {
 	return &Config{
 		UI:       true,
+		DevMode:  false,
 		Version:  version.GetVersion(),
 		LogLevel: defaultLogLevel,
 		BindAddr: defaultBindAddress,

@@ -18,8 +18,9 @@ type NodeListCommand struct {
 	UI cli.UI
 
 	// Parsed flags
-	self bool
-	json bool
+	json   bool
+	status string
+	meta   manyStrings
 
 	Command
 }
@@ -31,8 +32,9 @@ func (c *NodeListCommand) FlagSet() *flag.FlagSet {
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
-	flags.BoolVar(&c.self, "self", false, "")
 	flags.BoolVar(&c.json, "json", false, "")
+	flags.StringVar(&c.status, "status", "*", "")
+	flags.Var(&c.meta, "meta", "")
 
 	return flags
 }
@@ -57,8 +59,8 @@ func (c *NodeListCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) > 1 {
-		c.UI.Error("This command takes either one or no arguments")
+	if len(args) != 0 {
+		c.UI.Error("This command takes no arguments")
 		return 1
 	}
 
@@ -69,43 +71,24 @@ func (c *NodeListCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	if len(args) == 0 && !c.self {
+	filters := map[string][]string{}
+	filters["meta"] = c.meta
+	filters["status"] = []string{c.status}
 
-		nodes, err := api.Nodes().List()
-		if err != nil {
-			c.UI.Error(fmt.Sprintf("Error retrieving node status: %s", err))
-			return 1
-		}
-
-		if len(nodes) == 0 {
-			return 0
-		}
-
-		c.UI.Output(c.formatNodeList(nodes))
-
-		return 0
-	}
-
-	// Print status of a single node
-	var nodeID string
-	if !c.self {
-		nodeID = args[0]
-	} else {
-		if nodeID, err = localAgentNodeID(api); err != nil {
-			c.UI.Error(fmt.Sprintf("Error determining local node ID: %s", err))
-			return 1
-		}
-	}
-
-	node, err := api.Nodes().Get(nodeID)
+	nodes, err := api.Nodes().List(filters)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving node status: %s", err))
 		return 1
 	}
 
-	c.UI.Output(c.formatNode(node))
+	if len(nodes) == 0 {
+		return 0
+	}
+
+	c.UI.Output(c.formatNodeList(nodes))
 
 	return 0
+
 }
 
 // Help :
@@ -122,11 +105,14 @@ General Options:
 
 Node List Options:
 
-  -self
-    Query the status of the local node.
-
   -json=<bool>
     Enable JSON output.
+  
+  -meta=<key:value>
+    Filter nodes by metadata.
+
+  -status=<initializing|ready|down>
+    Filter nodes by status.
 
  `
 	return strings.TrimSpace(h)

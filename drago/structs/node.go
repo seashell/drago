@@ -16,7 +16,7 @@ type Node struct {
 	ID               string
 	SecretID         string
 	Name             string
-	AdvertiseAddress *string
+	AdvertiseAddress string
 	Status           string
 	Interfaces       []string
 	Connections      []string
@@ -72,7 +72,7 @@ func (n *Node) Merge(in *Node) *Node {
 	if in.Name != "" {
 		result.Name = in.Name
 	}
-	if in.AdvertiseAddress != nil {
+	if in.AdvertiseAddress != "" {
 		result.AdvertiseAddress = in.AdvertiseAddress
 	}
 	if in.Interfaces != nil {
@@ -170,6 +170,7 @@ func (n *Node) Stub() *NodeListStub {
 		InterfacesCount:  len(n.Interfaces),
 		ConnectionsCount: len(n.Connections),
 		ModifyIndex:      n.ModifyIndex,
+		Meta:             n.Meta,
 		CreatedAt:        n.CreatedAt,
 		UpdatedAt:        n.UpdatedAt,
 	}
@@ -179,11 +180,12 @@ func (n *Node) Stub() *NodeListStub {
 type NodeListStub struct {
 	ID               string
 	Name             string
-	AdvertiseAddress *string
+	AdvertiseAddress string
 	Status           string
 	InterfacesCount  int
 	ConnectionsCount int
 	ModifyIndex      uint64
+	Meta             map[string]string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }
@@ -245,9 +247,10 @@ func (r *NodeRegisterRequest) Validate() error {
 
 // NodeUpdateStatusRequest :
 type NodeUpdateStatusRequest struct {
-	NodeID string
-	Status string
-	Meta   map[string]string
+	NodeID           string
+	Status           string
+	AdvertiseAddress string
+	Meta             map[string]string
 	WriteRequest
 }
 

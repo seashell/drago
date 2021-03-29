@@ -33,10 +33,10 @@ func (t *Nodes) Get(id string) (*structs.Node, error) {
 }
 
 // List :
-func (t *Nodes) List() ([]*structs.NodeListStub, error) {
+func (t *Nodes) List(filters map[string][]string) ([]*structs.NodeListStub, error) {
 
 	var items []*structs.NodeListStub
-	err := t.client.listResources(path.Join(nodesPath, "/"), nil, &items)
+	err := t.client.listResources(path.Join(nodesPath, "/"), filters, &items)
 	if err != nil {
 		return nil, err
 	}

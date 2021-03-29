@@ -7,9 +7,23 @@ import (
 	"github.com/seashell/drago/pkg/validator"
 )
 
+type Filters map[string][]string
+
+func (f Filters) Get(k string) []string {
+	if v, ok := f[k]; ok {
+		return v
+	}
+	return []string{}
+}
+
+func (f Filters) Add(k, v string) {
+	f[k] = append(f[k], []string{v}...)
+}
+
 // QueryOptions contains information that is common to all read requests.
 type QueryOptions struct {
 	AuthToken string
+	Filters   Filters
 }
 
 // WriteRequest contains information that is common to all write requests.

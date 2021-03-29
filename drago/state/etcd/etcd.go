@@ -32,6 +32,7 @@ const (
 type Config struct {
 	DataDir  string
 	LogLevel string
+
 	config.EtcdConfig
 }
 

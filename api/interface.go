@@ -33,10 +33,10 @@ func (n *Interfaces) Get(id string) (*structs.Interface, error) {
 }
 
 // List :
-func (n *Interfaces) List() ([]*structs.InterfaceListStub, error) {
+func (n *Interfaces) List(filters map[string][]string) ([]*structs.InterfaceListStub, error) {
 
 	var items []*structs.InterfaceListStub
-	err := n.client.listResources(path.Join(interfacesPath, "/"), nil, &items)
+	err := n.client.listResources(path.Join(interfacesPath, "/"), filters, &items)
 	if err != nil {
 		return nil, err
 	}

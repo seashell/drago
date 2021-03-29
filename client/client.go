@@ -136,6 +136,7 @@ func (c *Client) setupNode() error {
 	c.node.Name = c.config.Name
 	c.node.Meta = c.config.Meta
 
+	c.node.AdvertiseAddress = c.config.AdvertiseAddress
 	c.node.Status = structs.NodeStatusInit
 
 	if c.node.Name == "" {
@@ -447,9 +448,10 @@ func (c *Client) updateNodeStatus() error {
 	c.logger.Debugf("updating node status (client -> server)")
 
 	req := &structs.NodeUpdateStatusRequest{
-		NodeID: c.NodeID(),
-		Status: structs.NodeStatusReady,
-		Meta:   c.node.Meta,
+		NodeID:           c.NodeID(),
+		Status:           structs.NodeStatusReady,
+		AdvertiseAddress: c.Node().AdvertiseAddress,
+		Meta:             c.node.Meta,
 	}
 
 	var err error

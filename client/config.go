@@ -41,6 +41,9 @@ type Config struct {
 	// StateDir is the directory to store our state in.
 	StateDir string
 
+	// AdvertiseAddress is the public address advertised to other nodes.
+	AdvertiseAddress string
+
 	// InterfacesPrefix is the string prepended to the name of all WireGuard
 	// interfaces created by Drago.
 	InterfacesPrefix string
@@ -88,6 +91,9 @@ func (c *Config) Merge(b *Config) *Config {
 	}
 	if b.StateDir != "" {
 		result.StateDir = b.StateDir
+	}
+	if b.AdvertiseAddress != "" {
+		result.AdvertiseAddress = b.AdvertiseAddress
 	}
 	if b.InterfacesPrefix != "" {
 		result.InterfacesPrefix = b.InterfacesPrefix

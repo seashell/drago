@@ -1,3 +1,4 @@
+//go:generate yarn --cwd ./ui
 //go:generate yarn --cwd ./ui build
 
 package main

@@ -3,6 +3,8 @@ package drago
 import (
 	"context"
 	"fmt"
+	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -178,6 +180,7 @@ func (s *NodeService) UpdateStatus(args *structs.NodeUpdateStatusRequest, out *s
 	}
 
 	n.Status = args.Status
+	n.AdvertiseAddress = args.AdvertiseAddress
 
 	if args.Meta != nil {
 		n.Meta = args.Meta
@@ -249,7 +252,7 @@ func (s *NodeService) GetInterfaces(args *structs.NodeSpecificRequest, out *stru
 
 			peer := &structs.Peer{
 				PublicKey:           peerIface.PublicKey,
-				Address:             peerNode.AdvertiseAddress,
+				Address:             &peerNode.AdvertiseAddress,
 				Port:                peerIface.ListenPort,
 				AllowedIPs:          []string{},
 				PersistentKeepalive: conn.PersistentKeepalive,
@@ -337,7 +340,7 @@ func (s *NodeService) GetNode(args *structs.NodeSpecificRequest, out *structs.Si
 	return nil
 }
 
-// ListNodes retrieves all network entities in the repository
+// ListNodes retrieves all node entities in the repository
 func (s *NodeService) ListNodes(args *structs.NodeListRequest, out *structs.NodeListResponse) error {
 
 	ctx := context.TODO()
@@ -349,16 +352,18 @@ func (s *NodeService) ListNodes(args *structs.NodeListRequest, out *structs.Node
 		}
 	}
 
-	networks, err := s.state.Nodes(ctx)
+	nodes, err := s.state.Nodes(ctx)
 	if err != nil {
 		return structs.NewInternalError(err.Error())
 	}
 
 	out.Items = nil
 
-	for _, n := range networks {
+	for _, n := range nodes {
 		out.Items = append(out.Items, n.Stub())
 	}
+
+	out.Items = filterNodes(out.Items, args.Filters)
 
 	return nil
 }
@@ -483,4 +488,47 @@ func (s *NetworkService) LeaveNetwork(args *structs.NodeLeaveNetworkRequest, out
 	}
 
 	return nil
+}
+
+func filterNodes(nodes []*structs.NodeListStub, filters structs.Filters) []*structs.NodeListStub {
+
+	statusFilter := "*"
+	if len(filters.Get("status")) > 0 {
+		statusFilter = filters.Get("status")[0]
+	}
+
+	metaFilters := map[string]string{}
+	for _, f := range filters.Get("meta") {
+		kv := strings.Split(f, ":")
+		if len(kv) != 2 {
+			continue
+		}
+		metaFilters[kv[0]] = kv[1]
+	}
+
+	out := []*structs.NodeListStub{}
+
+	for _, n := range nodes {
+
+		matchStatusFilter := true
+		if matched, _ := path.Match(statusFilter, n.Status); !matched {
+			matchStatusFilter = false
+		}
+
+		matchAllMetaFilters := true
+		for k, v := range metaFilters {
+			if metaValue, found := n.Meta[k]; found {
+				if matched, _ := path.Match(v, metaValue); !matched {
+					matchAllMetaFilters = false
+				}
+				continue
+			}
+			matchAllMetaFilters = false
+		}
+		if matchStatusFilter && matchAllMetaFilters {
+			out = append(out, n)
+		}
+	}
+
+	return out
 }

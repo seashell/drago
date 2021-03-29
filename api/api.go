@@ -116,7 +116,7 @@ func (c *Client) deleteResource(id, p string, receiver interface{}) error {
 	return c.doRequest(req, receiver)
 }
 
-func (c *Client) listResources(p string, filters map[string]string, receiver interface{}) error {
+func (c *Client) listResources(p string, filters map[string][]string, receiver interface{}) error {
 
 	u, err := url.Parse(c.config.Address)
 	if err != nil {
@@ -141,11 +141,12 @@ func (c *Client) addHeaders(req *http.Request) {
 	req.Header.Add("X-Drago-Token", c.config.Token)
 }
 
-func (c *Client) addQuery(filters map[string]string, req *http.Request) {
+func (c *Client) addQuery(filters map[string][]string, req *http.Request) {
+
 	q := req.URL.Query()
 
-	if len(filters) > 0 {
-		for k, v := range filters {
+	for k, values := range filters {
+		for _, v := range values {
 			q.Add(k, v)
 		}
 	}

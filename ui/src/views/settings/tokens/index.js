@@ -157,9 +157,9 @@ const TokensView = () => {
           <Text textStyle="bodyText" mb={2}>
             ID: {token.ID}
           </Text>
-          <Text textStyle="bodyText" mb={2}>
+          {token.Secret && <Text textStyle="bodyText" mb={2}>
             Secret: {token.Secret}
-          </Text>
+          </Text>}
           <Text textStyle="subtitle" fontSize="18px" mb={2} mt={3}>
             Policies
           </Text>

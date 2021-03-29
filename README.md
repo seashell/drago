@@ -15,7 +15,7 @@ A flexible configuration manager for WireGuard networks
   <img alt="GitHub" src="https://img.shields.io/github/license/seashell/drago">
 </p>
 
-Drago is a flexible configuration manager for WireGuard which is designed to make it simple to configure secure network overlays spanning heterogeneous nodes distributed across different clouds and physical locations.
+Drago is a flexible configuration manager for WireGuard which is designed to make it simple to configure secure network overlays spanning heterogeneous nodes distributed across different clouds and physical locations. We welcome contributions from the open-source community.
 
 <p align="center"> 
 <img src="../assets/demo.gif"/>
@@ -100,6 +100,8 @@ While the agent is running, Drago's UI will be accessible at `127.0.0.1:8080`. I
 $ go generate
 ```
 
+Note that the `--dev` flag also configures the server to use the in-memory storage backend instead of `etcd`. Therefore, any state will be destroyed whenever the agent is stopped.
+
 To apply independent customizations to client and server, start them with:
 
 ```
@@ -154,21 +156,40 @@ Run the following to get a comprehensive list of build options:
 
 ## Roadmap
 
-- [x] Website
-- [ ] Code coverage
-- [x] Backend API for issuing volatile tokens
-- [ ] Integration with Hashicorp Vault
-- [x] Integration with userspace WireGuard implementations
-  - [x]  `WireGuard/wireguard-go`
-  - [x]  `cloudflare/boringtun`
-- [ ] Integration with firewall tools for more sophisticated networking rules
-- [ ] Auto-join and auto-meshing modes
-- [x] Automatic IP assignment
-- [ ] Automatic discovery
-- [ ] Etcd storage backend
-- [x] RPC API
-- [x] Fine-grained authorization
-- [x] CLI improvements 
+- [ ] Project: 
+  - [x] Website
+  - [x] Documentation
+  - [ ] Code coverage
+
+- [ ] Features:
+  - [x] RPC API
+  - [ ] Input validation
+  - [ ] Node pre-registration
+  - [ ] Drago server clustering
+  - [x] Fine-grained authorization
+  - [x] Etcd storage backend
+  - [x] Inmem storage backend
+  - [x] Backend API for issuing volatile tokens
+  - [ ] Plugin system
+  - [x] Integration with userspace WireGuard implementations
+    - [x]  `WireGuard/wireguard-go`
+    - [x]  `cloudflare/boringtun`
+
+- [ ] Improvements:
+  - [ ] Repository transactions
+  - [x] CLI improvements
+
+- [ ] Plugins:
+  - [ ]  Meshing;
+  - [ ]  Leasing;
+  - [ ]  Admission;
+  - [ ]  Notification;
+
+- [ ] Others:
+  - [ ] Vault plugin
+  - [ ] Terraform provider
+  - [ ] [go-discover](https://github.com/hashicorp/go-discover) provider
+
 
 ## License
 Drago is released under the Apache 2.0 license. See LICENSE.txt

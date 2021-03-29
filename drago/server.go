@@ -7,8 +7,10 @@ import (
 
 	auth "github.com/seashell/drago/drago/auth"
 	state "github.com/seashell/drago/drago/state"
-	inmem "github.com/seashell/drago/drago/state/inmem"
+	"github.com/seashell/drago/drago/state/etcd"
+	"github.com/seashell/drago/drago/state/inmem"
 	structs "github.com/seashell/drago/drago/structs"
+	"github.com/seashell/drago/drago/structs/config"
 	acl "github.com/seashell/drago/pkg/acl"
 	log "github.com/seashell/drago/pkg/log"
 	rpc "github.com/seashell/drago/pkg/rpc"
@@ -64,16 +66,19 @@ func NewServer(config *Config) (*Server, error) {
 	err = s.setupACLModel()
 	if err != nil {
 		s.logger.Errorf("Error setting up ACL model: %s", err.Error())
+		return nil, err
 	}
 
 	err = s.setupApplication()
 	if err != nil {
 		s.logger.Errorf("Error setting up application modules: %s", err.Error())
+		return nil, err
 	}
 
 	err = s.setupRPCServer()
 	if err != nil {
 		s.logger.Errorf("Error setting up rpc server: %s", err.Error())
+		return nil, err
 	}
 
 	return s, nil
@@ -113,7 +118,30 @@ func (s *Server) Shutdown() error {
 
 func (s *Server) setupApplication() error {
 
-	s.state = inmem.NewStateRepository(s.logger)
+	if s.config.DevMode {
+		s.state = inmem.NewStateRepository(s.logger)
+	} else {
+		state, err := etcd.NewStateRepository(&etcd.Config{
+			DataDir:  s.config.DataDir,
+			LogLevel: s.config.LogLevel,
+			EtcdConfig: config.EtcdConfig{
+				Name:                       s.config.Etcd.Name,
+				ListenPeerURLs:             s.config.Etcd.ListenPeerURLs,
+				ListenClientURLs:           s.config.Etcd.ListenClientURLs,
+				InitialAdvertisePeerURLs:   s.config.Etcd.InitialAdvertisePeerURLs,
+				InitialAdvertiseClientURLs: s.config.Etcd.InitialAdvertiseClientURLs,
+				InitialCluster:             s.config.Etcd.InitialCluster,
+				InitialClusterState:        s.config.Etcd.InitialClusterState,
+				ProxyModeEnabled:           s.config.Etcd.ProxyModeEnabled,
+				CORS:                       s.config.Etcd.CORS,
+			},
+		})
+		if err != nil {
+			return err
+		}
+
+		s.state = state
+	}
 
 	// Setup default policies
 	ctx := context.TODO()

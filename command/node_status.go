@@ -71,8 +71,10 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 
 	if len(args) == 0 && !c.self {
 
+		filters := map[string][]string{}
+
 		// Print status of multiple nodes
-		nodes, err := api.Nodes().List()
+		nodes, err := api.Nodes().List(filters)
 		if err != nil {
 			c.UI.Error(fmt.Sprintf("Error retrieving node status: %s", err))
 			return 1
