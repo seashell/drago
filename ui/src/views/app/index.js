@@ -1,20 +1,14 @@
+import { Router } from '@reach/router'
 import React from 'react'
 import styled from 'styled-components'
-
-import HomeView from '_views/home'
-import NotFound from '_views/not-found'
-
-import HostsRouter from '_views/hosts'
-import LinksRouter from '_views/links'
-import NetworksRouter from '_views/networks'
-import InterfacesRouter from '_views/interfaces'
-import SettingsRouter from '_views/settings'
-
+import Footer from '_containers/footer'
 import Header from '_containers/header'
 import SideNav from '_containers/side-nav'
-import Footer from '_containers/footer'
-
-import { Router } from '@reach/router'
+import ClientsRouter from '_views/clients'
+import HomeView from '_views/home'
+import NetworksRouter from '_views/networks'
+import NotFound from '_views/not-found'
+import SettingsRouter from '_views/settings'
 
 const Dashboard = styled.div`
   position: relative;
@@ -36,6 +30,11 @@ const Content = styled(Router).attrs({ primary: false })`
   width: 90%;
   max-width: 800px;
   justify-self: center;
+
+  // Laptops and above
+  @media (min-width: 1280px) {
+    padding-left: 200px;
+  }
 `
 
 const App = () => (
@@ -44,9 +43,9 @@ const App = () => (
     <SideNav />
     <Content>
       <HomeView path="/" />
-      <HostsRouter path="hosts/*" />
-      <InterfacesRouter path="interfaces/*" />
-      <LinksRouter path="links/*" />
+      <ClientsRouter path="clients/*" />
+      {/* <InterfacesRouter path="interfaces/*" /> */}
+      {/* <LinksRouter path="links/*" /> */}
       <NetworksRouter path="networks/*" />
       <SettingsRouter path="settings/*" />
       <NotFound default />
@@ -54,5 +53,4 @@ const App = () => (
     <Footer gridArea="footer" />
   </Dashboard>
 )
-
 export default App

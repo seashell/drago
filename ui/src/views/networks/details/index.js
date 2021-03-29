@@ -1,204 +1,207 @@
-import React, { useState, useEffect, useMemo } from 'react'
+import { useMutation, useQuery } from '@apollo/client'
+import { useLocation, useNavigate, useParams } from '@reach/router'
+import React, { useEffect, useState } from 'react'
 import styled from 'styled-components'
-import { useNavigate, useLocation, useParams } from '@reach/router'
-import { Portal } from 'react-portal'
-
-import { useQuery } from 'react-apollo'
-import { GET_LINKS } from '_graphql/actions/links'
-import { GET_INTERFACES } from '_graphql/actions/interfaces'
-
+import { icons } from '_assets/'
+import BackLink from '_components/back-link'
 import Box from '_components/box'
-import Text from '_components/text'
-import ErrorState from '_components/error-state'
+import Button from '_components/button'
+import { useConfirmationDialog } from '_components/confirmation-dialog'
 import EmptyState from '_components/empty-state'
+import Icon from '_components/icon'
+import List from '_components/list'
+import NodeSelectInput from '_components/node-select-input'
 import { Dragon as Spinner } from '_components/spinner'
+import Text from '_components/text'
+import { CREATE_INTERFACE, DELETE_INTERFACE } from '_graphql/mutations'
+import { GET_NETWORK_WITH_INTERFACES } from '_graphql/queries'
+import AdmitNodeModal from '_modals/admit-node'
+import PeerCard from './peer-card'
 
-import InterfaceCard from './interface-card'
-import LinkCard from './link-card'
-
-import Graph from './graph'
-
-const Container = styled.div`
-  display: flex;
+const Container = styled(Box)`
   flex-direction: column;
-  grid-column: span 12;
 `
 
-const StyledInterfaceCard = styled(InterfaceCard)`
-  position: absolute;
-  bottom: 32px;
-  right: 8px;
-  background: #fff;
-  z-index: 99;
+const StyledIcon = styled(Icon)`
+  border-radius: 4px;
+  background: ${(props) => props.theme.colors.neutralLighter};
+  align-items: center;
+  justify-content: center;
 `
 
-const StyledLinkCard = styled(LinkCard)`
-  position: absolute;
-  bottom: 32px;
-  right: 8px;
-  background: #fff;
-  z-index: 99;
-`
+// eslint-disable-next-line react/prop-types
+const AddNodeWidget = ({ nodes, onAddNode }) => {
+  const [selectedNodeId, setSelectedNodeId] = useState(undefined)
 
-const Topology = () => {
+  const handleAddNodeButtonClick = () => {
+    onAddNode(selectedNodeId)
+  }
+
+  const handleSelectedNodeChanged = (id) => {
+    setSelectedNodeId(id)
+  }
+
+  return (
+    <Box alignItems="center" mt="24px">
+      <NodeSelectInput
+        width="300px"
+        nodes={nodes}
+        selectedId={selectedNodeId}
+        onChange={handleSelectedNodeChanged}
+        mr={2}
+      />
+      <Button variant="primary" onClick={handleAddNodeButtonClick}>
+        Add
+      </Button>
+    </Box>
+  )
+}
+
+const NetworkDetails = () => {
   const location = useLocation()
   const navigate = useNavigate()
-  const urlParams = useParams()
+  const { networkId } = useParams()
 
-  const [interfaces, setInterfaces] = useState([])
-  const [links, setLinks] = useState([])
+  const { confirm } = useConfirmationDialog()
 
-  const [selectedInterfaceID, setSelectedInterfaceID] = useState(undefined)
-  const [selectedLinkID, setSelectedLinkID] = useState(undefined)
+  const [isAdmitNodeModalOpen, setAdmitNodeModalOpen] = useState(false)
 
-  const getInterfacesQuery = useQuery(GET_INTERFACES, {
-    variables: { networkId: urlParams.networkId },
-    onCompleted: data => {
-      if (data === undefined) return
-      setInterfaces(data.result.items)
-    },
+  const getNetworkQuery = useQuery(GET_NETWORK_WITH_INTERFACES, {
+    variables: { id: networkId },
   })
 
-  const getLinksQuery = useQuery(GET_LINKS, {
-    variables: {},
-    onCompleted: data => {
-      if (data === undefined) return
-      setLinks(data.result.items)
-    },
+  const [createInterface, createInterfaceMutation] = useMutation(CREATE_INTERFACE, {
+    variables: { networkId },
   })
+
+  const [deleteInterface, deleteInterfaceMutation] = useMutation(DELETE_INTERFACE)
 
   useEffect(() => {
     window.scrollTo(0, 0)
-    getLinksQuery.refetch()
-    getInterfacesQuery.refetch()
+    getNetworkQuery.refetch()
   }, [location])
 
-  const handleNodeClick = node => {
-    if (node !== null) {
-      if (node.type === 'interface') {
-        navigate(`/ui/hosts/${node.data.hostId}/interfaces`)
-      } else if (node.type === 'host') {
-        navigate(`/ui/hosts/${node.data.id}`)
-      }
-    }
+  const handleAdmitNodeButtonClick = () => {
+    setAdmitNodeModalOpen(true)
   }
 
-  const handleNodeHover = n => {
-    if (n !== null) {
-      if (n.type === 'interface') {
-        setSelectedInterfaceID(n.id)
-        return
-      }
-    }
-    setSelectedInterfaceID(undefined)
+  const handleAdmitNode = (id) => {
+    createInterface({
+      variables: {
+        networkId,
+        nodeId: id,
+      },
+    })
+      .then(() => {
+        getNetworkQuery.refetch()
+      })
+      .catch(() => {})
   }
 
-  const handleLinkHover = l => {
-    if (l !== null) {
-      if (l.source.type === 'interface' && l.target.type === 'interface') {
-        setSelectedLinkID(l.id)
-        return
-      }
-    }
-    setSelectedLinkID(undefined)
+  const handlePeerCardClick = (id) => {
+    navigate(`/ui/clients/${id}`)
   }
 
-  const gNodes = interfaces
-    .map(iface => ({
-      type: 'interface',
-      id: iface.id,
-      data: iface,
-    }))
-    .concat(
-      interfaces
-        .map(iface => ({
-          type: 'host',
-          id: iface.parentHost.id,
-          data: iface.parentHost,
-        }))
-        .filter((host, index, self) => index === self.findIndex(h => h.id === host.id))
-    )
-
-  const gLinks = links
-    .map(link => ({
-      id: link.id,
-      source: link.fromInterfaceId,
-      target: link.toInterfaceId,
-      label: link.allowedIps,
-      data: link,
-    }))
-    .concat(
-      interfaces.map(iface => ({
-        id: `${iface.id}+${iface.parentHost.id}`,
-        target: iface.id,
-        source: iface.parentHost.id,
-      }))
-    )
-
-  const MemoizedGraph = useMemo(
-    () => (
-      <Graph
-        links={gLinks}
-        nodes={gNodes}
-        onNodeHovered={handleNodeHover}
-        onLinkHovered={handleLinkHover}
-        onNodeClicked={handleNodeClick}
-      />
-    ),
-    [links, interfaces]
-  )
-
-  const hoveredInterface = interfaces.find(h => h.id === selectedInterfaceID) || {
-    data: { name: '', ipAddress: '', listenPort: '' },
+  const handlePeerDelete = (id) => {
+    confirm({
+      title: 'Are you sure?',
+      details: `This will remove the node from the network, destroying its interface and connections.`,
+      isDestructive: true,
+      onConfirm: () => {
+        deleteInterface({
+          variables: { id },
+        })
+          .then(() => {
+            getNetworkQuery.refetch()
+          })
+          .catch(() => {})
+      },
+    })
   }
-  const hoveredLink = links.find(l => l.id === selectedLinkID) || { data: {} }
 
-  const isError = getInterfacesQuery.error || getLinksQuery.error
-  const isLoading = getInterfacesQuery.loading || getLinksQuery.loading
-  const isEmpty = !isLoading && interfaces.length === 0
+  const isLoading =
+    getNetworkQuery.loading || createInterfaceMutation.loading || deleteInterfaceMutation.loading
 
   if (isLoading) {
     return <Spinner />
   }
 
-  return isError ? (
-    <ErrorState />
-  ) : isEmpty ? (
-    <EmptyState description="Oops! It seems that you don't have any hosts yet registered in this network." />
-  ) : (
+  const network = getNetworkQuery.data ? getNetworkQuery.data.result : { Interfaces: [] }
+
+  if (isLoading) {
+    return <Spinner />
+  }
+
+  return (
     <Container>
-      <Box mb={3} width="100%">
-        <Text textStyle="title">Network topology</Text>
+      <AdmitNodeModal
+        isOpen={isAdmitNodeModalOpen}
+        onAdmit={handleAdmitNode}
+        onClose={() => setAdmitNodeModalOpen(false)}
+      />
+
+      <BackLink to="/ui/networks" text="Networks" mb={3} />
+      <Box alignItems="center" mb={4}>
+        <StyledIcon mr="12px" p={2} icon={<icons.Network />} size="48px" color="neutralDarker" />
+        <div>
+          <Text textStyle="title" mb={1}>
+            {network.Name}
+          </Text>
+          <Text textStyle="detail">{network.ID}</Text>
+        </div>
       </Box>
 
-      {isLoading && <Spinner />}
-      {isError ? <ErrorState /> : isEmpty ? <EmptyState /> : MemoizedGraph}
+      <Box px={3} py={2} border="discrete" alignItems="center">
+        <Box mr={4}>
+          <Text textStyle="strong" fontSize="12px" mr={2}>
+            Address range
+          </Text>
+          <Text textStyle="detail">{network.AddressRange}</Text>
+        </Box>
+      </Box>
 
-      {selectedLinkID && (
-        <Portal>
-          <StyledLinkCard
-            sourceName={hoveredLink.fromInterface.name}
-            sourceAddress={hoveredLink.fromInterface.ipAddress}
-            targetName={hoveredLink.toInterface.name}
-            targetAddress={hoveredLink.toInterface.ipAddress}
-            allowedIPs={hoveredLink.allowedIps}
-            persistentKeepalive={hoveredLink.persistentKeepalive}
+      <Box alignItems="center" mt={4} mb={3}>
+        <Text textStyle="subtitle">Nodes</Text>
+        {network.Interfaces.length > 0 && (
+          <Button variant="primary" ml="auto" onClick={handleAdmitNodeButtonClick}>
+            Admit Node
+          </Button>
+        )}
+      </Box>
+      <List>
+        {network.Interfaces.map((el) => (
+          <PeerCard
+            key={el.ID}
+            id={el.NodeID}
+            name={el.Name}
+            address={el.Address}
+            nodeName={el.Node.Name}
+            nodeStatus={el.Node.Status}
+            hasPublicKey={el.HasPublicKey}
+            nodeAdvertiseAddress={el.Node.AdvertiseAddress}
+            onClick={() => handlePeerCardClick(el.Node.ID)}
+            onDelete={() => handlePeerDelete(el.ID)}
           />
-        </Portal>
-      )}
-      {selectedInterfaceID && (
-        <Portal>
-          <StyledInterfaceCard
-            name={hoveredInterface.name}
-            address={hoveredInterface.ipAddress}
-            listenPort={hoveredInterface.listenPort}
-          />
-        </Portal>
+        ))}
+      </List>
+      {network.Interfaces.length === 0 && (
+        <EmptyState
+          title="No nodes."
+          description="Nodes can be added to a network at any time."
+          image={<Icon my={4} icon={<icons.Host />} size="48px" color="neutral" />}
+          extra={
+            <Box alignItems="center" mt="24px">
+              <Button variant="primary" onClick={handleAdmitNodeButtonClick}>
+                Admit Node
+              </Button>
+            </Box>
+          }
+        />
       )}
     </Container>
   )
 }
 
-Topology.propTypes = {}
+NetworkDetails.propTypes = {}
 
-export default Topology
+export default NetworkDetails

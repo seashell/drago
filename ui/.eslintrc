@@ -1,25 +1,20 @@
 {
-  "parser": "babel-eslint",
-  
-  "extends": ["react-app", "airbnb", "prettier", "prettier/react"],
-  
   "env": {
     "browser": true,
-    "node": true
+    "es2021": true
   },
-
-  "settings": {
-    "import/resolver": {
-      "webpack": {
-        "config": "config/webpack/eslint.js"
-      }
-    }
+  "extends": ["react-app","plugin:react/recommended", "airbnb", "prettier", "prettier/react"],
+  "parserOptions": {
+    "ecmaFeatures": {
+        "jsx": true
+    },
+    "ecmaVersion": 12,
+    "sourceType": "module"
   },
-
-  "plugins": ["react", "prettier"],
-  
+  "plugins": ["react"],
   "rules": {
     "no-unused-vars": "warn",
+    "react/jsx-curly-brace-presence": "off",
     "no-param-reassign": "off",
     "no-use-before-define": "off",
     "no-nested-ternary": "off",
@@ -27,18 +22,16 @@
     "import/no-extraneous-dependencies": "off",
     "jsx-a11y/anchor-is-valid": "off",
     "react-hooks/exhaustive-deps": "off",
-
-    "prettier/prettier": [
-      "error",
-      {
-        "singleQuote": true,
-        "trailingComma": "es5",
-        "bracketSpacing": true,
-        "jsxBracketSameLine": false,
-        "semi": false,
-        "parser": "babel",
-        "printWidth": 100
+    "react/jsx-props-no-spreading": "off",
+    "react/destructuring-assignment": "off",
+    "react/state-in-constructor": "off",
+    "react/static-property-placement":"off"
+  },
+  "settings": {
+    "import/resolver": {
+      "webpack": {
+        "config": "config/webpack/eslint.js"
       }
-    ]
+    }
   }
 }

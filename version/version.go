@@ -11,18 +11,18 @@ var (
 	GitDescribe string
 
 	// The main version number that is being run at the moment.
-	Version = "0.1.0-rc1"
+	Version = "0.2.0"
 
 	// A pre-release marker for the version. If this is "" (empty string)
 	// then it means that it is a final release. Otherwise, this is a pre-release
 	// such as "dev" (in development), "beta", "rc1", etc.
-	VersionPrerelease = "dev"
+	VersionPrerelease = ""
 
 	// VersionMetadata is metadata further describing the build type.
 	VersionMetadata = ""
 )
 
-// VersionInfo
+// VersionInfo :
 type VersionInfo struct {
 	Revision          string
 	Version           string
@@ -30,6 +30,7 @@ type VersionInfo struct {
 	VersionMetadata   string
 }
 
+// GetVersion :
 func GetVersion() *VersionInfo {
 	ver := Version
 	rel := VersionPrerelease
@@ -49,8 +50,9 @@ func GetVersion() *VersionInfo {
 	}
 }
 
+// VersionNumber:
 func (c *VersionInfo) VersionNumber() string {
-	version := fmt.Sprintf("%s", c.Version)
+	version := c.Version
 
 	if c.VersionPrerelease != "" {
 		version = fmt.Sprintf("%s-%s", version, c.VersionPrerelease)
@@ -63,10 +65,11 @@ func (c *VersionInfo) VersionNumber() string {
 	return version
 }
 
+// FullVersionNumber :
 func (c *VersionInfo) FullVersionNumber(rev bool) string {
 	var versionString bytes.Buffer
 
-	fmt.Fprintf(&versionString, "drago v%s", c.Version)
+	fmt.Fprintf(&versionString, "Drago v%s", c.Version)
 	if c.VersionPrerelease != "" {
 		fmt.Fprintf(&versionString, "-%s", c.VersionPrerelease)
 	}

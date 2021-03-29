@@ -8,7 +8,7 @@ const StyledLink = styled(Link)`
   display: inline;
 
   font-family: Lato !important;
-  
+
   :link {
     text-decoration: none;
     cursor: pointer;
@@ -20,13 +20,13 @@ const StyledLink = styled(Link)`
   }
 
   color: inherit;
-  
+
   :hover {
-    ${props => props.hoverStyle}
+    ${(props) => props.hoverStyle}
   }
 
   &[aria-current] {
-    ${props => props.activeStyle}
+    ${(props) => props.activeStyle}
   }
 
   ${color}
@@ -34,7 +34,6 @@ const StyledLink = styled(Link)`
   ${layout}
   ${border}
   ${typography}
-
 `
 
 StyledLink.propTypes = {

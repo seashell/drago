@@ -1,7 +1,7 @@
+import PropTypes from 'prop-types'
 import React from 'react'
 import styled, { keyframes } from 'styled-components'
 import { layout } from 'styled-system'
-import PropTypes from 'prop-types'
 
 const rotate = keyframes`
   0% {
@@ -33,8 +33,8 @@ const Container = styled.div`
   }
 `
 
-const Dragon = ({ size, color }) => (
-  <Overlay>
+const Dragon = ({ size, color, ...props }) => (
+  <Overlay {...props}>
     <Container size={size}>
       <svg viewBox="0 0 100 100" id="dragon" width="100%">
         <g

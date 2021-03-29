@@ -1,17 +1,16 @@
+import { Router } from '@reach/router'
 import React from 'react'
 import ReactDOM from 'react-dom'
-
-import { ApolloProvider } from 'react-apollo'
-import { ModalProvider, BaseModalBackground } from 'styled-react-modal'
 import styled, { ThemeProvider } from 'styled-components'
-
-import { ToastContainer } from '_components/toast'
-
-import Router from './router'
-import client from './graphql/client'
-
-import { themes, GlobalStyles } from './styles'
+import { BaseModalBackground, ModalProvider } from 'styled-react-modal'
+import ConfirmationDialogProvider from '_components/confirmation-dialog'
+import ApolloProvider from '_graphql/apollo-provider'
+import ToastProvider from '_utils/toast-provider'
+import App from '_views/app'
+import NotFound from '_views/not-found'
 import * as serviceWorker from './serviceWorker'
+import { GlobalStyles, themes } from './styles'
+import './assets/fonts/index.css'
 
 const theme = 'light'
 
@@ -20,15 +19,21 @@ const ModalBackground = styled(BaseModalBackground)`
 `
 
 ReactDOM.render(
-  <ApolloProvider client={client}>
-    <ThemeProvider theme={themes[theme]}>
+  <ThemeProvider theme={themes[theme]}>
+    <ToastProvider>
       <ModalProvider backgroundComponent={ModalBackground}>
-        <GlobalStyles />
-        <Router />
-        <ToastContainer />
+        <ConfirmationDialogProvider>
+          <ApolloProvider>
+            <GlobalStyles />
+            <Router>
+              <App path="/ui/*" />
+              <NotFound default />
+            </Router>
+          </ApolloProvider>
+        </ConfirmationDialogProvider>
       </ModalProvider>
-    </ThemeProvider>
-  </ApolloProvider>,
+    </ToastProvider>
+  </ThemeProvider>,
   document.getElementById('root')
 )
 

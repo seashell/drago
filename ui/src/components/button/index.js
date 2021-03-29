@@ -1,42 +1,43 @@
 import styled from 'styled-components'
 
-import { buttonStyle, shadow, layout, typography, border, space } from 'styled-system'
+import { buttonStyle, shadow, layout, typography, border, space, color } from 'styled-system'
 
 const Button = styled.button`
-  border-radius: 24px;
-  
   font-family: 'Lato';
   font-weight: bold;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.04em;
   border: none;
 
   :disabled {
-    background: ${props => props.theme.colors.neutralLighter};
+    opacity: 0.4;
+    background: #ddd;
+    border-color: #ddd;
+    color: #666;
     box-shadow: none;
-    cursor: default;
-    :hover {
-      filter: none;
-    }
+    cursor: not-allowed;
   }
 
   &:hover {
-    filter: brightness(90%);
+    filter: brightness(95%);
     transition: all 0.7s ease;
   }
+
+  border-radius: 1px;
+
   ${buttonStyle}
   ${typography}
   ${shadow}
   ${layout}
   ${space}
   ${border}
+  ${color}
 `
 
 Button.defaultProps = {
   variant: 'primary',
-  boxShadow: 'light',
-  width: '100px',
-  height: '40px',
-  borderRadius: 3,
+  width: 'max-content',
+  px: '24px',
+  height: '50px',
   type: 'button',
 }
 

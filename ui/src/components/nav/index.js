@@ -27,7 +27,7 @@ export const HorizontalNavLink = styled(Link).attrs(({ theme }) => ({
   }
 `
 
-export const VerticalNavLink = styled(Link).attrs(props => ({
+export const VerticalNavLink = styled(Link).attrs((props) => ({
   py: 2,
   color: 'neutral',
   activeStyle: { color: props.theme.colors.primary },

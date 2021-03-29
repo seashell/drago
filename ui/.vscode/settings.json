@@ -1,8 +1,22 @@
 {
-    "prettier.eslintIntegration": true,
-    "eslint.autoFixOnSave": true,
+    "eslint.workingDirectories": ["./ui/"],
+    "eslint.alwaysShowStatus": true,
     "eslint.packageManager": "yarn",
-    "editor.codeActionsOnSave": {
-        "source.fixAll.eslint": true
-    }
-}
+    "eslint.run": "onType",
+    
+    "prettier.prettierPath": "./node_modules/prettier",
+    "prettier.configPath": "./.prettierrc",
+    "prettier.packageManager": "yarn",
+    
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true,      
+      "editor.codeActionsOnSave": {
+        "source.organizeImports": true,
+        "source.fixAll.eslint": true,
+        "source.fixAll.stylelint": true
+      }
+    },
+   
+  }
+  

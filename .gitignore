@@ -19,14 +19,15 @@
 # vendor/
 
 ### Go Patch ###
-/vendor/
-/Godeps/
+vendor/
+Godeps/
 
 # End of https://www.gitignore.io/api/go
-/build/
-/ui/build/*
-#/ui/statik/*
-/ui/node_modules/*
-/vendor/*
+ui/node_modules/*
+ui/.eslintcache
+ui/build/**/
+vendor/*
 
-/tmp
+!*.keep
+
+tmp

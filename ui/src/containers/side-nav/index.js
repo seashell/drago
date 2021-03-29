@@ -1,12 +1,11 @@
 import React from 'react'
+import { CollapsibleSection, Container, NavLink } from './styled'
 
-import { Container, CollapsibleSection, NavLink } from './styled'
-
-const SideNav = props => (
+const SideNav = (props) => (
   <Container {...props}>
     <CollapsibleSection title="Manage" isOpen>
       <NavLink to="networks">Networks</NavLink>
-      <NavLink to="hosts">Hosts</NavLink>
+      <NavLink to="clients">Clients</NavLink>
     </CollapsibleSection>
   </Container>
 )

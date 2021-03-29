@@ -14,7 +14,7 @@ const Container = styled(Box).attrs({
   height: auto;
 `
 
-const FormikState = props =>
+const FormikState = (props) =>
   DEBUG ? (
     <Portal>
       <Container>
