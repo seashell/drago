@@ -14,7 +14,7 @@ server {
 client {
     enabled = true
     servers = ["192.168.100.12:8081"]
-    wireguard_path = "/home/eschmidt/wireguard"
+    wireguard_path = "./wireguard"
     meta = {
         test_meta = "test_meta_value"
     }

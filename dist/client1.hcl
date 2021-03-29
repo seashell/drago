@@ -14,5 +14,5 @@ server {
 client {
     enabled = true
     servers = ["192.168.99.1:8081"]
-    wireguard_path = "/home/eschmidt/boringtun"
+    wireguard_path = "./boringtun"
 }
