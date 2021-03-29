@@ -180,10 +180,10 @@ Run the following to get a comprehensive list of build options:
   - [x] CLI improvements
 
 - [ ] Plugins:
-  - [ ]  Meshing;
-  - [ ]  Leasing;
-  - [ ]  Admission;
-  - [ ]  Notification;
+  - [ ]  Meshing
+  - [ ]  Leasing
+  - [ ]  Admission
+  - [ ]  Notification
 
 - [ ] Others:
   - [ ] Vault plugin
