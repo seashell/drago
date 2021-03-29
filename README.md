@@ -12,10 +12,13 @@ A flexible configuration manager for WireGuard networks
 
 <p align="center">
   <a href="https://goreportcard.com/report/github.com/seashell/drago"><img src="https://goreportcard.com/badge/github.com/seashell/drago" alt="Go report: A+"></a>
-  <img alt="GitHub" src="https://img.shields.io/github/license/seashell/drago">
+  <img alt="GitHub" src="https://img.shields.io/github/license/seashell/drago">  
+  <a href="https://gitter.im/seashell/drago"><img src="https://img.shields.io/badge/gitter-join%20chat-green?color=00cc99" alt="Gitter"></a>
 </p>
 
-Drago is a flexible configuration manager for WireGuard which is designed to make it simple to configure secure network overlays spanning heterogeneous nodes distributed across different clouds and physical locations. We welcome contributions from the open-source community.
+Drago is a flexible configuration manager for WireGuard designed to make it simple to configure secure network overlays spanning heterogeneous nodes distributed across different clouds and physical locations. 
+
+Drago is in active development, and we welcome contributions from the open-source community. Feedback and feature requests are particularly appreciated.
 
 <p align="center"> 
 <img src="../assets/demo.gif"/>
@@ -24,28 +27,29 @@ Drago is a flexible configuration manager for WireGuard which is designed to mak
 ## Features
 
 - Single-binary, lightweight
-- Slick management dashboard
 - Encrypted node-to-node communication
 - Support for multiple storage backends
-- Support for userspace WireGuard implementations
+- Support for multiple WireGuard implementations
 - Dynamic network configuration
 - Automatic key rotation
 - Extensible via REST API
+- Slick management dashboard
 - Automatic IP assignment
   
 ## Use cases
+- Securely connect IoT devices
+- Build your own cloud with Raspberry Pi's
+- Connect services running on multiple cloud providers 
+- Manage access to sensitive services deployed to private hosts
+- Expose development servers for debugging and demonstration purposes
 - Secure home automation, SSH access, etc
 - Establish secure VPNs for your company
-- Manage access to sensitive services deployed to private nodes
-- Expose development servers for debugging and demonstration purposes
-- Establish multi-cloud clusters with ease
-- Build your own cloud with RaspberryPIs
 
 ## Overview
 
-[WireGuard®](https://www.wireguard.com/) is an extremely simple yet fast and modern VPN that utilizes state-of-the-art cryptography. It aims to be faster, simpler, leaner, and more useful than IPsec. It also intends to be considerably more performant than OpenVPN. WireGuard is designed as a general purpose VPN for running on embedded interfaces and super computers alike, fit for many different circumstances. Initially released for the Linux kernel, it is now cross-platform and widely deployable, being regarded as the most secure, easiest to use, and simplest VPN solution in the industry. 
+[WireGuard®](https://www.wireguard.com/) is an extremely simple yet fast and modern VPN that utilizes state-of-the-art cryptography. It aims to be faster, simpler, leaner, and more useful than IPsec. It also intends to be considerably more performant than OpenVPN. WireGuard is designed as a general purpose VPN for running on embedded interfaces and super computers alike, fit for many different circumstances. Initially released for the Linux kernel, it is now cross-platform and widely deployable, being regarded as the most secure, easiest to use, and simplest VPN solution in the industry.
 
-WireGuard presents several advantages over other VPN solutions, but it does not allow for the dynamic configuration of network parameters such as IP addresses and firewall rules.Drago builds on top of WireGuard, allowing users to dynamically manage the configuration of their VPN networks, providing a unified control plane for overlays spanning containers, virtual machines, and IoT devices.
+WireGuard presents several advantages over other VPN solutions, but it does not allow for the dynamic configuration of network parameters such as IP addresses and firewall rules. Drago builds on top of WireGuard, allowing users to dynamically manage the configuration of their VPN networks, providing a unified control plane for overlays spanning containers, virtual machines, and IoT devices.
 
 ## How it works
 
@@ -59,11 +63,11 @@ The Drago server exposes a comprehensive API through which these configurations 
 
 The Drago client, in turn, runs on every node in the network, and is responsible for  retrieving the most up-to-date configurations from the server through the API. Thanks to a simple reconciliation process, the Drago client then guarantees that the WireGuard configurations on each node always match the desired state stored in the database. When running in client mode, Drago also takes care of automatically generating key pairs for WireGuard, and sharing the public key so that nodes can always connect to each other.
 
-The only assumptions made by Drago is that each node running a client has WireGuard available either in the kernel or as a userspace binary, and that the server is reachable through the network.
+The only assumptions made by Drago is (i) that each node running a client has WireGuard available either as a kernel module or userspace application, and (ii) that the Drag server is reachable through the network.
 
-Drago does not enforce any specific network topology. Its sole responsibility is to distribute the desired configurations, and guarantee that they are correctly applied to WireGuard on every single client node. This means that it is up to you to define how your nodes are connected to each other and how your network should look like.
+Drago does not enforce any specific network topology. Its sole responsibility is to distribute the desired configurations, and guarantee that they are correctly applied to WireGuard on every single client node. This means that it is up to the user to define how nodes are connected to each other and how the network should look like.
 
-Drago is meant to be simple, and provide a solid foundation for higher-level functionality. Need automatic IP assignment, dynamic firewall rules, or some kind of telemetry? You are free to implement on top of the already existing API.
+Drago is meant to be simple, and provide a solid foundation for higher-level functionality. Need automatic IP assignment, dynamic firewall rules, or some kind of telemetry? Feel free to implement it on top of the already existing API.
 
 ## Usage
 ```
