@@ -85,9 +85,33 @@ Available commands:
     version       Print the Drago version
 ```
 
+## Quickstart
+
+A Docker container is provided for those interested in building and running Drago without having to install anything in their systems. 
+
+In order to perform a containerized build of Drago's Docker image, run:
+
+```
+$ make container DOCKER=1
+```
+
+This will build a minimal Docker image containing the Drago binary. The `DOCKER` flag ensures that the build takes place within a Docker container, thus removing the entry barrier for potential users.
+
+Once the build process finishes, start the Drago agent in development mode with:
+
+```
+$ docker run -ti -p 8080:8080 drago agent --dev
+```
+
+You can now interact with the system through the Web UI, available at `http://localhost:8080/`. Alternatively, you can also interact with Drago through the command-line interface:
+
+```
+$ docker run --network host drago
+```
+
 ## Development
 
-Requirements:
+In order to develop Drago, your environment should meet the following requirements:
 - Golang 1.16+
 - Node 10.17.0+
 - yarn 1.12.3+
@@ -118,16 +142,17 @@ $ go run main.go agent --server --config=<path-to-config-file>
 
 We also provide the `air.sh` script, which makes use of `comstrek/air` to perform hot-reloading of the Drago agent. When running Drago through the `air.sh` script, the binary will be rebuilt and restarted whenever a change is detected in the codebase.
 
-### Web UI
+#### Web UI
 
-The Drago web UI, can be launched independently from the binary. To do this, simply `cd` into the `/ui/` directory containing the UI codebase and run:
+The Drago web UI, can be launched independently from the binary so that developers can benefit from the covenient features offered by React's development server e.g., hot-reloading. To start Drago's UI in development mode and independently from the binary, `cd` into the `/ui/` directory and run:
 
 ```
-$ yarn start
+$ yarn && yarn start
 ```
-This will launch React's development server, which comes with hot-reloading out-of-the-box.
 
-While we still don't have any kind of data mocking (e.g., with `miragejs`), if you want to develop the UI you first need to make sure the Drago server is up and running (see instructions above).
+This will download all required dependencies, and launch React's development server. The UI can then be accessed at `http://localhost:3000/ui/`.
+
+While running the Web UI independently from the Drago binary is possible, this subproject still lacks a more sophisticated data mocking mechanism to allow for its independent testing. For those interested in contributing to the UI, we suggest that they first start the Drago agent, and then run the Web UI according to the instructions above.
 
 
 ## Build
@@ -138,12 +163,12 @@ $ go generate
 $ go build
 ```
 
-Alternatively, you can build Drago with `make`, for example:
+Alternatively, you can build Drago with `make`. To do so, run:
 ```
 $ make dev
 ```
 
-Run the following to get a comprehensive list of build options:
+In order to get a comprehensive list of build options, run:
  ```
  $ make help
  ```
@@ -164,6 +189,7 @@ Run the following to get a comprehensive list of build options:
   - [x] Website
   - [x] Documentation
   - [ ] Code coverage
+  - [ ] E2E testing
 
 - [ ] Features:
   - [x] RPC API
@@ -174,10 +200,12 @@ Run the following to get a comprehensive list of build options:
   - [x] Etcd storage backend
   - [x] Inmem storage backend
   - [x] Backend API for issuing volatile tokens
-  - [ ] Plugin system
+  - [ ] Integration of a plugin system
   - [x] Integration with userspace WireGuard implementations
     - [x]  `WireGuard/wireguard-go`
     - [x]  `cloudflare/boringtun`
+  - [ ]  `miragejs` mocks for testing the UI
+  - [ ]  Client-side input validation
 
 - [ ] Improvements:
   - [ ] Repository transactions
@@ -196,4 +224,4 @@ Run the following to get a comprehensive list of build options:
 
 
 ## License
-Drago is released under the Apache 2.0 license. See LICENSE.txt
+Drago is released under the Apache 2.0 license. See [LICENSE](https://github.com/seashell/drago/blob/master/LICENSE).
