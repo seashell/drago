@@ -1,11 +1,11 @@
-# Command: interface list
+# Command: connection update
 
-The `interface list` command is used to list all available interfaces.
+The `connection update` command is used to update an existing connection.
 
 ## Usage
 
 ```
-drago interface list [options]
+drago connection update [options] <id>
 ```
 
 ## General Options
@@ -22,6 +22,4 @@ drago interface list [options]
     Defaults to `""`
  
 
-## Info Options
-
-- `-json`: Enable JSON output.
+## Update Options

@@ -1,11 +1,11 @@
-# Command: interface list
+# Command: network create
 
-The `interface list` command is used to list all available interfaces.
+The `network create` command is used to create a new network.
 
 ## Usage
 
 ```
-drago interface list [options]
+drago network create [options]
 ```
 
 ## General Options
@@ -22,6 +22,10 @@ drago interface list [options]
     Defaults to `""`
  
 
-## Info Options
+## Create Options
+
+- `-name`: Network name.
+
+- `-ip_range`: Network IP address range in CIDR notation.
 
 - `-json`: Enable JSON output.

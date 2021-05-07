@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"path"
 
 	"github.com/seashell/drago/drago/structs"
@@ -21,13 +22,19 @@ func (c *Client) ACLPolicies() *ACLPolicies {
 }
 
 // Create :
-func (p *ACLPolicies) Upsert(token *structs.ACLToken) (*structs.ACLToken, error) {
-	return nil, nil
+func (p *ACLPolicies) Upsert(policy *structs.ACLPolicy) error {
+	return fmt.Errorf("not implemented")
 }
 
 // Delete :
-func (p *ACLPolicies) Delete(id string) (*structs.ACLPolicy, error) {
-	return nil, nil
+func (p *ACLPolicies) Delete(name string) error {
+
+	err := p.client.deleteResource(name, aclPoliciesPath, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // Get :

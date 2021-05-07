@@ -20,6 +20,28 @@ func (c *Client) Networks() *Networks {
 	return &Networks{client: c}
 }
 
+// Create :
+func (n *Networks) Create(network *structs.Network) error {
+
+	err := n.client.createResource(networksPath, network, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete :
+func (n *Networks) Delete(id string) error {
+
+	err := n.client.deleteResource(id, networksPath, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Get :
 func (n *Networks) Get(id string) (*structs.Network, error) {
 

@@ -1,11 +1,11 @@
-# Command: interface list
+# Command: network delete
 
-The `interface list` command is used to list all available interfaces.
+The `network delete` command is used to delete an existing network.
 
 ## Usage
 
 ```
-drago interface list [options]
+drago network delete [options] <id>
 ```
 
 ## General Options
@@ -20,8 +20,3 @@ drago interface list [options]
     The token used to authenticate with the Drago server.
     Overrides the `DRAGO_TOKEN` environment variable if set.
     Defaults to `""`
- 
-
-## Info Options
-
-- `-json`: Enable JSON output.

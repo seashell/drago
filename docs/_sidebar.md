@@ -35,11 +35,17 @@
   * [agent info](/docs/commands/agent-info)
   * interface
     * [list](/docs/commands/interface/list)
+    * [update](/docs/commands/interface/update)
   * connection
     * [list](/docs/commands/connection/list)
+    * [update](/docs/commands/connection/update)
   * network
+    * [create](/docs/commands/network/create)
     * [list](/docs/commands/network/list)
+    * [delete](/docs/commands/network/delete)
   * node
+    * [join](/docs/commands/node/join)
+    * [leave](/docs/commands/node/leave)
     * [list](/docs/commands/node/list)
     * [status](/docs/commands/node/status)
 

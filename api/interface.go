@@ -43,3 +43,41 @@ func (n *Interfaces) List(filters map[string][]string) ([]*structs.InterfaceList
 
 	return items, nil
 }
+
+// Create :
+func (n *Interfaces) Create(nodeID, networkID string) error {
+
+	iface := &structs.Interface{
+		NodeID:    nodeID,
+		NetworkID: networkID,
+	}
+
+	err := n.client.createResource(interfacesPath, iface, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Update :
+func (n *Interfaces) Update(iface *structs.Interface) error {
+
+	err := n.client.createResource(interfacesPath, iface, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// Delete :
+func (n *Interfaces) Delete(id string) error {
+
+	err := n.client.deleteResource(id, interfacesPath, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
