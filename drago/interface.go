@@ -135,7 +135,6 @@ func (s *InterfaceService) UpsertInterface(args *structs.InterfaceUpsertRequest,
 		i.Address = nil             // TODO: set with leasing plugin if it is loaded and enabled
 		i.Peers = []*structs.Peer{} // TODO: set with meshing plugin if it is loaded and enabled
 		i.CreatedAt = time.Now()
-		i.ModifyIndex = 0
 	}
 
 	// Retrieve the network to which the interface is meant to be added, throwing an error if it does not exist
@@ -164,7 +163,6 @@ func (s *InterfaceService) UpsertInterface(args *structs.InterfaceUpsertRequest,
 	}
 
 	i.UpdatedAt = time.Now()
-	i.ModifyIndex++
 
 	// TODO: wrap in a transaction
 

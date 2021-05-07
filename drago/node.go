@@ -132,7 +132,6 @@ func (s *NodeService) Register(args *structs.NodeRegisterRequest, out *structs.N
 	if err != nil {
 		s.logger.Debugf("registering a new node with id %s!", n.ID)
 		n.CreatedAt = time.Now()
-		n.ModifyIndex = 0
 	} else {
 		s.logger.Debugf("node %s already registered.", n.ID)
 		if old != nil {
@@ -144,7 +143,6 @@ func (s *NodeService) Register(args *structs.NodeRegisterRequest, out *structs.N
 	}
 
 	n.UpdatedAt = time.Now()
-	n.ModifyIndex++
 
 	err = s.state.UpsertNode(ctx, n)
 	if err != nil {
@@ -406,15 +404,14 @@ func (s *NetworkService) JoinNetwork(args *structs.NodeJoinNetworkRequest, out *
 	}
 
 	iface := &structs.Interface{
-		ID:          uuid.Generate(),
-		NodeID:      node.ID,
-		NetworkID:   network.ID,
-		Name:        nil,               // Setting name is responsibility of the client node
-		Address:     nil,               // TODO: set with leasing plugin if it is loaded and enabled
-		Peers:       []*structs.Peer{}, // TODO: set with meshing plugin if it is loaded and enabled
-		ModifyIndex: 0,
-		CreatedAt:   time.Now(),
-		UpdatedAt:   time.Now(),
+		ID:        uuid.Generate(),
+		NodeID:    node.ID,
+		NetworkID: network.ID,
+		Name:      nil,               // Setting name is responsibility of the client node
+		Address:   nil,               // TODO: set with leasing plugin if it is loaded and enabled
+		Peers:     []*structs.Peer{}, // TODO: set with meshing plugin if it is loaded and enabled
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
 	}
 
 	err = s.state.UpsertInterface(ctx, iface)

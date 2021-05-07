@@ -61,13 +61,11 @@ func (s *ACLService) UpsertPolicy(args *structs.ACLPolicyUpsertRequest, out *str
 	old, err := s.state.ACLPolicyByName(ctx, p.Name)
 	if err != nil {
 		p.CreatedAt = time.Now()
-		p.ModifyIndex = 0
 	} else {
 		p = old.Merge(p)
 	}
 
 	p.UpdatedAt = time.Now()
-	p.ModifyIndex++
 
 	err = s.state.UpsertACLPolicy(ctx, p)
 	if err != nil {

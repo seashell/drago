@@ -4,16 +4,17 @@ import (
 	"context"
 	"fmt"
 	"sync"
+	"time"
 
 	auth "github.com/seashell/drago/drago/auth"
 	state "github.com/seashell/drago/drago/state"
 	"github.com/seashell/drago/drago/state/etcd"
-	"github.com/seashell/drago/drago/state/inmem"
 	structs "github.com/seashell/drago/drago/structs"
 	"github.com/seashell/drago/drago/structs/config"
 	acl "github.com/seashell/drago/pkg/acl"
 	log "github.com/seashell/drago/pkg/log"
 	rpc "github.com/seashell/drago/pkg/rpc"
+	"github.com/seashell/drago/pkg/uuid"
 )
 
 var (
@@ -118,44 +119,48 @@ func (s *Server) Shutdown() error {
 
 func (s *Server) setupApplication() error {
 
-	if s.config.DevMode {
-		s.state = inmem.NewStateRepository(s.logger)
-	} else {
-		state, err := etcd.NewStateRepository(&etcd.Config{
-			DataDir:  s.config.DataDir,
-			LogLevel: s.config.LogLevel,
-			EtcdConfig: config.EtcdConfig{
-				Name:                       s.config.Etcd.Name,
-				ListenPeerURLs:             s.config.Etcd.ListenPeerURLs,
-				ListenClientURLs:           s.config.Etcd.ListenClientURLs,
-				InitialAdvertisePeerURLs:   s.config.Etcd.InitialAdvertisePeerURLs,
-				InitialAdvertiseClientURLs: s.config.Etcd.InitialAdvertiseClientURLs,
-				InitialCluster:             s.config.Etcd.InitialCluster,
-				InitialClusterState:        s.config.Etcd.InitialClusterState,
-				ProxyModeEnabled:           s.config.Etcd.ProxyModeEnabled,
-				CORS:                       s.config.Etcd.CORS,
-			},
-		})
-		if err != nil {
-			return err
-		}
+	state, err := etcd.NewStateRepository(&etcd.Config{
+		DataDir:  s.config.DataDir,
+		LogLevel: s.config.LogLevel,
+		EtcdConfig: config.EtcdConfig{
+			Name:                       s.config.Etcd.Name,
+			ListenPeerURLs:             s.config.Etcd.ListenPeerURLs,
+			ListenClientURLs:           s.config.Etcd.ListenClientURLs,
+			InitialAdvertisePeerURLs:   s.config.Etcd.InitialAdvertisePeerURLs,
+			InitialAdvertiseClientURLs: s.config.Etcd.InitialAdvertiseClientURLs,
+			InitialCluster:             s.config.Etcd.InitialCluster,
+			InitialClusterState:        s.config.Etcd.InitialClusterState,
+			ProxyModeEnabled:           s.config.Etcd.ProxyModeEnabled,
+			CORS:                       s.config.Etcd.CORS,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	s.state = state
 
-		s.state = state
+	ctx := context.TODO()
+
+	// Setup default network
+	if _, err := s.state.NetworkByName(ctx, "default"); err != nil {
+		s.logger.Infof("Creating default network...")
+		if s.state.UpsertNetwork(ctx, &structs.Network{
+			ID:           uuid.Generate(),
+			Name:         "default",
+			AddressRange: "192.168.0.0/24",
+			CreatedAt:    time.Now(),
+			UpdatedAt:    time.Now()}) != nil {
+			s.logger.Warnf("Could not create default network")
+		}
 	}
 
 	// Setup default policies
-	ctx := context.TODO()
 	for _, p := range s.defaultACLPolicies() {
 		err := s.state.UpsertACLPolicy(ctx, p)
 		if err != nil {
 			return err
 		}
 	}
-
-	// err := mock.PopulateRepository(s.state)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to populate repository with mock data: %v", err)
-	// }
 
 	s.authHandler = auth.NewAuthorizationHandler(
 		s.config.ACL.Model,

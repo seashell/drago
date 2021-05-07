@@ -21,9 +21,8 @@ type Connection struct {
 	// connection table.
 	PersistentKeepalive *int
 
-	ModifyIndex uint64
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 // Validate :
@@ -99,9 +98,6 @@ func (c *Connection) Merge(in *Connection) *Connection {
 	if in.PersistentKeepalive != nil {
 		result.PersistentKeepalive = in.PersistentKeepalive
 	}
-	if in.ModifyIndex != 0 {
-		result.ModifyIndex = in.ModifyIndex
-	}
 
 	return &result
 }
@@ -122,7 +118,6 @@ func (c *Connection) Stub() *ConnectionListStub {
 		PeerSettings:        c.PeerSettings,
 		PersistentKeepalive: c.PersistentKeepalive,
 		BytesTransferred:    0,
-		ModifyIndex:         c.ModifyIndex,
 		CreatedAt:           c.CreatedAt,
 		UpdatedAt:           c.UpdatedAt,
 	}
@@ -137,7 +132,6 @@ type ConnectionListStub struct {
 	PeerSettings        map[string]*PeerSettings
 	PersistentKeepalive *int
 	BytesTransferred    uint64
-	ModifyIndex         uint64
 	CreatedAt           time.Time
 	UpdatedAt           time.Time
 }
