@@ -15,7 +15,6 @@ import { defaults } from './local-state'
 
 const {
   link: networkStatusLink,
-  useApolloNetworkStatus: useNetworkStatus,
 } = createNetworkStatusNotifier()
 
 export async function customFetch(requestInfo, init) {

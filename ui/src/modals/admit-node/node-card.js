@@ -29,14 +29,6 @@ const StyledIcon = styled(Icon)`
   justify-content: center;
 `
 
-const Badge = styled(Box)`
-  color: ${(props) => props.theme.colors.neutralDark};
-  background: ${(props) => props.theme.colors.neutralLighter};
-  padding: 4px 8px;
-  border-radius: 2px;
-  width: 48px;
-  justify-content: center;
-`
 const SelectionIndicator = styled(Box).attrs({})`
   border: 1px solid ${(props) => props.theme.colors.neutralLight};
   width: 10px;

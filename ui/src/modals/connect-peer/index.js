@@ -121,8 +121,7 @@ const ConnectPeerModal = ({ isOpen, onJoin, onClose }) => {
 
   // Find node interface within the selected network
   const sourceInterface = node.Interfaces.find((el) => el.NetworkID === selectedNetwork)
-  const targetInterface = peers.find((el) => el.ID === selectedPeer)
-
+  
   const filteredPeers = peers
     .filter((el) => el.ID !== sourceInterface.ID) // Do not show source interface as an option
     .filter((el) => (el.Name !== null ? el.Name.includes(searchString) : true)) // Filter peers based on search query

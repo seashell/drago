@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import React from 'react'
 import Select from 'react-select'
-import styled, {css} from 'styled-components'
+import styled from 'styled-components'
 import { layout, space } from 'styled-system'
 
 export const OptionContainer = styled.div`
