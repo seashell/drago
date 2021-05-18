@@ -15,14 +15,13 @@ const (
 
 // ACLToken :
 type ACLToken struct {
-	ID          string
-	Type        string
-	Name        string
-	Secret      string
-	ModifyIndex uint64
-	Policies    []string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	ID        string
+	Type      string
+	Name      string
+	Secret    string
+	Policies  []string
+	CreatedAt time.Time
+	UpdatedAt time.Time
 }
 
 func (t *ACLToken) Validate() error {
@@ -51,9 +50,6 @@ func (t *ACLToken) Merge(in *ACLToken) *ACLToken {
 	}
 	if in.Secret != "" {
 		result.Secret = in.Secret
-	}
-	if in.ModifyIndex != 0 {
-		result.ModifyIndex = in.ModifyIndex
 	}
 	if in.Policies != nil {
 		result.Policies = in.Policies

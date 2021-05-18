@@ -12,7 +12,6 @@ type Interface struct {
 	Address     *string
 	ListenPort  *int
 	PublicKey   *string
-	ModifyIndex uint64
 	Peers       []*Peer
 	Connections []string
 	CreatedAt   time.Time
@@ -51,9 +50,6 @@ func (i *Interface) Merge(in *Interface) *Interface {
 	}
 	if in.Peers != nil {
 		result.Peers = in.Peers
-	}
-	if in.ModifyIndex != 0 {
-		result.ModifyIndex = in.ModifyIndex
 	}
 
 	return &result
@@ -109,7 +105,6 @@ func (i *Interface) Stub() *InterfaceListStub {
 		ListenPort:       i.ListenPort,
 		NodeID:           i.NodeID,
 		NetworkID:        i.NetworkID,
-		ModifyIndex:      i.ModifyIndex,
 		ConnectionsCount: len(i.Connections),
 		PublicKey:        i.PublicKey,
 		HasPublicKey:     i.PublicKey != nil,
@@ -127,7 +122,6 @@ type InterfaceListStub struct {
 	Address          *string
 	ListenPort       *int
 	ConnectionsCount int
-	ModifyIndex      uint64
 	PublicKey        *string
 	HasPublicKey     bool
 	CreatedAt        time.Time

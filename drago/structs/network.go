@@ -14,7 +14,6 @@ type Network struct {
 	AddressRange string
 	Interfaces   []string
 	Connections  []string
-	ModifyIndex  uint64
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 
@@ -135,9 +134,6 @@ func (n *Network) Merge(in *Network) *Network {
 	if in.Connections != nil {
 		result.Connections = in.Connections
 	}
-	if in.ModifyIndex != 0 {
-		result.ModifyIndex = in.ModifyIndex
-	}
 	if in.AddressRange != "" {
 		result.AddressRange = in.AddressRange
 	}
@@ -153,7 +149,6 @@ func (n *Network) Stub() *NetworkListStub {
 		AddressRange:     n.AddressRange,
 		InterfacesCount:  len(n.Interfaces),
 		ConnectionsCount: len(n.Connections),
-		ModifyIndex:      n.ModifyIndex,
 		CreatedAt:        n.CreatedAt,
 		UpdatedAt:        n.UpdatedAt,
 	}
@@ -166,7 +161,6 @@ type NetworkListStub struct {
 	AddressRange     string
 	InterfacesCount  int
 	ConnectionsCount int
-	ModifyIndex      uint64
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
 }

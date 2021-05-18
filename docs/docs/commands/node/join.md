@@ -1,11 +1,11 @@
-# Command: interface list
+# Command: node join
 
-The `interface list` command is used to list all available interfaces.
+The `node join` command is used to have the local client node join an existing network.
 
 ## Usage
 
 ```
-drago interface list [options]
+drago node join [options] <network_id>
 ```
 
 ## General Options
@@ -20,8 +20,3 @@ drago interface list [options]
     The token used to authenticate with the Drago server.
     Overrides the `DRAGO_TOKEN` environment variable if set.
     Defaults to `""`
- 
-
-## Info Options
-
-- `-json`: Enable JSON output.

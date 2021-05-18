@@ -140,7 +140,6 @@ func (s *ConnectionService) UpsertConnection(args *structs.ConnectionUpsertReque
 		c.ID = uuid.Generate()
 		c.NodeIDs = []string{}
 		c.CreatedAt = time.Now()
-		c.ModifyIndex = 0
 	}
 
 	connectedInterfaceIDs := c.ConnectedInterfaceIDs()
@@ -197,7 +196,6 @@ func (s *ConnectionService) UpsertConnection(args *structs.ConnectionUpsertReque
 	c.NetworkID = ifaces[0].NetworkID
 
 	c.UpdatedAt = time.Now()
-	c.ModifyIndex++
 
 	// TODO: wrap in a transaction
 

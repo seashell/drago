@@ -1,11 +1,11 @@
-# Command: interface list
+# Command: node leave
 
-The `interface list` command is used to list all available interfaces.
+The `node leave` command is used to have the local client node leave a specific network.
 
 ## Usage
 
 ```
-drago interface list [options]
+drago node leave [options] <network_id>
 ```
 
 ## General Options
@@ -20,8 +20,3 @@ drago interface list [options]
     The token used to authenticate with the Drago server.
     Overrides the `DRAGO_TOKEN` environment variable if set.
     Defaults to `""`
- 
-
-## Info Options
-
-- `-json`: Enable JSON output.

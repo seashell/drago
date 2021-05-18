@@ -98,8 +98,6 @@ const ConnectionCard = ({
   onDelete,
   isExpanded,
   showSpinner,
-  createdAt,
-  updatedAt,
 }) => {
   const formik = useFormik({
     initialValues: {

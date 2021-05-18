@@ -29,7 +29,7 @@ func PopulateRepository(repo state.Repository) error {
 	repo.UpsertACLToken(ctx, &structs.ACLToken{ID: uuid.Generate(), Type: structs.ACLTokenTypeClient, Name: "client-12343234", Secret: "xyz", Policies: []string{"read", "write"}})
 
 	// Create nodes
-	node1 := &structs.Node{ID: nodeID1, Name: "test-node", SecretID: "84dd48eb-5f4d-f8aa-6bb6-bed687d9ed56", Meta: map[string]string{"location": "uk"}, Status: structs.NodeStatusInit, AdvertiseAddress: util.StrToPtr("192.168.100.7")}
+	node1 := &structs.Node{ID: nodeID1, Name: "test-node", SecretID: "84dd48eb-5f4d-f8aa-6bb6-bed687d9ed56", Meta: map[string]string{"location": "uk"}, Status: structs.NodeStatusInit, AdvertiseAddress: "192.168.100.7"}
 	node2 := &structs.Node{ID: nodeID2, Name: "other-test-node", SecretID: "c9a1b3dc-bbc9-49dc-83ed-77ff8abb1f30", Meta: map[string]string{"location": "us"}, Status: structs.NodeStatusInit}
 
 	// Create networks
@@ -61,7 +61,7 @@ func PopulateRepository(repo state.Repository) error {
 			ifaceID1: {
 				InterfaceID: ifaceID1,
 				RoutingRules: &structs.RoutingRules{
-					AllowedIPs: []string{"dhjadbasj"},
+					AllowedIPs: []string{},
 				},
 			},
 			ifaceID2: {

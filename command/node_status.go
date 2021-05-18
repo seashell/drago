@@ -44,7 +44,7 @@ func (c *NodeStatusCommand) Name() string {
 
 // Synopsis :
 func (c *NodeStatusCommand) Synopsis() string {
-	return "Display status information about nodes"
+	return "Display status of existing nodes"
 }
 
 // Run :

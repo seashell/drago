@@ -20,7 +20,6 @@ type Node struct {
 	Status           string
 	Interfaces       []string
 	Connections      []string
-	ModifyIndex      uint64
 	Meta             map[string]string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time
@@ -80,9 +79,6 @@ func (n *Node) Merge(in *Node) *Node {
 	}
 	if in.Status != "" {
 		result.Status = in.Status
-	}
-	if in.ModifyIndex != 0 {
-		result.ModifyIndex = in.ModifyIndex
 	}
 
 	return &result
@@ -169,7 +165,6 @@ func (n *Node) Stub() *NodeListStub {
 		Status:           n.Status,
 		InterfacesCount:  len(n.Interfaces),
 		ConnectionsCount: len(n.Connections),
-		ModifyIndex:      n.ModifyIndex,
 		Meta:             n.Meta,
 		CreatedAt:        n.CreatedAt,
 		UpdatedAt:        n.UpdatedAt,
@@ -184,7 +179,6 @@ type NodeListStub struct {
 	Status           string
 	InterfacesCount  int
 	ConnectionsCount int
-	ModifyIndex      uint64
 	Meta             map[string]string
 	CreatedAt        time.Time
 	UpdatedAt        time.Time

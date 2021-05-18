@@ -8,7 +8,6 @@ import "time"
 type ACLPolicy struct {
 	Name        string
 	Description string
-	ModifyIndex uint64
 	Rules       []*ACLPolicyRule
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
@@ -28,9 +27,6 @@ func (p *ACLPolicy) Merge(in *ACLPolicy) *ACLPolicy {
 	if in.Description != "" {
 		result.Description = in.Description
 	}
-	if in.ModifyIndex != 0 {
-		result.ModifyIndex = in.ModifyIndex
-	}
 	if in.Rules != nil {
 		result.Rules = in.Rules
 	}
@@ -43,7 +39,6 @@ func (p *ACLPolicy) Stub() *ACLPolicyListStub {
 	return &ACLPolicyListStub{
 		Name:        p.Name,
 		Description: p.Description,
-		ModifyIndex: p.ModifyIndex,
 		CreatedAt:   p.CreatedAt,
 		UpdatedAt:   p.UpdatedAt,
 	}
@@ -53,7 +48,6 @@ func (p *ACLPolicy) Stub() *ACLPolicyListStub {
 type ACLPolicyListStub struct {
 	Name        string
 	Description string
-	ModifyIndex uint64
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 }

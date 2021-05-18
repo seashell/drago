@@ -1,11 +1,11 @@
-# Command: interface list
+# Command: interface update
 
-The `interface list` command is used to list all available interfaces.
+The `interface update` command is used to update an existing interface.
 
 ## Usage
 
 ```
-drago interface list [options]
+drago interface update [options] <id>
 ```
 
 ## General Options
@@ -22,6 +22,8 @@ drago interface list [options]
     Defaults to `""`
  
 
-## Info Options
+## Update Options
 
-- `-json`: Enable JSON output.
+- `-address`: Interface IP address in CIDR notation
+
+- `-dns`: DNS server's address

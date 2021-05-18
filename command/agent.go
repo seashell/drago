@@ -237,7 +237,7 @@ func (c *AgentCommand) setupAgent() error {
 
 func (c *AgentCommand) parseConfig(args []string) error {
 
-	configFromFlags := c.parseFlags(args)
+	configFromFlags := c.parseFlags()
 
 	configFromFile := c.parseConfigFiles(c.configs...)
 	configFromEnv := c.parseEnv(c.envs...)
@@ -257,7 +257,7 @@ func (c *AgentCommand) parseConfig(args []string) error {
 	return nil
 }
 
-func (c *AgentCommand) parseFlags(args []string) *agent.Config {
+func (c *AgentCommand) parseFlags() *agent.Config {
 
 	config := agent.EmptyConfig()
 

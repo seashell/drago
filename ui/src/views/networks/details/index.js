@@ -10,7 +10,6 @@ import { useConfirmationDialog } from '_components/confirmation-dialog'
 import EmptyState from '_components/empty-state'
 import Icon from '_components/icon'
 import List from '_components/list'
-import NodeSelectInput from '_components/node-select-input'
 import { Dragon as Spinner } from '_components/spinner'
 import Text from '_components/text'
 import { CREATE_INTERFACE, DELETE_INTERFACE } from '_graphql/mutations'
@@ -28,34 +27,6 @@ const StyledIcon = styled(Icon)`
   align-items: center;
   justify-content: center;
 `
-
-// eslint-disable-next-line react/prop-types
-const AddNodeWidget = ({ nodes, onAddNode }) => {
-  const [selectedNodeId, setSelectedNodeId] = useState(undefined)
-
-  const handleAddNodeButtonClick = () => {
-    onAddNode(selectedNodeId)
-  }
-
-  const handleSelectedNodeChanged = (id) => {
-    setSelectedNodeId(id)
-  }
-
-  return (
-    <Box alignItems="center" mt="24px">
-      <NodeSelectInput
-        width="300px"
-        nodes={nodes}
-        selectedId={selectedNodeId}
-        onChange={handleSelectedNodeChanged}
-        mr={2}
-      />
-      <Button variant="primary" onClick={handleAddNodeButtonClick}>
-        Add
-      </Button>
-    </Box>
-  )
-}
 
 const NetworkDetails = () => {
   const location = useLocation()

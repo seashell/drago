@@ -11,7 +11,6 @@ import SearchInput from '_components/inputs/search-input'
 import { Dragon as Spinner } from '_components/spinner'
 import Text from '_components/text'
 import { GET_NODES } from '_graphql/queries'
-import { useToast } from '_utils/toast-provider'
 import ClientCard from './client-card'
 
 const Container = styled(Box)`
@@ -20,7 +19,6 @@ const Container = styled(Box)`
 
 const ClientsListView = () => {
   const location = useLocation()
-  const { success } = useToast()
 
   const [searchFilter, setSearchFilter] = useState('')
   const getNodesQuery = useQuery(GET_NODES, {

@@ -46,7 +46,7 @@ func (c *NodeListCommand) Name() string {
 
 // Synopsis :
 func (c *NodeListCommand) Synopsis() string {
-	return "Display status information about nodes"
+	return "List existing nodes"
 }
 
 // Run :
