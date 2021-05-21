@@ -2,12 +2,12 @@ package command
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"strings"
 
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // InterfaceUpdateCommand :
@@ -20,7 +20,7 @@ type InterfaceUpdateCommand struct {
 	Command
 }
 
-func (c *InterfaceUpdateCommand) FlagSet() *flag.FlagSet {
+func (c *InterfaceUpdateCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -88,9 +88,9 @@ General Options:
 
 Network List Options:
 
-  -address=<id>
+  --address=<id>
     Interface address.
 
- `
+`
 	return strings.TrimSpace(h)
 }

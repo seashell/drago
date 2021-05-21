@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLTokenCreateCommand :
@@ -20,12 +20,12 @@ type ACLTokenCreateCommand struct {
 	json      bool
 	tname     string
 	ttype     string
-	tpolicies manyStrings
+	tpolicies []string
 
 	Command
 }
 
-func (c *ACLTokenCreateCommand) FlagSet() *flag.FlagSet {
+func (c *ACLTokenCreateCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -35,7 +35,7 @@ func (c *ACLTokenCreateCommand) FlagSet() *flag.FlagSet {
 	flags.BoolVar(&c.json, "json", false, "")
 	flags.StringVar(&c.tname, "name", "", "")
 	flags.StringVar(&c.ttype, "type", "", "")
-	flags.Var(&c.tpolicies, "policy", "")
+	flags.StringSliceVar(&c.tpolicies, "policy", []string{}, "")
 
 	return flags
 }
@@ -90,7 +90,7 @@ func (c *ACLTokenCreateCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLTokenCreateCommand) Help() string {
 	h := `
-Usage: drago acl token create <name> [options]
+Usage: drago acl token create <token> [options]
 
   Create is used to issue a new ACL token. Requires a management token.
 
@@ -99,19 +99,19 @@ General Options:
 
 ACL Token Create Options:
 
-  -name=""
+  --name=""
     Sets the human readable name for the ACL token.
 
-  -type="client"
+  --type="client"
     Sets the type of token. Must be one of "client" (default), or "management".
 
-  -policy=""
+  --policy=""
     Specifies a policy to associate with client tokens.
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

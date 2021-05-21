@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NodeListCommand :
@@ -20,12 +20,12 @@ type NodeListCommand struct {
 	// Parsed flags
 	json   bool
 	status string
-	meta   manyStrings
+	meta   []string
 
 	Command
 }
 
-func (c *NodeListCommand) FlagSet() *flag.FlagSet {
+func (c *NodeListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -34,7 +34,7 @@ func (c *NodeListCommand) FlagSet() *flag.FlagSet {
 	// General options
 	flags.BoolVar(&c.json, "json", false, "")
 	flags.StringVar(&c.status, "status", "*", "")
-	flags.Var(&c.meta, "meta", "")
+	flags.StringSliceVar(&c.meta, "meta", []string{}, "")
 
 	return flags
 }
@@ -114,7 +114,7 @@ Node List Options:
   -status=<initializing|ready|down>
     Filter nodes by status.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

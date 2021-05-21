@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ConnectionListCommand :
@@ -23,7 +23,7 @@ type ConnectionListCommand struct {
 	Command
 }
 
-func (c *ConnectionListCommand) FlagSet() *flag.FlagSet {
+func (c *ConnectionListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -96,7 +96,7 @@ General Options:
 
 Connection List Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
 `

@@ -4,12 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // AgentInfoCommand :
@@ -22,7 +22,7 @@ type AgentInfoCommand struct {
 	Command
 }
 
-func (c *AgentInfoCommand) FlagSet() *flag.FlagSet {
+func (c *AgentInfoCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -89,10 +89,10 @@ General Options:
 
 Agent Info Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

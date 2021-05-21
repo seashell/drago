@@ -2,11 +2,11 @@ package command
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"strings"
 
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLTokenDeleteCommand :
@@ -16,7 +16,7 @@ type ACLTokenDeleteCommand struct {
 	Command
 }
 
-func (c *ACLTokenDeleteCommand) FlagSet() *flag.FlagSet {
+func (c *ACLTokenDeleteCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -71,7 +71,7 @@ func (c *ACLTokenDeleteCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLTokenDeleteCommand) Help() string {
 	h := `
-Usage: drago acl token delete <id> [options]
+Usage: drago acl token delete <token> [options]
 
   Delete is used to delete an existing ACL token. Requires a management token.
 

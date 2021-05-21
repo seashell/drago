@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NodeStatusCommand :
@@ -24,7 +24,7 @@ type NodeStatusCommand struct {
 	Command
 }
 
-func (c *NodeStatusCommand) FlagSet() *flag.FlagSet {
+func (c *NodeStatusCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -114,7 +114,7 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NodeStatusCommand) Help() string {
 	h := `
-Usage: drago node status [options] <node>
+Usage: drago node status <node> [options]
 
   Display node status information.
 
@@ -129,13 +129,13 @@ General Options:
 
 Node Status Options:
 
-  -self
+  --self
     Query the status of the local node.
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

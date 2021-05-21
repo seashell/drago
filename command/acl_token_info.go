@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLTokenInfoCommand :
@@ -23,7 +23,7 @@ type ACLTokenInfoCommand struct {
 	Command
 }
 
-func (c *ACLTokenInfoCommand) FlagSet() *flag.FlagSet {
+func (c *ACLTokenInfoCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -82,7 +82,7 @@ func (c *ACLTokenInfoCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLTokenInfoCommand) Help() string {
 	h := `
-Usage: drago acl token info <id> [options]
+Usage: drago acl token info <token> [options]
 
   Display information on an existing ACL token.
 
@@ -91,10 +91,10 @@ General Options:
 
 ACL Token Info Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

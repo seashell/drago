@@ -33,7 +33,7 @@ func (c *Connection) Validate() error {
 // ConnectedInterfaceIDs :
 func (c *Connection) ConnectedInterfaceIDs() []string {
 	ids := []string{}
-	for k, _ := range c.PeerSettings {
+	for k := range c.PeerSettings {
 		ids = append(ids, k)
 	}
 	sort.Strings(ids)

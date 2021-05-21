@@ -2,11 +2,11 @@ package command
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"strings"
 
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NetworkDeleteCommand :
@@ -20,7 +20,7 @@ type NetworkDeleteCommand struct {
 	Command
 }
 
-func (c *NetworkDeleteCommand) FlagSet() *flag.FlagSet {
+func (c *NetworkDeleteCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -28,7 +28,6 @@ func (c *NetworkDeleteCommand) FlagSet() *flag.FlagSet {
 
 	// General options
 	flags.BoolVar(&c.json, "json", false, "")
-	flags.StringVar(&c.name, "name", "", "")
 
 	return flags
 }
@@ -53,10 +52,14 @@ func (c *NetworkDeleteCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) > 1 {
-		c.UI.Error("This command takes either one or no arguments")
+	if len(args) < 1 {
+		c.UI.Error("This command takes one argument: <network>")
+		c.UI.Error(`For additional help, try 'drago network delete --help'`)
 		return 1
 	}
+
+	name := args[0]
+	id := ""
 
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
@@ -65,27 +68,17 @@ func (c *NetworkDeleteCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	id := ""
-
-	if len(args) > 0 {
-		id = args[0]
+	networks, err := api.Networks().List()
+	if err != nil {
+		c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
+		return 1
 	}
 
-	if c.name != "" {
-		networks, err := api.Networks().List()
-		if err != nil {
-			c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
-			return 1
-		}
+	for _, n := range networks {
+		if n.Name == name {
+			id = n.ID
 
-		for _, n := range networks {
-			if n.Name == c.name {
-				if id != "" && n.ID != id {
-					c.UI.Error("Error: name and ID belong to different networks")
-					return 1
-				}
-				id = n.ID
-			}
+			break
 		}
 	}
 
@@ -106,19 +99,14 @@ func (c *NetworkDeleteCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NetworkDeleteCommand) Help() string {
 	h := `
-Usage: drago network delete <id> [options]
+Usage: drago network delete <network> [options]
 
   Delete an existing Drago network.
 
   If ACLs are enabled, this option requires a token with the 'network:write' capability.
 
 General Options:
-` + GlobalOptions() + `
+` + GlobalOptions()
 
-Network List Options:
-
-  -name=""
-    Human readable name of the network to be deleted.
- `
 	return strings.TrimSpace(h)
 }

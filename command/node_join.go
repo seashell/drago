@@ -2,11 +2,11 @@ package command
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"strings"
 
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NodeJoinCommand :
@@ -19,7 +19,7 @@ type NodeJoinCommand struct {
 	Command
 }
 
-func (c *NodeJoinCommand) FlagSet() *flag.FlagSet {
+func (c *NodeJoinCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }

@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLPolicyInfoCommand :
@@ -23,7 +23,7 @@ type ACLPolicyInfoCommand struct {
 	Command
 }
 
-func (c *ACLPolicyInfoCommand) FlagSet() *flag.FlagSet {
+func (c *ACLPolicyInfoCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -82,7 +82,7 @@ func (c *ACLPolicyInfoCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLPolicyInfoCommand) Help() string {
 	h := `
-Usage: drago acl policy info <name> [options]
+Usage: drago acl policy info <policy> [options]
 
   Display information on an existing ACL policy.
 
@@ -93,10 +93,10 @@ General Options:
 
 ACL Policy Info Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

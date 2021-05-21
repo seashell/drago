@@ -2,12 +2,12 @@ package command
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"strings"
 
 	"github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLPolicyUpsertCommand :
@@ -20,7 +20,7 @@ type ACLPolicyUpsertCommand struct {
 	Command
 }
 
-func (c *ACLPolicyUpsertCommand) FlagSet() *flag.FlagSet {
+func (c *ACLPolicyUpsertCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -87,9 +87,9 @@ General Options:
 
 ACL Policy List Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }

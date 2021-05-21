@@ -2,9 +2,10 @@ package command
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"strings"
+
+	"github.com/spf13/pflag"
 
 	cli "github.com/seashell/drago/pkg/cli"
 )
@@ -18,7 +19,7 @@ type ACLPolicyDeleteCommand struct {
 	Command
 }
 
-func (c *ACLPolicyDeleteCommand) FlagSet() *flag.FlagSet {
+func (c *ACLPolicyDeleteCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -77,7 +78,7 @@ func (c *ACLPolicyDeleteCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLPolicyDeleteCommand) Help() string {
 	h := `
-Usage: drago acl policy delete <name> [options]
+Usage: drago acl policy delete <policy> [options]
 
   Delete an existing ACL policy.
 

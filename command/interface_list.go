@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // InterfaceListCommand :
@@ -19,13 +19,13 @@ type InterfaceListCommand struct {
 
 	// Parsed flags
 	json    bool
-	node    manyStrings
-	network manyStrings
+	node    []string
+	network []string
 
 	Command
 }
 
-func (c *InterfaceListCommand) FlagSet() *flag.FlagSet {
+func (c *InterfaceListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -33,8 +33,8 @@ func (c *InterfaceListCommand) FlagSet() *flag.FlagSet {
 
 	// General options
 	flags.BoolVar(&c.json, "json", false, "")
-	flags.Var(&c.node, "node", "")
-	flags.Var(&c.network, "network", "")
+	flags.StringSliceVar(&c.node, "node", []string{}, "")
+	flags.StringSliceVar(&c.network, "network", []string{}, "")
 
 	return flags
 }
@@ -110,16 +110,16 @@ General Options:
 
 Network List Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
-  -node=<id>
+  --node=<id>
     Filter results by node ID.
 
-  -network=<id>
+  --network=<id>
     Filter results by network ID.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

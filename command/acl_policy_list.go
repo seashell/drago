@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLPolicyListCommand :
@@ -23,7 +23,7 @@ type ACLPolicyListCommand struct {
 	Command
 }
 
-func (c *ACLPolicyListCommand) FlagSet() *flag.FlagSet {
+func (c *ACLPolicyListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -94,10 +94,10 @@ General Options:
 
 ACL Policy List Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

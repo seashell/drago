@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NodeInfoCommand :
@@ -24,7 +24,7 @@ type NodeInfoCommand struct {
 	Command
 }
 
-func (c *NodeInfoCommand) FlagSet() *flag.FlagSet {
+func (c *NodeInfoCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -105,13 +105,13 @@ General Options:
 
 Node List Options:
 
-  -self
+  --self
     Query the status of the local node.
 
-  -json=<bool>
+  --json=
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

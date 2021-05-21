@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NetworkListCommand :
@@ -23,7 +23,7 @@ type NetworkListCommand struct {
 	Command
 }
 
-func (c *NetworkListCommand) FlagSet() *flag.FlagSet {
+func (c *NetworkListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -96,13 +96,10 @@ General Options:
 
 Network List Options:
 
-  -self
-    Query the status of the local node.
-
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

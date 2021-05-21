@@ -4,13 +4,13 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLTokenSelfCommand :
@@ -23,7 +23,7 @@ type ACLTokenSelfCommand struct {
 	Command
 }
 
-func (c *ACLTokenSelfCommand) FlagSet() *flag.FlagSet {
+func (c *ACLTokenSelfCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -86,17 +86,17 @@ Usage: drago acl token self <name> [options]
 
   Display information on the currently set ACL policy.
 
-  Use the -json flag to see a detailed list of the rules associated with the token.
+  Use the --json flag to see a detailed list of the rules associated with the token.
 
 General Options:
 ` + GlobalOptions() + `
 
 ACL Token Info Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

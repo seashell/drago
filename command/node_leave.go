@@ -2,11 +2,11 @@ package command
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"strings"
 
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NodeLeaveCommand :
@@ -19,7 +19,7 @@ type NodeLeaveCommand struct {
 	Command
 }
 
-func (c *NodeLeaveCommand) FlagSet() *flag.FlagSet {
+func (c *NodeLeaveCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
@@ -87,7 +87,7 @@ func (c *NodeLeaveCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NodeLeaveCommand) Help() string {
 	h := `
-Usage: drago node join <network_id> [options]
+Usage: drago node join <network> [options]
 
   Have the local client node leave a network.
 
@@ -98,7 +98,7 @@ General Options:
 
 Node Leave Options:
 
-  -node
+  --node
     The ID of the node joining the network.
 `
 	return strings.TrimSpace(h)
