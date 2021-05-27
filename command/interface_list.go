@@ -16,13 +16,12 @@ import (
 // InterfaceListCommand :
 type InterfaceListCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json    bool
 	node    []string
 	network []string
-
-	Command
 }
 
 func (c *InterfaceListCommand) FlagSet() *pflag.FlagSet {

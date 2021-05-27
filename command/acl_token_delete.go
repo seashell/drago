@@ -12,7 +12,6 @@ import (
 // ACLTokenDeleteCommand :
 type ACLTokenDeleteCommand struct {
 	UI cli.UI
-
 	Command
 }
 

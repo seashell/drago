@@ -16,11 +16,10 @@ import (
 // ConnectionListCommand :
 type ConnectionListCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
 func (c *ConnectionListCommand) FlagSet() *pflag.FlagSet {

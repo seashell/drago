@@ -13,11 +13,10 @@ import (
 // InterfaceUpdateCommand :
 type InterfaceUpdateCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	address string
-
-	Command
 }
 
 func (c *InterfaceUpdateCommand) FlagSet() *pflag.FlagSet {

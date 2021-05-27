@@ -12,11 +12,10 @@ import (
 // NodeLeaveCommand :
 type NodeLeaveCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	node string
-
-	Command
 }
 
 func (c *NodeLeaveCommand) FlagSet() *pflag.FlagSet {
@@ -57,15 +56,15 @@ func (c *NodeLeaveCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
+	networkID := args[0]
+	nodeID := c.node
+
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error setting up API client: %s", err))
 		return 1
 	}
-
-	nodeID := c.node
-	networkID := args[0]
 
 	if nodeID == "" {
 		if nodeID, err = localAgentNodeID(api); err != nil {

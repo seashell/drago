@@ -13,12 +13,10 @@ import (
 // NetworkCreateCommand :
 type NetworkCreateCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
-	name         string
 	addressRange string
-
-	Command
 }
 
 func (c *NetworkCreateCommand) FlagSet() *pflag.FlagSet {
@@ -53,7 +51,7 @@ func (c *NetworkCreateCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) < 1 {
+	if len(args) != 1 {
 		c.UI.Error("This command takes one argument: <network>")
 		c.UI.Error(`For additional help, try 'drago network create --help'`)
 		return 1

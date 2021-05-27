@@ -12,12 +12,10 @@ import (
 // NetworkDeleteCommand :
 type NetworkDeleteCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-	name string
-
-	Command
 }
 
 func (c *NetworkDeleteCommand) FlagSet() *pflag.FlagSet {
@@ -52,7 +50,7 @@ func (c *NetworkDeleteCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) < 1 {
+	if len(args) != 1 {
 		c.UI.Error("This command takes one argument: <network>")
 		c.UI.Error(`For additional help, try 'drago network delete --help'`)
 		return 1

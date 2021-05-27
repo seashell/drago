@@ -12,10 +12,6 @@ import (
 // NodeJoinCommand :
 type NodeJoinCommand struct {
 	UI cli.UI
-
-	// Parsed flags
-	name string
-
 	Command
 }
 
@@ -23,9 +19,6 @@ func (c *NodeJoinCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
-
-	// General options
-	flags.StringVar(&c.name, "name", "", "")
 
 	return flags
 }
@@ -56,6 +49,10 @@ func (c *NodeJoinCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
+	networkName := args[0]
+	nodeID := ""
+	networkID := ""
+
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
 	if err != nil {
@@ -63,33 +60,22 @@ func (c *NodeJoinCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	nodeID := ""
-	networkID := ""
-
-	if len(args) > 0 {
-		networkID = args[0]
-	}
-
 	if nodeID, err = localAgentNodeID(api); err != nil {
 		c.UI.Error(fmt.Sprintf("Error determining local node ID: %s", err))
 		return 1
 	}
 
-	if c.name != "" {
-		networks, err := api.Networks().List()
-		if err != nil {
-			c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
-			return 1
-		}
+	networks, err := api.Networks().List()
+	if err != nil {
+		c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
+		return 1
+	}
 
-		for _, n := range networks {
-			if n.Name == c.name {
-				if networkID != "" && n.ID != networkID {
-					c.UI.Error("Error: name and ID belong to different networks")
-					return 1
-				}
-				networkID = n.ID
-			}
+	for _, n := range networks {
+		if n.Name == networkName {
+			networkID = n.ID
+
+			break
 		}
 	}
 

@@ -16,11 +16,10 @@ import (
 // ACLTokenSelfCommand :
 type ACLTokenSelfCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
 func (c *ACLTokenSelfCommand) FlagSet() *pflag.FlagSet {

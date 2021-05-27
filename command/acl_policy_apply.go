@@ -13,11 +13,10 @@ import (
 // ACLPolicyApplyCommand :
 type ACLPolicyApplyCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	description string
-
-	Command
 }
 
 func (c *ACLPolicyApplyCommand) FlagSet() *pflag.FlagSet {

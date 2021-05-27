@@ -16,12 +16,10 @@ import (
 // NetworkInfoCommand :
 type NetworkInfoCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
-	name string
 	json bool
-
-	Command
 }
 
 func (c *NetworkInfoCommand) FlagSet() *pflag.FlagSet {
@@ -56,11 +54,14 @@ func (c *NetworkInfoCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) < 1 {
+	if len(args) != 1 {
 		c.UI.Error("This command takes one argument: <network>")
 		c.UI.Error(`For additional help, try 'drago network info --help'`)
 		return 1
 	}
+
+	name := args[0]
+	id := ""
 
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
@@ -68,9 +69,6 @@ func (c *NetworkInfoCommand) Run(ctx context.Context, args []string) int {
 		c.UI.Error(fmt.Sprintf("Error setting up API client: %s", err))
 		return 1
 	}
-
-	name := args[0]
-	id := ""
 
 	networks, err := api.Networks().List()
 	if err != nil {

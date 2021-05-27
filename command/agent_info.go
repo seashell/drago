@@ -15,11 +15,10 @@ import (
 // AgentInfoCommand :
 type AgentInfoCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
 func (c *AgentInfoCommand) FlagSet() *pflag.FlagSet {

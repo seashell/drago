@@ -15,14 +15,13 @@ import (
 // ACLTokenUpdateCommand :
 type ACLTokenUpdateCommand struct {
 	UI cli.UI
+	Command
 
 	// parsed flags
 	json       bool
 	name       string
 	policyType string
 	policies   []string
-
-	Command
 }
 
 func (c *ACLTokenUpdateCommand) FlagSet() *pflag.FlagSet {

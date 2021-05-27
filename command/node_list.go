@@ -16,13 +16,12 @@ import (
 // NodeListCommand :
 type NodeListCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json   bool
 	status string
 	meta   []string
-
-	Command
 }
 
 func (c *NodeListCommand) FlagSet() *pflag.FlagSet {

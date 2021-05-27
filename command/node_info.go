@@ -16,12 +16,11 @@ import (
 // NodeInfoCommand :
 type NodeInfoCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	self bool
 	json bool
-
-	Command
 }
 
 func (c *NodeInfoCommand) FlagSet() *pflag.FlagSet {
@@ -57,7 +56,7 @@ func (c *NodeInfoCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) > 1 {
+	if len(args) != 1 {
 		c.UI.Error("This command takes either one or no arguments")
 		return 1
 	}

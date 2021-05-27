@@ -16,11 +16,10 @@ import (
 // ACLTokenInfoCommand :
 type ACLTokenInfoCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
 func (c *ACLTokenInfoCommand) FlagSet() *pflag.FlagSet {
