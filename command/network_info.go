@@ -107,7 +107,7 @@ func (c *NetworkInfoCommand) Help() string {
 	h := `
 Usage: drago network info <network> [options]
 
-  Display detailed information about an existing network.
+  Display detailed information about an existing Drago network.
 
   If ACLs are enabled, this option requires a token with the 'network:read' capability.
 

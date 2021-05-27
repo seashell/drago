@@ -10,40 +10,37 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// ACLPolicyUpsertCommand :
-type ACLPolicyUpsertCommand struct {
+// ACLPolicyApplyCommand :
+type ACLPolicyApplyCommand struct {
 	UI cli.UI
 
 	// Parsed flags
-	json bool
+	description string
 
 	Command
 }
 
-func (c *ACLPolicyUpsertCommand) FlagSet() *pflag.FlagSet {
+func (c *ACLPolicyApplyCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
-	// General options
-	flags.BoolVar(&c.json, "json", false, "")
-
 	return flags
 }
 
 // Name :
-func (c *ACLPolicyUpsertCommand) Name() string {
-	return "acl policy upsert"
+func (c *ACLPolicyApplyCommand) Name() string {
+	return "acl policy apply"
 }
 
 // Synopsis :
-func (c *ACLPolicyUpsertCommand) Synopsis() string {
-	return "Upsert ACL policy"
+func (c *ACLPolicyApplyCommand) Synopsis() string {
+	return "Apply ACL policy"
 }
 
 // Run :
-func (c *ACLPolicyUpsertCommand) Run(ctx context.Context, args []string) int {
+func (c *ACLPolicyApplyCommand) Run(ctx context.Context, args []string) int {
 
 	flags := c.FlagSet()
 
@@ -52,10 +49,13 @@ func (c *ACLPolicyUpsertCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) > 0 {
-		c.UI.Error("This command takes no arguments")
+	if len(args) != 1 {
+		c.UI.Error("This command takes one argument: <name>")
+		c.UI.Error(`For additional help, try 'drago acl policy apply --help'`)
 		return 1
 	}
+
+	name := args[0]
 
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
@@ -64,9 +64,12 @@ func (c *ACLPolicyUpsertCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	p := &structs.ACLPolicy{}
+	p := &structs.ACLPolicy{
+		Name:        name,
+		Description: c.description,
+	}
 	if err := api.ACLPolicies().Upsert(p); err != nil {
-		c.UI.Error(fmt.Sprintf("Error upserting ACL policy: %s", err))
+		c.UI.Error(fmt.Sprintf("Error applying ACL policy: %s", err))
 		return 1
 	}
 
@@ -76,19 +79,19 @@ func (c *ACLPolicyUpsertCommand) Run(ctx context.Context, args []string) int {
 }
 
 // Help :
-func (c *ACLPolicyUpsertCommand) Help() string {
+func (c *ACLPolicyApplyCommand) Help() string {
 	h := `
-Usage: drago acl policy upsert [options]
+Usage: drago acl policy apply <name> [options]
 
   Create or update an ACL policy.
 
 General Options:
 ` + GlobalOptions() + `
 
-ACL Policy List Options:
+ACL Policy Apply Options:
 
-  --json
-    Enable JSON output.
+  --description=<description>
+    Sets the description for the ACL policy.
 
 `
 	return strings.TrimSpace(h)

@@ -52,7 +52,7 @@ func (c *NodeLeaveCommand) Run(ctx context.Context, args []string) int {
 
 	args = flags.Args()
 	if len(args) != 1 {
-		c.UI.Error("This command takes one argument")
+		c.UI.Error("This command takes one argument: <network>")
 		c.UI.Error(`For additional help, try 'drago node leave --help'`)
 		return 1
 	}
@@ -94,12 +94,7 @@ Usage: drago node join <network> [options]
   If ACLs are enabled, this option requires a token with the 'interface:write' capability.
 
 General Options:
-` + GlobalOptions() + `
+` + GlobalOptions()
 
-Node Leave Options:
-
-  --node
-    The ID of the node joining the network.
-`
 	return strings.TrimSpace(h)
 }

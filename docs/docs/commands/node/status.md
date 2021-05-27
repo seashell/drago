@@ -5,25 +5,23 @@ The `node status` command is used to list the status of one or more registered c
 ## Usage
 
 ```
-drago node status [options] [node]
+drago node status <node_id> [options]
 ```
 
 ## General Options
 
-- `-address=<addr>`
+- `--address=<addr>`
     The address of the Drago server.
-    Overrides the DRAGO_ADDR environment variable if set.
-    Defaults to `http://127.0.0.1:8080`
+    Overrides the `DRAGO_ADDR` environment variable if set.
+    Defaults to `http://127.0.0.1:8080`.
 
-
-- `-token=<token>`
+- `--token=<token>`
     The token used to authenticate with the Drago server.
     Overrides the `DRAGO_TOKEN` environment variable if set.
-    Defaults to `""`
- 
+    Defaults to `""`.
 
 ## Info Options
 
-- `-self`: Query the status of the local node.
+- `--self`: Query the status of the local node.
 
-- `-json`: Enable JSON output.
+- `--json`: Enable JSON output.

@@ -94,7 +94,7 @@ General Options:
 
 Network Create Options:
 
-  --range="cidr"
+  --range=<range>
     Sets the address range of the network, in CIDR notation.
 
 `

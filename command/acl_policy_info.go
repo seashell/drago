@@ -55,11 +55,13 @@ func (c *ACLPolicyInfoCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) < 1 {
+	if len(args) != 1 {
 		c.UI.Error("This command takes one argument: <name>")
 		c.UI.Error(`For additional help, try 'drago acl policy info --help'`)
 		return 1
 	}
+
+	name := args[0]
 
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
@@ -68,7 +70,7 @@ func (c *ACLPolicyInfoCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	policy, err := api.ACLPolicies().Get(args[0])
+	policy, err := api.ACLPolicies().Get(name)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving ACL policy: %s", err))
 		return 1
@@ -82,11 +84,11 @@ func (c *ACLPolicyInfoCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLPolicyInfoCommand) Help() string {
 	h := `
-Usage: drago acl policy info <policy> [options]
+Usage: drago acl policy info <name> [options]
 
   Display information on an existing ACL policy.
 
-  Use the -json flag to see a detailed list of the rules associated with the policy.
+  Use the --json flag to see a detailed list of the rules associated with the policy.
 
 General Options:
 ` + GlobalOptions() + `

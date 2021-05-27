@@ -55,11 +55,13 @@ func (c *ACLTokenInfoCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) < 1 {
-		c.UI.Error("This command takes one argument: <id>")
+	if len(args) != 1 {
+		c.UI.Error("This command takes one argument: <token_id>")
 		c.UI.Error(`For additional help, try 'drago acl token info --help'`)
 		return 1
 	}
+
+	id := args[0]
 
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
@@ -68,7 +70,7 @@ func (c *ACLTokenInfoCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	token, err := api.ACLTokens().Get(args[0])
+	token, err := api.ACLTokens().Get(id)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error retrieving ACL token: %s", err))
 		return 1
@@ -82,7 +84,7 @@ func (c *ACLTokenInfoCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLTokenInfoCommand) Help() string {
 	h := `
-Usage: drago acl token info <token> [options]
+Usage: drago acl token info <token_id> [options]
 
   Display information on an existing ACL token.
 

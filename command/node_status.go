@@ -114,7 +114,7 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NodeStatusCommand) Help() string {
 	h := `
-Usage: drago node status <node> [options]
+Usage: drago node status <node_id> [options]
 
   Display node status information.
 

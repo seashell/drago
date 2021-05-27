@@ -105,13 +105,13 @@ General Options:
 
 Node List Options:
 
-  -json=<bool>
+  --json=<bool>
     Enable JSON output.
   
-  -meta=<key:value>
+  --meta=<key:value>
     Filter nodes by metadata.
 
-  -status=<initializing|ready|down>
+  --status=<initializing|ready|down>
     Filter nodes by status.
 
 `

@@ -111,7 +111,7 @@ func (c *NodeJoinCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NodeJoinCommand) Help() string {
 	h := `
-Usage: drago node join <network_id> [options]
+Usage: drago node join <network> [options]
 
   Have the local client node join an existing network.
 

@@ -57,6 +57,7 @@ func (c *ACLTokenListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago acl token list --help'`)
 		return 1
 	}
 

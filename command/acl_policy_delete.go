@@ -56,14 +56,14 @@ func (c *ACLPolicyDeleteCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
+	name := args[0]
+
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error setting up API client: %s", err))
 		return 1
 	}
-
-	name := args[0]
 
 	if err := api.ACLPolicies().Delete(name); err != nil {
 		c.UI.Error(fmt.Sprintf("Error deleting ACL policies: %s", err))
@@ -78,7 +78,7 @@ func (c *ACLPolicyDeleteCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLPolicyDeleteCommand) Help() string {
 	h := `
-Usage: drago acl policy delete <policy> [options]
+Usage: drago acl policy delete <name> [options]
 
   Delete an existing ACL policy.
 

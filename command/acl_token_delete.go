@@ -45,11 +45,13 @@ func (c *ACLTokenDeleteCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) < 1 {
-		c.UI.Error("This command takes one argument: <id>")
+	if len(args) != 1 {
+		c.UI.Error("This command takes one argument: <token_id>")
 		c.UI.Error(`For additional help, try 'drago acl token delete --help'`)
 		return 1
 	}
+
+	id := args[0]
 
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
@@ -58,7 +60,7 @@ func (c *ACLTokenDeleteCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	if err := api.ACLTokens().Delete(args[0]); err != nil {
+	if err := api.ACLTokens().Delete(id); err != nil {
 		c.UI.Error(fmt.Sprintf("Error deleting ACL token: %s", err))
 		return 1
 	}
@@ -71,7 +73,7 @@ func (c *ACLTokenDeleteCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *ACLTokenDeleteCommand) Help() string {
 	h := `
-Usage: drago acl token delete <token> [options]
+Usage: drago acl token delete <token_id> [options]
 
   Delete is used to delete an existing ACL token. Requires a management token.
 

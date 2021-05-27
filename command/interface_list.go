@@ -113,10 +113,10 @@ Network List Options:
   --json
     Enable JSON output.
 
-  --node=<id>
+  --node=<node_id>
     Filter results by node ID.
 
-  --network=<id>
+  --network=<network_id>
     Filter results by network ID.
 
 `

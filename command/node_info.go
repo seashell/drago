@@ -94,7 +94,7 @@ func (c *NodeInfoCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NodeInfoCommand) Help() string {
 	h := `
-Usage: drago node info <id> [options]
+Usage: drago node info <node_id> [options]
 
   Display detailed information about an existing node.
 

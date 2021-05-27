@@ -53,7 +53,8 @@ func (c *InterfaceUpdateCommand) Run(ctx context.Context, args []string) int {
 
 	args = flags.Args()
 	if len(args) != 0 {
-		c.UI.Error("This command takes one argument")
+		c.UI.Error("This command takes one argument: <interface_id>")
+		c.UI.Error(`For additional help, try 'drago interface update --help'`)
 		return 1
 	}
 
@@ -77,7 +78,7 @@ func (c *InterfaceUpdateCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *InterfaceUpdateCommand) Help() string {
 	h := `
-Usage: drago interface update <id> [options]
+Usage: drago interface update <interface_id> [options]
 
   Update an existing interface.
 
@@ -88,7 +89,7 @@ General Options:
 
 Network List Options:
 
-  --address=<id>
+  --address=<addr>
     Interface address.
 
 `
