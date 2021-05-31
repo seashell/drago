@@ -1,5 +1,6 @@
 //go:generate yarn --cwd ./ui
 //go:generate yarn --cwd ./ui build
+//go:generate touch ./ui/build/.keep
 
 package main
 
