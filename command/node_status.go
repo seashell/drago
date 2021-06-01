@@ -58,6 +58,7 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) != 1 {
 		c.UI.Error("This command takes either one or no arguments")
+		c.UI.Error(`For additional help, try 'drago node status --help'`)
 		return 1
 	}
 
@@ -119,7 +120,7 @@ Usage: drago node status <node_id> [options]
 
   If a node ID is passed, information for that specific node will be displayed.
   If no node ID's are passed, then a short-hand list of all nodes will be displayed.
-  The -self flag is useful to quickly access the status of the local node.
+  The --self flag is useful to quickly access the status of the local node.
 
   If ACLs are enabled, this option requires a token with the 'node:read' capability.
 
@@ -148,8 +149,8 @@ func (c *NodeStatusCommand) formatNodeList(nodes []*structs.NodeListStub) string
 		enc.SetIndent("", "    ")
 		for _, node := range nodes {
 			fnodes = append(fnodes, map[string]string{
-				"ID":     node.ID,
-				"Status": node.Status,
+				"id":     node.ID,
+				"status": node.Status,
 			})
 		}
 		if err := enc.Encode(fnodes); err != nil {
@@ -175,8 +176,8 @@ func (c *NodeStatusCommand) formatNode(node *structs.Node) string {
 		enc.SetIndent("", "    ")
 
 		fnode := map[string]string{
-			"ID":     node.ID,
-			"Status": node.Status,
+			"id":     node.ID,
+			"status": node.Status,
 		}
 
 		if err := enc.Encode(fnode); err != nil {

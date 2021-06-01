@@ -107,13 +107,13 @@ func (c *ACLTokenInfoCommand) formatToken(token *structs.ACLToken) string {
 		enc := json.NewEncoder(&b)
 		enc.SetIndent("", "    ")
 		formatted := map[string]interface{}{
-			"ID":        token.ID,
-			"Name":      token.Name,
-			"Type":      token.Type,
-			"Secret":    token.Secret,
-			"Policies":  token.Policies,
-			"CreatedAt": token.CreatedAt,
-			"UpdatedAt": token.UpdatedAt,
+			"id":        token.ID,
+			"name":      token.Name,
+			"type":      token.Type,
+			"secret":    token.Secret,
+			"policies":  token.Policies,
+			"createdAt": token.CreatedAt,
+			"updatedAt": token.UpdatedAt,
 		}
 		if err := enc.Encode(formatted); err != nil {
 			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))

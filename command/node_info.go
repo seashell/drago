@@ -58,6 +58,7 @@ func (c *NodeInfoCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) != 1 {
 		c.UI.Error("This command takes either one or no arguments")
+		c.UI.Error(`For additional help, try 'drago node info --help'`)
 		return 1
 	}
 
@@ -123,10 +124,10 @@ func (c *NodeInfoCommand) formatNode(node *structs.Node) string {
 		enc.SetIndent("", "    ")
 
 		fnode := map[string]string{
-			"ID":               node.ID,
-			"Name":             node.Name,
-			"AdvertiseAddress": node.AdvertiseAddress,
-			"Status":           node.Status,
+			"id":               node.ID,
+			"name":             node.Name,
+			"advertiseAddress": node.AdvertiseAddress,
+			"status":           node.Status,
 		}
 
 		if err := enc.Encode(fnode); err != nil {

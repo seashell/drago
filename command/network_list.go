@@ -56,6 +56,7 @@ func (c *NetworkListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago network list --help'`)
 		return 1
 	}
 
@@ -112,9 +113,9 @@ func (c *NetworkListCommand) formatNetworkList(networks []*structs.NetworkListSt
 		enc.SetIndent("", "    ")
 		for _, network := range networks {
 			fnetworks = append(fnetworks, map[string]string{
-				"ID":           network.ID,
-				"Name":         network.Name,
-				"AddressRange": network.AddressRange,
+				"id":           network.ID,
+				"name":         network.Name,
+				"addressRange": network.AddressRange,
 			})
 		}
 		if err := enc.Encode(fnetworks); err != nil {
@@ -140,9 +141,9 @@ func (c *NetworkListCommand) formatNetwork(network *structs.Network) string {
 		enc.SetIndent("", "    ")
 
 		fnetwork := map[string]string{
-			"ID":           network.ID,
-			"Name":         network.Name,
-			"AddressRange": network.AddressRange,
+			"id":           network.ID,
+			"name":         network.Name,
+			"addressRange": network.AddressRange,
 		}
 
 		if err := enc.Encode(fnetwork); err != nil {

@@ -56,6 +56,7 @@ func (c *ConnectionListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago connection list --help'`)
 		return 1
 	}
 
@@ -112,7 +113,7 @@ func (c *ConnectionListCommand) formatConnectionList(connections []*structs.Conn
 		enc.SetIndent("", "    ")
 		for _, conn := range connections {
 			fconnections = append(fconnections, map[string]string{
-				"ID": conn.ID,
+				"id": conn.ID,
 			})
 		}
 		if err := enc.Encode(fconnections); err != nil {

@@ -111,8 +111,8 @@ func (c *ACLPolicyListCommand) formatPolicyList(policies []*structs.ACLPolicyLis
 		enc.SetIndent("", "    ")
 		for _, policy := range policies {
 			fpolicies = append(fpolicies, map[string]string{
-				"Name":        policy.Name,
-				"Description": policy.Description,
+				"name":        policy.Name,
+				"description": policy.Description,
 			})
 		}
 		if err := enc.Encode(fpolicies); err != nil {

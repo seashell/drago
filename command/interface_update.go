@@ -51,7 +51,7 @@ func (c *InterfaceUpdateCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) != 0 {
+	if len(args) != 1 {
 		c.UI.Error("This command takes one argument: <interface_id>")
 		c.UI.Error(`For additional help, try 'drago interface update --help'`)
 		return 1

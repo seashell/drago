@@ -19,7 +19,6 @@ drago connection list [options]
     The token used to authenticate with the Drago server.
     Overrides the `DRAGO_TOKEN` environment variable if set.
     Defaults to `""`.
- 
 
 ## Info Options
 

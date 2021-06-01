@@ -1,11 +1,11 @@
-# Command: interface list
+# Command: connection create
 
-The `interface list` command is used to list all available interfaces.
+The `connection create` command is used to create a connection.
 
 ## Usage
 
 ```
-drago interface list [options]
+drago connection create <src_node_id> <dst_node_id> <network> [options]
 ```
 
 ## General Options
@@ -24,8 +24,6 @@ drago interface list [options]
 
 - `--json`: Enable JSON output.
 
-- `--self`: Filter results by the local node ID. Can not be used with the --node filter flag.
+- `--allow-all`: Enables routing of all traffic in this connection.
 
-- `--node=<node_id>`: Filter results by node ID. Can not be used with the --self filter flag.
-
-- `--network=<network>`: Filter results by network.
+- `--keepalive=<seconds>`: Time interval between persistent keepalive packets. Defaults to 0, which disables the feature.

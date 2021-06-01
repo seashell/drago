@@ -109,9 +109,9 @@ func (c *ACLPolicyInfoCommand) formatPolicy(policy *structs.ACLPolicy) string {
 		enc := json.NewEncoder(&b)
 		enc.SetIndent("", "    ")
 		fpolicy := map[string]interface{}{
-			"Name":        policy.Name,
-			"Description": policy.Description,
-			"Rules":       policy.Rules,
+			"name":        policy.Name,
+			"description": policy.Description,
+			"rules":       policy.Rules,
 		}
 		if err := enc.Encode(fpolicy); err != nil {
 			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))

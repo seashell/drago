@@ -20,8 +20,9 @@ type InterfaceListCommand struct {
 
 	// Parsed flags
 	json    bool
-	node    []string
-	network []string
+	self    bool
+	node    string
+	network string
 }
 
 func (c *InterfaceListCommand) FlagSet() *pflag.FlagSet {
@@ -32,8 +33,9 @@ func (c *InterfaceListCommand) FlagSet() *pflag.FlagSet {
 
 	// General options
 	flags.BoolVar(&c.json, "json", false, "")
-	flags.StringSliceVar(&c.node, "node", []string{}, "")
-	flags.StringSliceVar(&c.network, "network", []string{}, "")
+	flags.BoolVar(&c.self, "self", false, "")
+	flags.StringVar(&c.node, "node", "", "")
+	flags.StringVar(&c.network, "network", "", "")
 
 	return flags
 }
@@ -60,6 +62,7 @@ func (c *InterfaceListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago interface list --help'`)
 		return 1
 	}
 
@@ -71,13 +74,46 @@ func (c *InterfaceListCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	filters := map[string][]string{}
+	networkID := ""
 
 	if len(c.network) > 0 {
-		filters["network"] = c.network
+		networks, err := api.Networks().List()
+		if err != nil {
+			c.UI.Error(fmt.Sprintf("Error retrieving networks: %s", err))
+			return 1
+		}
+
+		for _, network := range networks {
+			if c.network == network.Name {
+				networkID = network.ID
+
+				break
+			}
+		}
+	}
+
+	if c.self && len(c.node) > 0 {
+		c.UI.Error("Can not have both the --self and the --node flags.")
+		return 1
+	}
+
+	if len(c.network) > 0 {
+		filters["network"] = []string{networkID}
 	}
 
 	if len(c.node) > 0 {
-		filters["node"] = c.node
+		filters["node"] = []string{c.node}
+	}
+
+	if c.self {
+		nodeID := ""
+
+		if nodeID, err = localAgentNodeID(api); err != nil {
+			c.UI.Error(fmt.Sprintf("Error determining local node ID: %s", err))
+			return 1
+		}
+
+		filters["node"] = []string{nodeID}
 	}
 
 	ifaces, err := api.Interfaces().List(filters)
@@ -112,11 +148,14 @@ Network List Options:
   --json
     Enable JSON output.
 
-  --node=<node_id>
-    Filter results by node ID.
+  --self
+    Filter results by the local node ID. Can not be used with the --node filter flag.
 
-  --network=<network_id>
-    Filter results by network ID.
+  --node=<node_id>
+    Filter results by node ID. Can not be used with the --self filter flag.
+
+  --network=<network>
+    Filter results by network.
 
 `
 	return strings.TrimSpace(h)
@@ -132,9 +171,9 @@ func (c *InterfaceListCommand) formatInterfaceList(interfaces []*structs.Interfa
 		enc.SetIndent("", "    ")
 		for _, iface := range interfaces {
 			fifaces = append(fifaces, map[string]string{
-				"ID":      iface.ID,
-				"Name":    valueOrPlaceholder(iface.Name, "N/A"),
-				"Address": valueOrPlaceholder(iface.Address, "N/A"),
+				"id":      iface.ID,
+				"name":    valueOrPlaceholder(iface.Name, "N/A"),
+				"address": valueOrPlaceholder(iface.Address, "N/A"),
 			})
 		}
 		if err := enc.Encode(fifaces); err != nil {

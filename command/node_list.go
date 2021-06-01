@@ -60,6 +60,7 @@ func (c *NodeListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) != 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago node list --help'`)
 		return 1
 	}
 
@@ -127,9 +128,9 @@ func (c *NodeListCommand) formatNodeList(nodes []*structs.NodeListStub) string {
 		enc.SetIndent("", "    ")
 		for _, node := range nodes {
 			fnodes = append(fnodes, map[string]string{
-				"ID":     node.ID,
-				"Name":   node.Name,
-				"Status": node.Status,
+				"id":     node.ID,
+				"name":   node.Name,
+				"status": node.Status,
 			})
 		}
 		if err := enc.Encode(fnodes); err != nil {
@@ -155,9 +156,9 @@ func (c *NodeListCommand) formatNode(node *structs.Node) string {
 		enc.SetIndent("", "    ")
 
 		fnode := map[string]string{
-			"ID":     node.ID,
-			"Name":   node.Name,
-			"Status": node.Status,
+			"id":     node.ID,
+			"name":   node.Name,
+			"status": node.Status,
 		}
 
 		if err := enc.Encode(fnode); err != nil {

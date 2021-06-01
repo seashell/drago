@@ -43,3 +43,15 @@ func (n *Connections) List() ([]*structs.ConnectionListStub, error) {
 
 	return items, nil
 }
+
+func (n *Connections) Create(connection *structs.Connection) (*structs.Connection, error) {
+
+	out := &structs.Connection{}
+
+	err := n.client.createResource(networksPath, connection, out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}

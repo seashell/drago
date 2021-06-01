@@ -130,9 +130,9 @@ func (c *NetworkInfoCommand) formatNetwork(network *structs.Network) string {
 		enc.SetIndent("", "    ")
 
 		fnetwork := map[string]string{
-			"ID":           network.ID,
-			"Name":         network.Name,
-			"AddressRange": network.AddressRange,
+			"id":           network.ID,
+			"name":         network.Name,
+			"addressRange": network.AddressRange,
 		}
 
 		if err := enc.Encode(fnetwork); err != nil {

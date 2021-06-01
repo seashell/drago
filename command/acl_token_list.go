@@ -111,9 +111,9 @@ func (c *ACLTokenListCommand) formatTokenList(tokens []*structs.ACLTokenListStub
 		enc.SetIndent("", "    ")
 		for _, token := range tokens {
 			ftokens = append(ftokens, map[string]string{
-				"ID":   token.ID,
-				"Name": token.Name,
-				"Type": token.Type,
+				"id":   token.ID,
+				"name": token.Name,
+				"type": token.Type,
 			})
 		}
 		if err := enc.Encode(ftokens); err != nil {

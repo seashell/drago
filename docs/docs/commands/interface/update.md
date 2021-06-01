@@ -5,7 +5,7 @@ The `interface update` command is used to update an existing interface.
 ## Usage
 
 ```
-drago interface update [options] <id>
+drago interface update <interface_id> [options]
 ```
 
 ## General Options
@@ -23,5 +23,3 @@ drago interface update [options] <id>
 ## Update Options
 
 - `--address`: Interface IP address in CIDR notation
-
-- `--dns`: DNS server's address
