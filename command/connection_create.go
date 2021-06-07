@@ -63,8 +63,12 @@ func (c *ConnectionCreateCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	networkID := "" // Get from Networks API based on Network.Name
-
+	networkID := ""
+	networkAddressRange := ""
+	
+	nodeIDs := []string{args[0], args[1]}
+	networkName := args[2]
+	
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
 	if err != nil {
@@ -72,10 +76,71 @@ func (c *ConnectionCreateCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	connection, err := api.Connections().Create(&structs.Connection{
+	networks, err := api.Networks().List()
+	if err != nil {
+		c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
+		return 1
+	}
+
+	for _, n := range networks {
+		if n.Name == networkName {
+			networkID = n.ID
+			networkAddressRange = n.AddressRange
+			break
+		}
+	}
+
+	if networkID == "" {
+		c.UI.Error("Error: network not found")
+		return 1
+	}
+
+	conn := &structs.Connection{
 		NetworkID:           networkID,
 		PersistentKeepalive: &c.persistentKeepalive,
-	})
+		PeerSettings: map[string]*structs.PeerSettings{},
+	}
+
+	for idx, nodeID := range(nodeIDs){
+
+		filters := map[string][]string{
+			"node": []string{nodeID},
+		}
+
+		interfaces, err := api.Interfaces().List(filters)
+		if err != nil {
+			c.UI.Error(fmt.Sprintf("Error getting node interfaces: %s", err))
+			return 1
+		}
+
+		// Find interface in node which is connected to the target network,
+		// and add it to the connection struct together with default settings.
+		for _, iface := range(interfaces) {
+			if iface.NetworkID == networkID {
+				
+				conn.PeerSettings[iface.ID] = &structs.PeerSettings{
+					InterfaceID: iface.ID,
+					RoutingRules: &structs.RoutingRules{
+						AllowedIPs: []string{},
+					},
+				}
+				
+				// Allow all traffic if allowAll is set
+				if c.allowAll {
+					conn.PeerSettings[iface.ID].RoutingRules.AllowedIPs = []string{networkAddressRange}
+				}
+
+				break
+			}
+		}
+
+		if len(conn.PeerSettings) < idx + 1 {
+			c.UI.Error(fmt.Sprintf("Error: node %s does not have any interface in network %s", nodeID, networkID))
+			return 1
+		}
+	}
+	
+	connection, err := api.Connections().Create(conn)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error creating connection: %s", err))
 		return 1
@@ -91,7 +156,7 @@ func (c *ConnectionCreateCommand) Help() string {
 	h := `
 Usage: drago connection create <src_node_id> <dst_node_id> <network> [options]
 
-  Create is used to create a new connection between two nodes that have interfaces for the same network.
+  Create is used to create a new connection between two nodes that have interfaces in the same network.
 
   If ACLs are enabled, this option requires a token with the 'connection:write' capability.
 
