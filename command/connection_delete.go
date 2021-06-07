@@ -1,13 +1,10 @@
 package command
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"strings"
 
-	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
 	"github.com/spf13/pflag"
 )
@@ -62,7 +59,7 @@ func (c *ConnectionDeleteCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 	
-	err := api.Connections().Delete(id)
+	err = api.Connections().Delete(id)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error deleting connection: %s", err))
 		return 1

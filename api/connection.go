@@ -55,3 +55,14 @@ func (n *Connections) Create(connection *structs.Connection) (*structs.Connectio
 
 	return out, nil
 }
+
+
+func (n *Connections) Delete(id string) error {
+
+	err := n.client.deleteResource(id, connectionsPath, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
