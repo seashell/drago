@@ -38,7 +38,7 @@ func (c *InterfaceUpdateCommand) Name() string {
 
 // Synopsis :
 func (c *InterfaceUpdateCommand) Synopsis() string {
-	return "Update an existing interfaces"
+	return "Update an existing interface"
 }
 
 // Run :

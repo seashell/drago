@@ -65,8 +65,6 @@ func (c *ACLPolicyDeleteCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	c.UI.Output("Deleted!")
-
 	return 0
 }
 

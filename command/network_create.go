@@ -83,7 +83,7 @@ func (c *NetworkCreateCommand) Help() string {
 	h := `
 Usage: drago network create <network> [options]
 
-  Create a new Drago network.
+  Create a new network.
 
   If ACLs are enabled, this option requires a token with the 'network:write' capability.
 

@@ -12,7 +12,7 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// ACLTokenCreateCommand :
+// ConnectionCreateCommand :
 type ConnectionCreateCommand struct {
 	UI cli.UI
 	Command
@@ -59,7 +59,7 @@ func (c *ConnectionCreateCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) != 3 {
 		c.UI.Error("This command takes three arguments: <src_node_id> <dst_node_id> <network>")
-		c.UI.Error(`For additional help, try 'drago acl token create --help'`)
+		c.UI.Error(`For additional help, try 'drago connection create --help'`)
 		return 1
 	}
 

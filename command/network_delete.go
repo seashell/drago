@@ -87,7 +87,7 @@ func (c *NetworkDeleteCommand) Run(ctx context.Context, args []string) int {
 
 	err = api.Networks().Delete(id)
 	if err != nil {
-		c.UI.Error(fmt.Sprintf("Error creating network: %s", err))
+		c.UI.Error(fmt.Sprintf("Error deleting network: %s", err))
 		return 1
 	}
 

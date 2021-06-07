@@ -103,7 +103,7 @@ func (c *NetworkInfoCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NetworkInfoCommand) Help() string {
 	h := `
-Usage: drago network info <network> [options]
+  Usage: drago network info <network> [options]
 
   Display detailed information about an existing Drago network.
 

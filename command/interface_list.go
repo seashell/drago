@@ -136,7 +136,7 @@ func (c *InterfaceListCommand) Help() string {
 	h := `
 Usage: drago interface list [options]
 
-  Lists interfaces managed by Drago.
+  List interfaces managed by Drago.
 
   If ACLs are enabled, this option requires a token with the 'interface:read' capability.
 

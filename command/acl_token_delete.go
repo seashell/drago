@@ -64,8 +64,6 @@ func (c *ACLTokenDeleteCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	c.UI.Output("ACL token successfully deleted")
-
 	return 0
 }
 

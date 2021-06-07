@@ -72,8 +72,6 @@ func (c *ACLPolicyApplyCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	c.UI.Output("Success!")
-
 	return 0
 }
 
