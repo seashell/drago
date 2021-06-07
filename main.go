@@ -130,7 +130,7 @@ func setupCLI() *cli.CLI {
 			"connection":        &command.ConnectionCommand{UI: ui},
 			"connection list":   &command.ConnectionListCommand{UI: ui},
 			"connection create": &command.ConnectionCreateCommand{UI: ui},
-			// "connection delete":       &command.ConnectionDeleteCommand{UI: ui},
+			"connection delete": &command.ConnectionDeleteCommand{UI: ui},
 			// "connection update":       &command.ConnectionUpdateCommand{UI: ui},
 			// "system":                  &command.SystemCommand{UI: ui},
 			// "system gc":               &command.SystemGCCommand{UI: ui},
