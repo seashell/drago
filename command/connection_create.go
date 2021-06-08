@@ -65,10 +65,10 @@ func (c *ConnectionCreateCommand) Run(ctx context.Context, args []string) int {
 
 	networkID := ""
 	networkAddressRange := ""
-	
+
 	nodeIDs := []string{args[0], args[1]}
 	networkName := args[2]
-	
+
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
 	if err != nil {
@@ -76,6 +76,7 @@ func (c *ConnectionCreateCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
+	// Resolve network name
 	networks, err := api.Networks().List()
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
@@ -98,10 +99,10 @@ func (c *ConnectionCreateCommand) Run(ctx context.Context, args []string) int {
 	conn := &structs.Connection{
 		NetworkID:           networkID,
 		PersistentKeepalive: &c.persistentKeepalive,
-		PeerSettings: map[string]*structs.PeerSettings{},
+		PeerSettings:        []*structs.PeerSettings{},
 	}
 
-	for idx, nodeID := range(nodeIDs){
+	for idx, nodeID := range nodeIDs {
 
 		filters := map[string][]string{
 			"node": []string{nodeID},
@@ -115,31 +116,31 @@ func (c *ConnectionCreateCommand) Run(ctx context.Context, args []string) int {
 
 		// Find interface in node which is connected to the target network,
 		// and add it to the connection struct together with default settings.
-		for _, iface := range(interfaces) {
+		for _, iface := range interfaces {
 			if iface.NetworkID == networkID {
-				
-				conn.PeerSettings[iface.ID] = &structs.PeerSettings{
+
+				conn.PeerSettings = append(conn.PeerSettings, &structs.PeerSettings{
 					InterfaceID: iface.ID,
 					RoutingRules: &structs.RoutingRules{
 						AllowedIPs: []string{},
 					},
-				}
-				
+				})
+
 				// Allow all traffic if allowAll is set
 				if c.allowAll {
-					conn.PeerSettings[iface.ID].RoutingRules.AllowedIPs = []string{networkAddressRange}
+					conn.PeerSettingsByInterfaceID(iface.ID).RoutingRules.AllowedIPs = []string{networkAddressRange}
 				}
 
 				break
 			}
 		}
 
-		if len(conn.PeerSettings) < idx + 1 {
+		if len(conn.PeerSettings) < idx+1 {
 			c.UI.Error(fmt.Sprintf("Error: node %s does not have any interface in network %s", nodeID, networkID))
 			return 1
 		}
 	}
-	
+
 	connection, err := api.Connections().Create(conn)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error creating connection: %s", err))

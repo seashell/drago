@@ -58,7 +58,7 @@ func (c *ConnectionDeleteCommand) Run(ctx context.Context, args []string) int {
 		c.UI.Error(fmt.Sprintf("Error setting up API client: %s", err))
 		return 1
 	}
-	
+
 	err = api.Connections().Delete(id)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error deleting connection: %s", err))

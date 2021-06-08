@@ -99,7 +99,8 @@ func (r *StateRepository) ConnectionsByNodeID(ctx context.Context, id string) ([
 		if err := decodeValue(el.Value, conn); err != nil {
 			return nil, err
 		}
-		if conn.NodeIDs[0] == id || conn.NodeIDs[1] == id {
+
+		if conn.PeerSettings[0].NodeID == id || conn.PeerSettings[1].NodeID == id {
 			items = append(items, conn)
 		}
 	}

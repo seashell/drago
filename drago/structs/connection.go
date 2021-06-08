@@ -9,11 +9,10 @@ import (
 type Connection struct {
 	ID        string
 	NetworkID string
-	NodeIDs   []string
 
 	// PeerSettings contains the ID and the configurations to be applied
 	// to each of the connected interfaces.
-	PeerSettings map[string]*PeerSettings
+	PeerSettings []*PeerSettings
 
 	// If the connection is going from a NAT-ed peer to a public peer,
 	// the node behind the NAT must regularly send an outgoing ping to
@@ -33,26 +32,57 @@ func (c *Connection) Validate() error {
 // ConnectedInterfaceIDs :
 func (c *Connection) ConnectedInterfaceIDs() []string {
 	ids := []string{}
-	for k := range c.PeerSettings {
-		ids = append(ids, k)
+	for _, peer := range c.PeerSettings {
+		ids = append(ids, peer.InterfaceID)
 	}
 	sort.Strings(ids)
 	return ids
 }
 
+// ConnectedNodeIDs :
+func (c *Connection) ConnectedNodeIDs() []string {
+	ids := []string{}
+	for _, peer := range c.PeerSettings {
+		ids = append(ids, peer.NodeID)
+	}
+	sort.Strings(ids)
+	return ids
+}
+
+// PeerSettingsByNodeID :
+func (c *Connection) PeerSettingsByNodeID(s string) *PeerSettings {
+
+	if c.PeerSettings[0].NodeID == s {
+		return c.PeerSettings[0]
+	} else if c.PeerSettings[1].NodeID == s {
+		return c.PeerSettings[1]
+	}
+
+	return nil
+}
+
 // PeerSettingsByInterfaceID :
 func (c *Connection) PeerSettingsByInterfaceID(s string) *PeerSettings {
-	return c.PeerSettings[s]
+
+	if c.PeerSettings[0].InterfaceID == s {
+		return c.PeerSettings[0]
+	} else if c.PeerSettings[1].InterfaceID == s {
+		return c.PeerSettings[1]
+	}
+
+	return nil
 }
 
 // OtherPeerSettingsByInterfaceID : given the ID of one of the connected interfaces,
 // returns the settings for the peer/interface at the other end of the connection.
 func (c *Connection) OtherPeerSettingsByInterfaceID(s string) *PeerSettings {
-	for ifaceID, settings := range c.PeerSettings {
-		if ifaceID != s {
-			return settings
-		}
+
+	if c.PeerSettings[0].InterfaceID == s {
+		return c.PeerSettings[1]
+	} else if c.PeerSettings[1].InterfaceID == s {
+		return c.PeerSettings[0]
 	}
+
 	return nil
 }
 
@@ -68,7 +98,8 @@ func (c *Connection) ConnectsInterfaces(a, b string) bool {
 // ConnectsInterface : checks whether a connection connects
 // an interface whose index is passed as argument.
 func (c *Connection) ConnectsInterface(s string) bool {
-	if _, ok := c.PeerSettings[s]; ok {
+
+	if c.PeerSettings[0].InterfaceID == s || c.PeerSettings[1].InterfaceID == s {
 		return true
 	}
 	return false
@@ -86,11 +117,11 @@ func (c *Connection) Merge(in *Connection) *Connection {
 		if result.PeerSettings == nil {
 			result.PeerSettings = in.PeerSettings
 		} else {
-			for k := range in.PeerSettings {
-				if _, ok := result.PeerSettings[k]; ok {
-					result.PeerSettings[k] = result.PeerSettings[k].Merge(in.PeerSettings[k])
-				} else {
-					result.PeerSettings[k] = in.PeerSettings[k]
+			for _, peer := range in.PeerSettings {
+				if result.PeerSettings[0].InterfaceID == peer.InterfaceID {
+					result.PeerSettings[0] = result.PeerSettings[0].Merge(peer)
+				} else if result.PeerSettings[1].InterfaceID == peer.InterfaceID {
+					result.PeerSettings[1] = result.PeerSettings[1].Merge(peer)
 				}
 			}
 		}
@@ -106,14 +137,13 @@ func (c *Connection) Merge(in *Connection) *Connection {
 func (c *Connection) Stub() *ConnectionListStub {
 
 	peers := []string{}
-	for k := range c.PeerSettings {
-		peers = append(peers, k)
+	for _, peer := range c.PeerSettings {
+		peers = append(peers, peer.InterfaceID)
 	}
 
 	return &ConnectionListStub{
 		ID:                  c.ID,
 		NetworkID:           c.NetworkID,
-		NodeIDs:             c.NodeIDs,
 		Peers:               peers,
 		PeerSettings:        c.PeerSettings,
 		PersistentKeepalive: c.PersistentKeepalive,
@@ -129,7 +159,7 @@ type ConnectionListStub struct {
 	NetworkID           string
 	NodeIDs             []string
 	Peers               []string
-	PeerSettings        map[string]*PeerSettings
+	PeerSettings        []*PeerSettings
 	PersistentKeepalive *int
 	BytesTransferred    uint64
 	CreatedAt           time.Time
@@ -138,6 +168,7 @@ type ConnectionListStub struct {
 
 // PeerSettings :
 type PeerSettings struct {
+	NodeID       string
 	InterfaceID  string
 	RoutingRules *RoutingRules
 }
@@ -145,6 +176,9 @@ type PeerSettings struct {
 // Merge :
 func (r *PeerSettings) Merge(in *PeerSettings) *PeerSettings {
 	result := *r
+	if in.NodeID != "" {
+		result.NodeID = in.NodeID
+	}
 	if in.InterfaceID != "" {
 		result.InterfaceID = in.InterfaceID
 	}
