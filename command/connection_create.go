@@ -105,7 +105,7 @@ func (c *ConnectionCreateCommand) Run(ctx context.Context, args []string) int {
 	for idx, nodeID := range nodeIDs {
 
 		filters := map[string][]string{
-			"node": []string{nodeID},
+			"node": {nodeID},
 		}
 
 		interfaces, err := api.Interfaces().List(filters)

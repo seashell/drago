@@ -80,7 +80,7 @@ func (r *StateRepository) ConnectionsByNodeID(ctx context.Context, id string) ([
 	for el := range r.kv.Iter() {
 		if strings.HasPrefix(el.Key, prefix) {
 			if conn, ok := el.Value.(*structs.Connection); ok {
-				if conn.NodeIDs[0] == id || conn.NodeIDs[1] == id {
+				if conn.PeerSettings[0].NodeID == id || conn.PeerSettings[1].NodeID == id {
 					res = append(res, conn)
 				}
 			}

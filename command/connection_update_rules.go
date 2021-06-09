@@ -80,10 +80,40 @@ func (c *ConnectionUpdateRulesCommand) Run(ctx context.Context, args []string) i
 		return 1
 	}
 
-	if c.on == "" {
+	if c.allowAll {
+		network, err := api.Networks().Get(conn.NetworkID)
+		if err != nil {
+			c.UI.Error(fmt.Sprintf("Error getting network: %s", err))
+			return 1
+		}
 
+		if c.on == "" {
+			for i := range conn.PeerSettings {
+				conn.PeerSettings[i].RoutingRules.AllowedIPs = []string{network.AddressRange}
+			}
+		} else {
+			for i := range conn.PeerSettings {
+				if conn.PeerSettings[i].InterfaceID == c.on || conn.PeerSettings[i].NodeID == c.on {
+					conn.PeerSettings[i].RoutingRules.AllowedIPs = []string{network.AddressRange}
+
+					break
+				}
+			}
+		}
 	} else {
+		if c.on == "" {
+			for i := range conn.PeerSettings {
+				conn.PeerSettings[i].RoutingRules.AllowedIPs = c.allow
+			}
+		} else {
+			for i := range conn.PeerSettings {
+				if conn.PeerSettings[i].InterfaceID == c.on || conn.PeerSettings[i].NodeID == c.on {
+					conn.PeerSettings[i].RoutingRules.AllowedIPs = c.allow
 
+					break
+				}
+			}
+		}
 	}
 
 	err = api.Connections().Update(conn)
