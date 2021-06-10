@@ -185,8 +185,58 @@ func (c *ConnectionCreateCommand) formatConnection(connection *structs.Connectio
 	enc := json.NewEncoder(&b)
 	enc.SetIndent("", "    ")
 	formatted := map[string]interface{}{
-		"id":        connection.ID,
-		"networkId": connection.NetworkID,
+		"id":                  connection.ID,
+		"networkId":           connection.NetworkID,
+		"persistentKeepalive": connection.PersistentKeepalive,
+		"peerSettings":        c.formatPeerSettings(connection.PeerSettings),
+	}
+	if err := enc.Encode(formatted); err != nil {
+		c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
+	}
+
+	s := b.String()
+
+	if c.json {
+		return s
+	}
+
+	return cleanJSONString(s)
+}
+
+func (c *ConnectionCreateCommand) formatPeerSettings(peerSettings []*structs.PeerSettings) string {
+
+	var b bytes.Buffer
+
+	for _, peer := range peerSettings {
+		enc := json.NewEncoder(&b)
+		enc.SetIndent("", "    ")
+		formatted := map[string]interface{}{
+			"nodeId":       peer.NodeID,
+			"interfaceID":  peer.InterfaceID,
+			"routingRules": c.formatRoutingRules(peer.RoutingRules),
+		}
+		if err := enc.Encode(formatted); err != nil {
+			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
+		}
+	}
+
+	s := b.String()
+
+	if c.json {
+		return s
+	}
+
+	return cleanJSONString(s)
+}
+
+func (c *ConnectionCreateCommand) formatRoutingRules(rules *structs.RoutingRules) string {
+
+	var b bytes.Buffer
+
+	enc := json.NewEncoder(&b)
+	enc.SetIndent("", "    ")
+	formatted := map[string]interface{}{
+		"allowedIps": rules.AllowedIPs,
 	}
 	if err := enc.Encode(formatted); err != nil {
 		c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
