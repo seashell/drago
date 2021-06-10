@@ -21,7 +21,6 @@ type NodeLeaveCommand struct {
 func (c *NodeLeaveCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -73,12 +72,12 @@ func (c *NodeLeaveCommand) Run(ctx context.Context, args []string) int {
 		}
 	}
 
-	if err = api.Interfaces().Create(nodeID, networkID); err != nil {
+	if _, err = api.Interfaces().Create(nodeID, networkID); err != nil {
 		c.UI.Error(fmt.Sprintf("Error joining network: %s", err))
 		return 1
 	}
 
-	c.UI.Output("Joined!")
+	c.UI.Output("Left!")
 
 	return 0
 }

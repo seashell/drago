@@ -1,10 +1,14 @@
 package command
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	table "github.com/rodaine/table"
+	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
 	"github.com/spf13/pflag"
 )
@@ -13,12 +17,17 @@ import (
 type NodeJoinCommand struct {
 	UI cli.UI
 	Command
+
+	json bool
 }
 
 func (c *NodeJoinCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
+
+	// General options
+	flags.BoolVar(&c.json, "json", false, "")
 
 	return flags
 }
@@ -84,12 +93,14 @@ func (c *NodeJoinCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	if err = api.Interfaces().Create(nodeID, networkID); err != nil {
+	iface, err := api.Interfaces().Create(nodeID, networkID)
+	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error joining network: %s", err))
 		return 1
 	}
 
 	c.UI.Output("Joined!")
+	c.UI.Output(c.formatInterface(iface))
 
 	return 0
 }
@@ -104,7 +115,39 @@ Usage: drago node join <network> [options]
   If ACLs are enabled, this option requires a token with the 'interface:write' capability.
 
 General Options:
-` + GlobalOptions()
+` + GlobalOptions() + `
 
+  --json
+	Enable JSON output.
+
+`
 	return strings.TrimSpace(h)
+}
+
+func (c *NodeJoinCommand) formatInterface(iface *structs.Interface) string {
+
+	var b bytes.Buffer
+
+	if c.json {
+		enc := json.NewEncoder(&b)
+		enc.SetIndent("", "    ")
+
+		fiface := map[string]string{
+			"id":      iface.ID,
+			"address": valueOrPlaceholder(iface.Address, "N/A"),
+			"network": iface.NetworkID,
+			"node":    iface.NodeID,
+		}
+
+		if err := enc.Encode(fiface); err != nil {
+			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
+		}
+
+	} else {
+		tbl := table.New("INTERFACE ID", "ADDRESS", "NETWORK ID", "NODE ID").WithWriter(&b)
+		tbl.AddRow(iface.ID, valueOrPlaceholder(iface.Address, "N/A"), iface.NetworkID, iface.NodeID)
+		tbl.Print()
+	}
+
+	return b.String()
 }

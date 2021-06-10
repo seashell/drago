@@ -22,12 +22,12 @@ type ConnectionUpdateRulesCommand struct {
 	allowAll  bool
 	allowNone bool
 	on        string
+	json      bool
 }
 
 func (c *ConnectionUpdateRulesCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -35,6 +35,7 @@ func (c *ConnectionUpdateRulesCommand) FlagSet() *pflag.FlagSet {
 	flags.StringSliceVar(&c.allow, "allow", []string{}, "")
 	flags.BoolVar(&c.allowAll, "allow-all", false, "")
 	flags.BoolVar(&c.allowNone, "allow-none", false, "")
+	flags.BoolVar(&c.json, "json", false, "")
 
 	return flags
 }
@@ -116,11 +117,13 @@ func (c *ConnectionUpdateRulesCommand) Run(ctx context.Context, args []string) i
 		}
 	}
 
-	err = api.Connections().Update(conn)
+	conn, err = api.Connections().Update(conn)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error updating connection: %s", err))
 		return 1
 	}
+
+	c.UI.Output(c.formatConnection(conn))
 
 	return 0
 }
@@ -138,6 +141,9 @@ General Options:
 ` + GlobalOptions() + `
 
 ACL Token Create Options:
+
+  --json
+	Enable JSON output.
 
   --allow
     Allow routing traffic to this address by the specified end of the connection.

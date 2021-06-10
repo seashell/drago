@@ -19,18 +19,21 @@ type NodeStatusCommand struct {
 	Command
 
 	// Parsed flags
-	self bool
-	json bool
+	self   bool
+	status string
+	meta   []string
+	json   bool
 }
 
 func (c *NodeStatusCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
 	flags.BoolVar(&c.self, "self", false, "")
+	flags.StringVar(&c.status, "status", "*", "")
+	flags.StringSliceVar(&c.meta, "meta", []string{}, "")
 	flags.BoolVar(&c.json, "json", false, "")
 
 	return flags
@@ -56,7 +59,7 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) != 1 {
+	if len(args) > 1 {
 		c.UI.Error("This command takes either one or no arguments")
 		c.UI.Error(`For additional help, try 'drago node status --help'`)
 		return 1
@@ -72,6 +75,8 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 	if len(args) == 0 && !c.self {
 
 		filters := map[string][]string{}
+		filters["meta"] = c.meta
+		filters["status"] = []string{c.status}
 
 		// Print status of multiple nodes
 		nodes, err := api.Nodes().List(filters)
@@ -132,6 +137,12 @@ Node Status Options:
   --self
     Query the status of the local node.
 
+  --meta=<key:value>
+    Filter nodes by metadata.
+
+  --status=<initializing|ready|down>
+    Filter nodes by status.
+
   --json
     Enable JSON output.
 
@@ -149,17 +160,19 @@ func (c *NodeStatusCommand) formatNodeList(nodes []*structs.NodeListStub) string
 		enc.SetIndent("", "    ")
 		for _, node := range nodes {
 			fnodes = append(fnodes, map[string]string{
-				"id":     node.ID,
-				"status": node.Status,
+				"id":               node.ID,
+				"name":             node.Name,
+				"advertiseAddress": node.AdvertiseAddress,
+				"status":           node.Status,
 			})
 		}
 		if err := enc.Encode(fnodes); err != nil {
 			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
 		}
 	} else {
-		tbl := table.New("NODE ID", "STATUS").WithWriter(&b)
+		tbl := table.New("NODE ID", "NAME", "ADVERTISE ADDRESS", "STATUS").WithWriter(&b)
 		for _, node := range nodes {
-			tbl.AddRow(node.ID, node.Status)
+			tbl.AddRow(node.ID, node.Name, node.AdvertiseAddress, node.Status)
 		}
 		tbl.Print()
 	}
@@ -176,8 +189,10 @@ func (c *NodeStatusCommand) formatNode(node *structs.Node) string {
 		enc.SetIndent("", "    ")
 
 		fnode := map[string]string{
-			"id":     node.ID,
-			"status": node.Status,
+			"id":               node.ID,
+			"name":             node.Name,
+			"advertiseAddress": node.AdvertiseAddress,
+			"status":           node.Status,
 		}
 
 		if err := enc.Encode(fnode); err != nil {
@@ -185,8 +200,8 @@ func (c *NodeStatusCommand) formatNode(node *structs.Node) string {
 		}
 
 	} else {
-		tbl := table.New("NODE ID", "STATUS").WithWriter(&b)
-		tbl.AddRow(node.ID, node.Status)
+		tbl := table.New("NODE ID", "NAME", "ADVERTISE ADDRESS", "STATUS").WithWriter(&b)
+		tbl.AddRow(node.ID, node.Name, node.AdvertiseAddress, node.Status)
 		tbl.Print()
 	}
 

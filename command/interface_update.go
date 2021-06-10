@@ -1,10 +1,13 @@
 package command
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
 	"github.com/spf13/pflag"
@@ -17,16 +20,17 @@ type InterfaceUpdateCommand struct {
 
 	// Parsed flags
 	address string
+	json    bool
 }
 
 func (c *InterfaceUpdateCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
 	flags.StringVar(&c.address, "address", "", "")
+	flags.BoolVar(&c.json, "json", false, "")
 
 	return flags
 }
@@ -66,10 +70,16 @@ func (c *InterfaceUpdateCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	api.Interfaces().Update(&structs.Interface{
+	iface, err := api.Interfaces().Update(&structs.Interface{
 		ID:      id,
 		Address: &c.address,
 	})
+	if err != nil {
+		c.UI.Error(fmt.Sprintf("Error updating interface: %s", err))
+		return 1
+	}
+
+	c.UI.Output(c.formatInterface(iface))
 
 	return 0
 }
@@ -88,9 +98,40 @@ General Options:
 
 Network List Options:
 
+  --json
+	Enable JSON output.
+
   --address=<addr>
     Interface address.
 
 `
 	return strings.TrimSpace(h)
+}
+
+func (c *InterfaceUpdateCommand) formatInterface(iface *structs.Interface) string {
+
+	var b bytes.Buffer
+
+	if c.json {
+		enc := json.NewEncoder(&b)
+		enc.SetIndent("", "    ")
+
+		fiface := map[string]string{
+			"id":      iface.ID,
+			"address": valueOrPlaceholder(iface.Address, "N/A"),
+			"network": iface.NetworkID,
+			"node":    iface.NodeID,
+		}
+
+		if err := enc.Encode(fiface); err != nil {
+			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
+		}
+
+	} else {
+		tbl := table.New("INTERFACE ID", "ADDRESS", "NETWORK ID", "NODE ID").WithWriter(&b)
+		tbl.AddRow(iface.ID, valueOrPlaceholder(iface.Address, "N/A"), iface.NetworkID, iface.NodeID)
+		tbl.Print()
+	}
+
+	return b.String()
 }

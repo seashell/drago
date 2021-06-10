@@ -18,7 +18,6 @@ type ConnectionDeleteCommand struct {
 func (c *ConnectionDeleteCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	return flags
@@ -64,6 +63,8 @@ func (c *ConnectionDeleteCommand) Run(ctx context.Context, args []string) int {
 		c.UI.Error(fmt.Sprintf("Error deleting connection: %s", err))
 		return 1
 	}
+
+	c.UI.Output("Deleted!")
 
 	return 0
 }

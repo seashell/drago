@@ -23,14 +23,14 @@ func (c *Client) ACLTokens() *ACLTokens {
 // Create :
 func (t *ACLTokens) Create(token *structs.ACLToken) (*structs.ACLToken, error) {
 
-	out := structs.ACLToken{}
+	out := &structs.ACLToken{}
 
-	err := t.client.createResource(aclTokensPath, token, &out)
+	err := t.client.createResource(aclTokensPath, token, out)
 	if err != nil {
 		return nil, err
 	}
 
-	return &out, nil
+	return out, nil
 }
 
 // Delete :

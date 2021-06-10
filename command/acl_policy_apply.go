@@ -22,7 +22,6 @@ type ACLPolicyApplyCommand struct {
 func (c *ACLPolicyApplyCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	return flags
@@ -67,7 +66,7 @@ func (c *ACLPolicyApplyCommand) Run(ctx context.Context, args []string) int {
 		Name:        name,
 		Description: c.description,
 	}
-	if err := api.ACLPolicies().Upsert(p); err != nil {
+	if _, err := api.ACLPolicies().Upsert(p); err != nil {
 		c.UI.Error(fmt.Sprintf("Error applying ACL policy: %s", err))
 		return 1
 	}

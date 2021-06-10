@@ -56,14 +56,15 @@ func (n *Connections) Create(connection *structs.Connection) (*structs.Connectio
 	return out, nil
 }
 
-func (n *Connections) Update(conn *structs.Connection) error {
+func (n *Connections) Update(conn *structs.Connection) (*structs.Connection, error) {
 
-	err := n.client.createResource(connectionsPath, conn, nil)
+	out := &structs.Connection{}
+	err := n.client.createResource(connectionsPath, conn, out)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return out, nil
 }
 
 func (n *Connections) Delete(id string) error {

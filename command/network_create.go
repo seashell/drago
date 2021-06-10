@@ -22,7 +22,6 @@ type NetworkCreateCommand struct {
 func (c *NetworkCreateCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -74,6 +73,8 @@ func (c *NetworkCreateCommand) Run(ctx context.Context, args []string) int {
 		c.UI.Error(fmt.Sprintf("Error creating network: %s", err))
 		return 1
 	}
+
+	c.UI.Output("Network created!")
 
 	return 0
 }

@@ -26,7 +26,6 @@ type ConnectionUpdateCommand struct {
 func (c *ConnectionUpdateCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -77,11 +76,13 @@ func (c *ConnectionUpdateCommand) Run(ctx context.Context, args []string) int {
 		PersistentKeepalive: &c.persistentKeepalive,
 	}
 
-	err = api.Connections().Update(conn)
+	rcvConn, err := api.Connections().Update(conn)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error updating connection: %s", err))
 		return 1
 	}
+
+	c.UI.Output(c.formatConnection(rcvConn))
 
 	return 0
 }

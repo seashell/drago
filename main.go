@@ -120,7 +120,6 @@ func setupCLI() *cli.CLI {
 			"network info":            &command.NetworkInfoCommand{UI: ui},
 			"network list":            &command.NetworkListCommand{UI: ui},
 			"node":                    &command.NodeCommand{UI: ui},
-			"node list":               &command.NodeListCommand{UI: ui},
 			"node status":             &command.NodeStatusCommand{UI: ui},
 			"node join":               &command.NodeJoinCommand{UI: ui},
 			"node leave":              &command.NodeLeaveCommand{UI: ui},

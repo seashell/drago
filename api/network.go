@@ -28,7 +28,7 @@ func (n *Networks) Create(network *structs.Network) error {
 		return err
 	}
 
-	return nil
+	return err
 }
 
 // Delete :

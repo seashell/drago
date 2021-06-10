@@ -28,7 +28,6 @@ type InterfaceListCommand struct {
 func (c *InterfaceListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -172,17 +171,18 @@ func (c *InterfaceListCommand) formatInterfaceList(interfaces []*structs.Interfa
 		for _, iface := range interfaces {
 			fifaces = append(fifaces, map[string]string{
 				"id":      iface.ID,
-				"name":    valueOrPlaceholder(iface.Name, "N/A"),
 				"address": valueOrPlaceholder(iface.Address, "N/A"),
+				"network": iface.NetworkID,
+				"node":    iface.NodeID,
 			})
 		}
 		if err := enc.Encode(fifaces); err != nil {
 			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
 		}
 	} else {
-		tbl := table.New("INTERFACE ID", "NAME", "ADDRESS").WithWriter(&b)
+		tbl := table.New("INTERFACE ID", "ADDRESS", "NETWORK ID", "NODE ID").WithWriter(&b)
 		for _, iface := range interfaces {
-			tbl.AddRow(iface.ID, valueOrPlaceholder(iface.Name, "N/A"), valueOrPlaceholder(iface.Address, "N/A"))
+			tbl.AddRow(iface.ID, valueOrPlaceholder(iface.Address, "N/A"), iface.NetworkID, iface.NodeID)
 		}
 		tbl.Print()
 	}

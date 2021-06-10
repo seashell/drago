@@ -18,7 +18,6 @@ type ACLTokenDeleteCommand struct {
 func (c *ACLTokenDeleteCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	return flags

@@ -26,7 +26,6 @@ type NodeInfoCommand struct {
 func (c *NodeInfoCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -56,8 +55,8 @@ func (c *NodeInfoCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) != 1 {
-		c.UI.Error("This command takes either one or no arguments")
+	if len(args) != 1 && !c.self {
+		c.UI.Error("This command takes either one argument or a --self flag")
 		c.UI.Error(`For additional help, try 'drago node info --help'`)
 		return 1
 	}
@@ -108,7 +107,7 @@ Node List Options:
   --self
     Query the status of the local node.
 
-  --json=
+  --json
     Enable JSON output.
 
 `

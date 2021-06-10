@@ -27,7 +27,6 @@ type NodeListCommand struct {
 func (c *NodeListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -105,7 +104,7 @@ General Options:
 
 Node List Options:
 
-  --json=<bool>
+  --json
     Enable JSON output.
   
   --meta=<key:value>

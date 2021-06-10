@@ -51,7 +51,6 @@ type AgentCommand struct {
 func (c *AgentCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options (available in both client and server modes)

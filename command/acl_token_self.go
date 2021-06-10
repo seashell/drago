@@ -25,7 +25,6 @@ type ACLTokenSelfCommand struct {
 func (c *ACLTokenSelfCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options

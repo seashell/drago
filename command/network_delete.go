@@ -21,7 +21,6 @@ type NetworkDeleteCommand struct {
 func (c *NetworkDeleteCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -90,6 +89,8 @@ func (c *NetworkDeleteCommand) Run(ctx context.Context, args []string) int {
 		c.UI.Error(fmt.Sprintf("Error deleting network: %s", err))
 		return 1
 	}
+
+	c.UI.Output("Network deleted!")
 
 	return 0
 }
