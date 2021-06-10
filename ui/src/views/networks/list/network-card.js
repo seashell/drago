@@ -54,10 +54,10 @@ const NetworkCard = ({
         <StyledIcon ml="auto" mr="12px" icon={<icons.Network />} color="neutralDarker" />
         <Box flexDirection="column" width="200px">
           <Text textStyle="subtitle" fontSize="14px">
-            {id.split('-')[0]}
+            {name}
           </Text>
           <Text textStyle="detail" fontSize="12px">
-            {name}
+            {id.split('-')[0]}
           </Text>
         </Box>
       </Box>
