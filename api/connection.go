@@ -46,7 +46,7 @@ func (n *Connections) List() ([]*structs.ConnectionListStub, error) {
 
 func (n *Connections) Create(connection *structs.Connection) (*structs.Connection, error) {
 
-	out := &structs.Connection{}
+	err := n.client.createResource(connectionsPath, connection, nil)
 
 	err := n.client.createResource(networksPath, connection, out)
 	if err != nil {
