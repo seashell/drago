@@ -4,29 +4,27 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NetworkListCommand :
 type NetworkListCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
-func (c *NetworkListCommand) FlagSet() *flag.FlagSet {
+func (c *NetworkListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -57,6 +55,7 @@ func (c *NetworkListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago network list --help'`)
 		return 1
 	}
 
@@ -96,13 +95,10 @@ General Options:
 
 Network List Options:
 
-  -self
-    Query the status of the local node.
-
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 
@@ -116,9 +112,9 @@ func (c *NetworkListCommand) formatNetworkList(networks []*structs.NetworkListSt
 		enc.SetIndent("", "    ")
 		for _, network := range networks {
 			fnetworks = append(fnetworks, map[string]string{
-				"ID":           network.ID,
-				"Name":         network.Name,
-				"AddressRange": network.AddressRange,
+				"id":           network.ID,
+				"name":         network.Name,
+				"addressRange": network.AddressRange,
 			})
 		}
 		if err := enc.Encode(fnetworks); err != nil {
@@ -144,9 +140,9 @@ func (c *NetworkListCommand) formatNetwork(network *structs.Network) string {
 		enc.SetIndent("", "    ")
 
 		fnetwork := map[string]string{
-			"ID":           network.ID,
-			"Name":         network.Name,
-			"AddressRange": network.AddressRange,
+			"id":           network.ID,
+			"name":         network.Name,
+			"addressRange": network.AddressRange,
 		}
 
 		if err := enc.Encode(fnetwork); err != nil {

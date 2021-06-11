@@ -8,7 +8,7 @@ To view a list of the available commands at any time, just run Drago with no arg
 
 The Drago CLI can be used to interact with a remote Drago agent.
 
-To do so, set the `DRAGO_ADDR` environment variable or use the `-address=<addr>` flag when running commands.
+To do so, set the `DRAGO_ADDR` environment variable or use the `--address=<addr>` flag when running commands.
 
 ```
 $ DRAGO_ADDR=https://<remote_addr>:8080 drago agent-info

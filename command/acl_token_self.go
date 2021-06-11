@@ -4,29 +4,27 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLTokenSelfCommand :
 type ACLTokenSelfCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
-func (c *ACLTokenSelfCommand) FlagSet() *flag.FlagSet {
+func (c *ACLTokenSelfCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -86,17 +84,17 @@ Usage: drago acl token self <name> [options]
 
   Display information on the currently set ACL policy.
 
-  Use the -json flag to see a detailed list of the rules associated with the token.
+  Use the --json flag to see a detailed list of the rules associated with the token.
 
 General Options:
 ` + GlobalOptions() + `
 
 ACL Token Info Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 
@@ -108,13 +106,13 @@ func (c *ACLTokenSelfCommand) formatToken(token *structs.ACLToken) string {
 		enc := json.NewEncoder(&b)
 		enc.SetIndent("", "    ")
 		formatted := map[string]interface{}{
-			"ID":        token.ID,
-			"Name":      token.Name,
-			"Type":      token.Type,
-			"Secret":    token.Secret,
-			"Policies":  token.Policies,
-			"CreatedAt": token.CreatedAt,
-			"UpdatedAt": token.UpdatedAt,
+			"id":        token.ID,
+			"name":      token.Name,
+			"type":      token.Type,
+			"secret":    token.Secret,
+			"policies":  token.Policies,
+			"createdAt": token.CreatedAt,
+			"updatedAt": token.UpdatedAt,
 		}
 		if err := enc.Encode(formatted); err != nil {
 			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))

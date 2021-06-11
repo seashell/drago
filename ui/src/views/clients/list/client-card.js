@@ -61,9 +61,11 @@ const ClientCard = ({ id, name, status, address, interfaceCount, connectionCount
     </IconContainer>
     <Box flexDirection="column" width="240px">
       <Text textStyle="subtitle" fontSize="14px">
+        {name}
+      </Text>
+      <Text textStyle="detail">
         {id.split('-')[0]}
       </Text>
-      <Text textStyle="detail">{name}</Text>
     </Box>
 
     <Box width="48px" justifyContent="center">

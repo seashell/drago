@@ -10,5 +10,5 @@ drago ui [options]
 
 ## General Options
 
-- `-address`: 
-- `-token`: 
+- `--address`: 
+- `--token`: 

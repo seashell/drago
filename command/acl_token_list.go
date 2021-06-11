@@ -4,29 +4,27 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLTokenListCommand :
 type ACLTokenListCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
-func (c *ACLTokenListCommand) FlagSet() *flag.FlagSet {
+func (c *ACLTokenListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -57,6 +55,7 @@ func (c *ACLTokenListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago acl token list --help'`)
 		return 1
 	}
 
@@ -94,10 +93,10 @@ General Options:
 
 ACL Policy List Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 
@@ -111,9 +110,9 @@ func (c *ACLTokenListCommand) formatTokenList(tokens []*structs.ACLTokenListStub
 		enc.SetIndent("", "    ")
 		for _, token := range tokens {
 			ftokens = append(ftokens, map[string]string{
-				"ID":   token.ID,
-				"Name": token.Name,
-				"Type": token.Type,
+				"id":   token.ID,
+				"name": token.Name,
+				"type": token.Type,
 			})
 		}
 		if err := enc.Encode(ftokens); err != nil {

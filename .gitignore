@@ -27,8 +27,10 @@ Godeps/
 # End of https://www.gitignore.io/api/go
 ui/node_modules/*
 ui/.eslintcache
-ui/build
+ui/build/*
 vendor/*
+
+!*.keep
 
 tmp
 dist/

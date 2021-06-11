@@ -2,9 +2,10 @@ package command
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"strings"
+
+	"github.com/spf13/pflag"
 
 	cli "github.com/seashell/drago/pkg/cli"
 )
@@ -12,19 +13,13 @@ import (
 // ACLPolicyDeleteCommand :
 type ACLPolicyDeleteCommand struct {
 	UI cli.UI
-
-	// Parsed flags
-
 	Command
 }
 
-func (c *ACLPolicyDeleteCommand) FlagSet() *flag.FlagSet {
+func (c *ACLPolicyDeleteCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
-
-	// General options
 
 	return flags
 }
@@ -55,6 +50,8 @@ func (c *ACLPolicyDeleteCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
+	name := args[0]
+
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
 	if err != nil {
@@ -62,14 +59,10 @@ func (c *ACLPolicyDeleteCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	name := args[0]
-
 	if err := api.ACLPolicies().Delete(name); err != nil {
 		c.UI.Error(fmt.Sprintf("Error deleting ACL policies: %s", err))
 		return 1
 	}
-
-	c.UI.Output("Deleted!")
 
 	return 0
 }

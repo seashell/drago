@@ -2,7 +2,6 @@ package command
 
 import (
 	"context"
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -17,6 +16,7 @@ import (
 	cli "github.com/seashell/drago/pkg/cli"
 	log "github.com/seashell/drago/pkg/log"
 	simple "github.com/seashell/drago/pkg/log/simple"
+	"github.com/spf13/pflag"
 )
 
 // AgentCommand :
@@ -33,9 +33,9 @@ type AgentCommand struct {
 	// Parsed flags
 	dev           bool
 	servers       string
-	envs          manyStrings
-	configs       manyStrings
-	meta          manyStrings
+	envs          []string
+	configs       []string
+	meta          []string
 	node          string
 	bind          string
 	dataDir       string
@@ -48,27 +48,26 @@ type AgentCommand struct {
 	aclEnabled    bool
 }
 
-func (c *AgentCommand) FlagSet() *flag.FlagSet {
+func (c *AgentCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options (available in both client and server modes)
-	flags.Var(&c.configs, "config", "")
+	flags.StringSliceVar(&c.configs, "config", []string{}, "")
 	flags.StringVar(&c.bind, "bind", "", "")
 	flags.StringVar(&c.node, "node", "", "")
 	flags.BoolVar(&c.dev, "dev", false, "")
 	flags.StringVar(&c.dataDir, "data-dir", "", "")
 	flags.StringVar(&c.logLevel, "log-level", "", "")
 	flags.StringVar(&c.pluginDir, "plugin-dir", "", "")
-	flags.Var(&c.envs, "env", "")
+	flags.StringSliceVar(&c.envs, "env", []string{}, "")
 
 	// Server-only options
 	flags.BoolVar(&c.server, "server", false, "")
 
 	// Client-only options
-	flags.Var(&c.meta, "meta", "")
+	flags.StringSliceVar(&c.meta, "meta", []string{}, "")
 	flags.BoolVar(&c.client, "client", false, "")
 	flags.StringVar(&c.servers, "servers", "", "")
 	flags.StringVar(&c.stateDir, "state-dir", "", "")
@@ -153,68 +152,68 @@ Usage: drago agent [options]
 General Options (clients and servers):
 ` + GlobalOptions() + `
 
-  -bind=<addr>
+  --bind=<addr>
     The address the agent will bind to for all of its various network
     services. The individual services that run bind to individual
     ports on this address. Defaults to the loopback 127.0.0.1.
 
-  -config=<path>
+  --config=<path>
     Path to a HCL file containing valid Drago configurations.
     Overrides the DRAGO_CONFIG_PATH environment variable if set.
 
-  -data-dir=<path>
+  --data-dir=<path>
     The data directory where all state will be persisted. On Drago 
     clients this is used to store local network configurations, whereas
     on server nodes, the data dir is also used to keep the desired state
     for all the managed networks. Overrides the DRAGO_DATA_DIRenvironment
     variable if set.
 
-  -node=<name>
+  --node=<name>
     The name of the local agent, use to identify the node. If not provided,
     defaults to the hostname of the machine.
 
-  -dev
+  --dev
     Start the agent in development mode. This enables a pre-configured
     dual-role agent (client + server) which is useful for developing
     or testing Drago. No other configuration is required to start the
     agent in this mode.
 
-  -log-level=<level>
+  --log-level=<level>
     The logging level Drago should log at. Valid values are INFO, WARN,
     DEBUG, ERROR, FATAL. Overrides the DRAGO_LOG_LEVEL environment variable
     if set.
 
-  -plugin-dir=<path>
+  --plugin-dir=<path>
     The plugin directory is used to discover Drago plugins. If not specified,
     the plugin directory defaults to be that of <data-dir>/plugins/.
 
 Server Options:
 
-  -server
+  --server
     Enable server mode for the agent.
 
 Client Options:
 
-  -client
+  --client
     Enable client mode for the agent. Client mode enables a given node to be
     evaluated for allocations. If client mode is not enabled, no work will be
     scheduled to the agent.
 
-  -state-dir
+  --state-dir
     The directory used to store state and other persistent data. If not
     specified a subdirectory under the "-data-dir" will be used.
   
-  -servers
+  --servers
     A comma-separated list of known server addresses to connect to in
     "host:port" format.
 
-  -meta
+  --meta
     User-specified metadata in KEY=VALUE format to associate with the node.
 	Repeat the meta flag for each key/value pair to be added.
 
 ACL Options:
 
-  -acl-enabled
+  --acl-enabled
     Specifies whether the agent should enable ACLs.
 
 `

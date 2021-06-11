@@ -71,7 +71,7 @@ Drago is meant to be simple, and provide a solid foundation for higher-level fun
 
 ## Usage
 ```
-Usage: drago [--version] [--help] <command> [<args>]
+Usage: drago [--version] [--help] <command> [options]
 
 Available commands:
     acl           Interact with ACL policies and tokens

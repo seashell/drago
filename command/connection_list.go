@@ -4,29 +4,27 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ConnectionListCommand :
 type ConnectionListCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
-func (c *ConnectionListCommand) FlagSet() *flag.FlagSet {
+func (c *ConnectionListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -57,6 +55,7 @@ func (c *ConnectionListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago connection list --help'`)
 		return 1
 	}
 
@@ -96,7 +95,7 @@ General Options:
 
 Connection List Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
 `
@@ -113,7 +112,7 @@ func (c *ConnectionListCommand) formatConnectionList(connections []*structs.Conn
 		enc.SetIndent("", "    ")
 		for _, conn := range connections {
 			fconnections = append(fconnections, map[string]string{
-				"ID": conn.ID,
+				"id": conn.ID,
 			})
 		}
 		if err := enc.Encode(fconnections); err != nil {

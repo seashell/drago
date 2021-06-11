@@ -1,11 +1,11 @@
-# Command: acl policy delete
+# Command: acl policy apply
 
-The `acl policy delete` command is used to delete an existing ACL policy.
+The `acl policy apply` command is used to create or update ACL policies.
 
 ## Usage
 
 ```
-drago acl policy delete <name> [options]
+drago acl policy apply <name> [options]
 ```
 
 ## General Options
@@ -19,3 +19,7 @@ drago acl policy delete <name> [options]
     The token used to authenticate with the Drago server.
     Overrides the `DRAGO_TOKEN` environment variable if set.
     Defaults to `""`.
+
+## Apply Options
+
+- `--description=<description>`: Sets the description of the ACL policy.

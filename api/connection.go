@@ -43,3 +43,34 @@ func (n *Connections) List() ([]*structs.ConnectionListStub, error) {
 
 	return items, nil
 }
+
+func (n *Connections) Create(connection *structs.Connection) error {
+
+	err := n.client.createResource(connectionsPath, connection, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (n *Connections) Update(conn *structs.Connection) (*structs.Connection, error) {
+
+	out := &structs.Connection{}
+	err := n.client.createResource(connectionsPath, conn, out)
+	if err != nil {
+		return nil, err
+	}
+
+	return out, nil
+}
+
+func (n *Connections) Delete(id string) error {
+
+	err := n.client.deleteResource(id, connectionsPath, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

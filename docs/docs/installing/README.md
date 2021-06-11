@@ -31,4 +31,3 @@ To verify Drago was built correctly, run the binary:
 ```bash
 $ ./build/drago
 ```
-

@@ -4,29 +4,27 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // ACLPolicyListCommand :
 type ACLPolicyListCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
-func (c *ACLPolicyListCommand) FlagSet() *flag.FlagSet {
+func (c *ACLPolicyListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -57,6 +55,7 @@ func (c *ACLPolicyListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago acl policy list --help'`)
 		return 1
 	}
 
@@ -94,10 +93,10 @@ General Options:
 
 ACL Policy List Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 
@@ -111,8 +110,8 @@ func (c *ACLPolicyListCommand) formatPolicyList(policies []*structs.ACLPolicyLis
 		enc.SetIndent("", "    ")
 		for _, policy := range policies {
 			fpolicies = append(fpolicies, map[string]string{
-				"Name":        policy.Name,
-				"Description": policy.Description,
+				"name":        policy.Name,
+				"description": policy.Description,
 			})
 		}
 		if err := enc.Encode(fpolicies); err != nil {

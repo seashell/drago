@@ -4,30 +4,28 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NodeInfoCommand :
 type NodeInfoCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	self bool
 	json bool
-
-	Command
 }
 
-func (c *NodeInfoCommand) FlagSet() *flag.FlagSet {
+func (c *NodeInfoCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -57,8 +55,9 @@ func (c *NodeInfoCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) > 1 {
-		c.UI.Error("This command takes either one or no arguments")
+	if len(args) != 1 && !c.self {
+		c.UI.Error("This command takes either one argument or a --self flag")
+		c.UI.Error(`For additional help, try 'drago node info --help'`)
 		return 1
 	}
 
@@ -94,7 +93,7 @@ func (c *NodeInfoCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NodeInfoCommand) Help() string {
 	h := `
-Usage: drago node info <id> [options]
+Usage: drago node info <node_id> [options]
 
   Display detailed information about an existing node.
 
@@ -105,13 +104,13 @@ General Options:
 
 Node List Options:
 
-  -self
+  --self
     Query the status of the local node.
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 
@@ -124,10 +123,10 @@ func (c *NodeInfoCommand) formatNode(node *structs.Node) string {
 		enc.SetIndent("", "    ")
 
 		fnode := map[string]string{
-			"ID":               node.ID,
-			"Name":             node.Name,
-			"AdvertiseAddress": node.AdvertiseAddress,
-			"Status":           node.Status,
+			"id":               node.ID,
+			"name":             node.Name,
+			"advertiseAddress": node.AdvertiseAddress,
+			"status":           node.Status,
 		}
 
 		if err := enc.Encode(fnode); err != nil {
