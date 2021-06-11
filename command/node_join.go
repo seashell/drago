@@ -1,31 +1,33 @@
 package command
 
 import (
+	"bytes"
 	"context"
-	"flag"
+	"encoding/json"
 	"fmt"
 	"strings"
 
+	table "github.com/rodaine/table"
+	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NodeJoinCommand :
 type NodeJoinCommand struct {
 	UI cli.UI
-
-	// Parsed flags
-	name string
-
 	Command
+
+	json bool
 }
 
-func (c *NodeJoinCommand) FlagSet() *flag.FlagSet {
+func (c *NodeJoinCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
-	flags.StringVar(&c.name, "name", "", "")
+	flags.BoolVar(&c.json, "json", false, "")
 
 	return flags
 }
@@ -56,6 +58,10 @@ func (c *NodeJoinCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
+	networkName := args[0]
+	nodeID := ""
+	networkID := ""
+
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
 	if err != nil {
@@ -63,33 +69,22 @@ func (c *NodeJoinCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	nodeID := ""
-	networkID := ""
-
-	if len(args) > 0 {
-		networkID = args[0]
-	}
-
 	if nodeID, err = localAgentNodeID(api); err != nil {
 		c.UI.Error(fmt.Sprintf("Error determining local node ID: %s", err))
 		return 1
 	}
 
-	if c.name != "" {
-		networks, err := api.Networks().List()
-		if err != nil {
-			c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
-			return 1
-		}
+	networks, err := api.Networks().List()
+	if err != nil {
+		c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
+		return 1
+	}
 
-		for _, n := range networks {
-			if n.Name == c.name {
-				if networkID != "" && n.ID != networkID {
-					c.UI.Error("Error: name and ID belong to different networks")
-					return 1
-				}
-				networkID = n.ID
-			}
+	for _, n := range networks {
+		if n.Name == networkName {
+			networkID = n.ID
+
+			break
 		}
 	}
 
@@ -98,12 +93,14 @@ func (c *NodeJoinCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	if err = api.Interfaces().Create(nodeID, networkID); err != nil {
+	iface, err := api.Interfaces().Create(nodeID, networkID)
+	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error joining network: %s", err))
 		return 1
 	}
 
 	c.UI.Output("Joined!")
+	c.UI.Output(c.formatInterface(iface))
 
 	return 0
 }
@@ -111,14 +108,46 @@ func (c *NodeJoinCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NodeJoinCommand) Help() string {
 	h := `
-Usage: drago node join <network_id> [options]
+Usage: drago node join <network> [options]
 
   Have the local client node join an existing network.
 
   If ACLs are enabled, this option requires a token with the 'interface:write' capability.
 
 General Options:
-` + GlobalOptions()
+` + GlobalOptions() + `
 
+  --json
+	Enable JSON output.
+
+`
 	return strings.TrimSpace(h)
+}
+
+func (c *NodeJoinCommand) formatInterface(iface *structs.Interface) string {
+
+	var b bytes.Buffer
+
+	if c.json {
+		enc := json.NewEncoder(&b)
+		enc.SetIndent("", "    ")
+
+		fiface := map[string]string{
+			"id":      iface.ID,
+			"address": valueOrPlaceholder(iface.Address, "N/A"),
+			"network": iface.NetworkID,
+			"node":    iface.NodeID,
+		}
+
+		if err := enc.Encode(fiface); err != nil {
+			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
+		}
+
+	} else {
+		tbl := table.New("INTERFACE ID", "ADDRESS", "NETWORK ID", "NODE ID").WithWriter(&b)
+		tbl.AddRow(iface.ID, valueOrPlaceholder(iface.Address, "N/A"), iface.NetworkID, iface.NodeID)
+		tbl.Print()
+	}
+
+	return b.String()
 }

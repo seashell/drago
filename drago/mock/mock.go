@@ -56,16 +56,17 @@ func PopulateRepository(repo state.Repository) error {
 	conn1 := &structs.Connection{
 		ID:        "14b62335-ba2b-4a05-8c6d-29b4e11f86b6",
 		NetworkID: net1.ID,
-		NodeIDs:   []string{iface1.NodeID, iface2.NodeID},
-		PeerSettings: map[string]*structs.PeerSettings{
-			ifaceID1: {
-				InterfaceID: ifaceID1,
+		PeerSettings: []*structs.PeerSettings{
+			{
+				NodeID:      iface1.NodeID,
+				InterfaceID: iface1.ID,
 				RoutingRules: &structs.RoutingRules{
 					AllowedIPs: []string{},
 				},
 			},
-			ifaceID2: {
-				InterfaceID: ifaceID2,
+			{
+				NodeID:      iface2.NodeID,
+				InterfaceID: iface2.ID,
 				RoutingRules: &structs.RoutingRules{
 					AllowedIPs: []string{},
 				},

@@ -1,11 +1,11 @@
-# Command: acl policy delete
+# Command: network info
 
-The `acl policy delete` command is used to delete an existing ACL policy.
+The `network info` command is used to display detailed information about an existing network.
 
 ## Usage
 
 ```
-drago acl policy delete <name> [options]
+drago network info <network> [options]
 ```
 
 ## General Options
@@ -19,3 +19,7 @@ drago acl policy delete <name> [options]
     The token used to authenticate with the Drago server.
     Overrides the `DRAGO_TOKEN` environment variable if set.
     Defaults to `""`.
+ 
+## Info Options
+
+- `--json`: Enable JSON output.

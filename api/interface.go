@@ -45,30 +45,32 @@ func (n *Interfaces) List(filters map[string][]string) ([]*structs.InterfaceList
 }
 
 // Create :
-func (n *Interfaces) Create(nodeID, networkID string) error {
+func (n *Interfaces) Create(nodeID, networkID string) (*structs.Interface, error) {
 
 	iface := &structs.Interface{
 		NodeID:    nodeID,
 		NetworkID: networkID,
 	}
 
-	err := n.client.createResource(interfacesPath, iface, nil)
+	out := &structs.Interface{}
+	err := n.client.createResource(interfacesPath, iface, out)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return out, nil
 }
 
 // Update :
-func (n *Interfaces) Update(iface *structs.Interface) error {
+func (n *Interfaces) Update(iface *structs.Interface) (*structs.Interface, error) {
 
-	err := n.client.createResource(interfacesPath, iface, nil)
+	out := &structs.Interface{}
+	err := n.client.createResource(interfacesPath, iface, out)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return nil
+	return out, err
 }
 
 // Delete :

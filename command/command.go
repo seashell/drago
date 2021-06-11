@@ -1,9 +1,10 @@
 package command
 
 import (
-	"flag"
 	"fmt"
 	"strings"
+
+	"github.com/spf13/pflag"
 
 	api "github.com/seashell/drago/api"
 	cli "github.com/seashell/drago/pkg/cli"
@@ -16,11 +17,11 @@ type Command struct {
 }
 
 // FlagSet declares flags that are common to all commands,
-// returning a flag.FlagSet struct that will hold their values after
-// flag.Parse() is called by the command.
-func (c *Command) FlagSet(name string) *flag.FlagSet {
+// returning a pflag.FlagSet struct that will hold their values after
+// pflag.Parse() is called by the command.
+func (c *Command) FlagSet(name string) *pflag.FlagSet {
 
-	flags := flag.NewFlagSet(name, flag.ContinueOnError)
+	flags := pflag.NewFlagSet(name, pflag.ContinueOnError)
 
 	flags.Usage = func() {}
 
@@ -45,12 +46,12 @@ func (c *Command) APIClient() (*api.Client, error) {
 // GlobalOptions returns the global usage options string.
 func GlobalOptions() string {
 	text := `
-  -address=<addr>
+  --address=<addr>
     The address of the Drago server.
     Overrides the DRAGO_ADDR environment variable if set.
     Default = http://127.0.0.1:8080
 
-  -token=<token>
+  --token=<token>
     The token used to authenticate with the Drago server.
     Overrides the DRAGO_TOKEN environment variable if set.
     Default = ""

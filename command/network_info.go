@@ -4,34 +4,30 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NetworkInfoCommand :
 type NetworkInfoCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
-	name string
 	json bool
-
-	Command
 }
 
-func (c *NetworkInfoCommand) FlagSet() *flag.FlagSet {
+func (c *NetworkInfoCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
-	flags.StringVar(&c.name, "name", "", "")
 	flags.BoolVar(&c.json, "json", false, "")
 
 	return flags
@@ -57,10 +53,14 @@ func (c *NetworkInfoCommand) Run(ctx context.Context, args []string) int {
 	}
 
 	args = flags.Args()
-	if len(args) > 1 {
-		c.UI.Error("This command takes either one or no arguments")
+	if len(args) != 1 {
+		c.UI.Error("This command takes one argument: <network>")
+		c.UI.Error(`For additional help, try 'drago network info --help'`)
 		return 1
 	}
+
+	name := args[0]
+	id := ""
 
 	// Get the HTTP client
 	api, err := c.Command.APIClient()
@@ -69,23 +69,17 @@ func (c *NetworkInfoCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	id := args[0]
+	networks, err := api.Networks().List()
+	if err != nil {
+		c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
+		return 1
+	}
 
-	if c.name != "" {
-		networks, err := api.Networks().List()
-		if err != nil {
-			c.UI.Error(fmt.Sprintf("Error getting networks: %s", err))
-			return 1
-		}
+	for _, n := range networks {
+		if n.Name == name {
+			id = n.ID
 
-		for _, n := range networks {
-			if n.Name == c.name {
-				if id != "" && n.ID != id {
-					c.UI.Error("Error: name and ID belong to different networks")
-					return 1
-				}
-				id = n.ID
-			}
+			break
 		}
 	}
 
@@ -108,27 +102,21 @@ func (c *NetworkInfoCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NetworkInfoCommand) Help() string {
 	h := `
-Usage: drago network create [options]
+  Usage: drago network info <network> [options]
 
-  Create a new Drago network.
+  Display detailed information about an existing Drago network.
 
-  If ACLs are enabled, this option requires a token with the 'network:write' capability.
+  If ACLs are enabled, this option requires a token with the 'network:read' capability.
 
 General Options:
 ` + GlobalOptions() + `
 
-Network List Options:
+Network Info Options:
 
-  -name=""
-    Sets the human readable name for the network.
-
-  -name=""
-    Sets the address range of the network, in CIDR notation.
-
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 
@@ -141,9 +129,9 @@ func (c *NetworkInfoCommand) formatNetwork(network *structs.Network) string {
 		enc.SetIndent("", "    ")
 
 		fnetwork := map[string]string{
-			"ID":           network.ID,
-			"Name":         network.Name,
-			"AddressRange": network.AddressRange,
+			"id":           network.ID,
+			"name":         network.Name,
+			"addressRange": network.AddressRange,
 		}
 
 		if err := enc.Encode(fnetwork); err != nil {

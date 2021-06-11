@@ -4,28 +4,26 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // AgentInfoCommand :
 type AgentInfoCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json bool
-
-	Command
 }
 
-func (c *AgentInfoCommand) FlagSet() *flag.FlagSet {
+func (c *AgentInfoCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
@@ -56,6 +54,7 @@ func (c *AgentInfoCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago agent info --help'`)
 		return 1
 	}
 
@@ -89,10 +88,10 @@ General Options:
 
 Agent Info Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 

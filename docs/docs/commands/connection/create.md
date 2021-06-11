@@ -1,11 +1,11 @@
-# Command: acl token list
+# Command: connection create
 
-The `acl token list` command is used to list all available ACL tokens.
+The `connection create` command is used to create a connection.
 
 ## Usage
 
 ```
-drago acl token list [options]
+drago connection create <src_node_id> <dst_node_id> <network> [options]
 ```
 
 ## General Options
@@ -23,3 +23,7 @@ drago acl token list [options]
 ## Info Options
 
 - `--json`: Enable JSON output.
+
+- `--allow-all`: Enables routing of all traffic in this connection.
+
+- `--keepalive=<seconds>`: Time interval between persistent keepalive packets. Defaults to 0, which disables the feature.

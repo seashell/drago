@@ -138,7 +138,6 @@ func (s *ConnectionService) UpsertConnection(args *structs.ConnectionUpsertReque
 		c = old.Merge(c)
 	} else {
 		c.ID = uuid.Generate()
-		c.NodeIDs = []string{}
 		c.CreatedAt = time.Now()
 	}
 
@@ -161,20 +160,21 @@ func (s *ConnectionService) UpsertConnection(args *structs.ConnectionUpsertReque
 	for _, id := range connectedInterfaceIDs {
 
 		// Initialize PeerSettings
-		if c.PeerSettings[id] == nil {
-			c.PeerSettings[id] = &structs.PeerSettings{InterfaceID: id, RoutingRules: &structs.RoutingRules{AllowedIPs: []string{}}}
-		}
+		if c.PeerSettingsByInterfaceID(id) == nil {
 
-		// Initialize InterfaceID
-		if c.PeerSettings[id].InterfaceID == "" {
-			c.PeerSettings[id].InterfaceID = id
-		} else if c.PeerSettings[id].InterfaceID != id {
-			return structs.NewInternalError("Peer ID mismatch")
+			c.PeerSettings = append(c.PeerSettings, &structs.PeerSettings{
+				InterfaceID: id,
+				RoutingRules: &structs.RoutingRules{
+					AllowedIPs: []string{},
+				},
+			})
+
 		}
 
 		// Initialize RoutingRules, if necessary
-		if c.PeerSettings[id].RoutingRules == nil {
-			c.PeerSettings[id].RoutingRules = &structs.RoutingRules{AllowedIPs: []string{}}
+		peer := c.PeerSettingsByInterfaceID(id)
+		if peer.RoutingRules == nil {
+			peer.RoutingRules = &structs.RoutingRules{AllowedIPs: []string{}}
 		}
 	}
 
@@ -206,7 +206,9 @@ func (s *ConnectionService) UpsertConnection(args *structs.ConnectionUpsertReque
 		}
 
 		if node, err := s.state.NodeByID(ctx, iface.NodeID); err == nil {
-			c.NodeIDs = append(c.NodeIDs, iface.NodeID)
+
+			c.PeerSettingsByInterfaceID(iface.ID).NodeID = iface.NodeID
+
 			node.UpsertConnection((c.ID))
 			if err = s.state.UpsertNode(ctx, node); err != nil {
 				return structs.ErrInternal
@@ -248,7 +250,7 @@ func (s *ConnectionService) DeleteConnection(args *structs.ConnectionDeleteReque
 			var ifaces []*structs.Interface
 			var network *structs.Network
 
-			for _, nodeID := range conn.NodeIDs {
+			for _, nodeID := range conn.ConnectedNodeIDs() {
 				if node, err := s.state.NodeByID(ctx, nodeID); err == nil {
 					nodes = append(nodes, node)
 				}

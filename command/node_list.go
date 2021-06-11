@@ -4,37 +4,35 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NodeListCommand :
 type NodeListCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
 	json   bool
 	status string
-	meta   manyStrings
-
-	Command
+	meta   []string
 }
 
-func (c *NodeListCommand) FlagSet() *flag.FlagSet {
+func (c *NodeListCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
 	flags.BoolVar(&c.json, "json", false, "")
 	flags.StringVar(&c.status, "status", "*", "")
-	flags.Var(&c.meta, "meta", "")
+	flags.StringSliceVar(&c.meta, "meta", []string{}, "")
 
 	return flags
 }
@@ -61,6 +59,7 @@ func (c *NodeListCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) != 0 {
 		c.UI.Error("This command takes no arguments")
+		c.UI.Error(`For additional help, try 'drago node list --help'`)
 		return 1
 	}
 
@@ -105,16 +104,16 @@ General Options:
 
 Node List Options:
 
-  -json=<bool>
+  --json
     Enable JSON output.
   
-  -meta=<key:value>
+  --meta=<key:value>
     Filter nodes by metadata.
 
-  -status=<initializing|ready|down>
+  --status=<initializing|ready|down>
     Filter nodes by status.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 
@@ -128,9 +127,9 @@ func (c *NodeListCommand) formatNodeList(nodes []*structs.NodeListStub) string {
 		enc.SetIndent("", "    ")
 		for _, node := range nodes {
 			fnodes = append(fnodes, map[string]string{
-				"ID":     node.ID,
-				"Name":   node.Name,
-				"Status": node.Status,
+				"id":     node.ID,
+				"name":   node.Name,
+				"status": node.Status,
 			})
 		}
 		if err := enc.Encode(fnodes); err != nil {
@@ -156,9 +155,9 @@ func (c *NodeListCommand) formatNode(node *structs.Node) string {
 		enc.SetIndent("", "    ")
 
 		fnode := map[string]string{
-			"ID":     node.ID,
-			"Name":   node.Name,
-			"Status": node.Status,
+			"id":     node.ID,
+			"name":   node.Name,
+			"status": node.Status,
 		}
 
 		if err := enc.Encode(fnode); err != nil {

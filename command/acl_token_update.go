@@ -12,19 +12,19 @@ import (
 	"github.com/spf13/pflag"
 )
 
-// ACLTokenCreateCommand :
-type ACLTokenCreateCommand struct {
+// ACLTokenUpdateCommand :
+type ACLTokenUpdateCommand struct {
 	UI cli.UI
 	Command
 
-	// Parsed flags
+	// parsed flags
 	json       bool
 	name       string
 	policyType string
 	policies   []string
 }
 
-func (c *ACLTokenCreateCommand) FlagSet() *pflag.FlagSet {
+func (c *ACLTokenUpdateCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
@@ -39,17 +39,17 @@ func (c *ACLTokenCreateCommand) FlagSet() *pflag.FlagSet {
 }
 
 // Name :
-func (c *ACLTokenCreateCommand) Name() string {
-	return "acl token create"
+func (c *ACLTokenUpdateCommand) Name() string {
+	return "acl token update"
 }
 
 // Synopsis :
-func (c *ACLTokenCreateCommand) Synopsis() string {
-	return "Create a new ACL token"
+func (c *ACLTokenUpdateCommand) Synopsis() string {
+	return "Update ACL token"
 }
 
 // Run :
-func (c *ACLTokenCreateCommand) Run(ctx context.Context, args []string) int {
+func (c *ACLTokenUpdateCommand) Run(ctx context.Context, args []string) int {
 
 	flags := c.FlagSet()
 
@@ -59,8 +59,8 @@ func (c *ACLTokenCreateCommand) Run(ctx context.Context, args []string) int {
 
 	args = flags.Args()
 	if len(args) > 0 {
-		c.UI.Error("This command takes no arguments")
-		c.UI.Error(`For additional help, try 'drago acl token create --help'`)
+		c.UI.Error("This command takes one argument: <token_id>")
+		c.UI.Error(`For additional help, try 'drago acl token update --help'`)
 		return 1
 	}
 
@@ -71,7 +71,7 @@ func (c *ACLTokenCreateCommand) Run(ctx context.Context, args []string) int {
 		return 1
 	}
 
-	token, err := api.ACLTokens().Create(&structs.ACLToken{
+	token, err := api.ACLTokens().Update(&structs.ACLToken{
 		Name:     c.name,
 		Type:     c.policyType,
 		Policies: c.policies,
@@ -87,25 +87,25 @@ func (c *ACLTokenCreateCommand) Run(ctx context.Context, args []string) int {
 }
 
 // Help :
-func (c *ACLTokenCreateCommand) Help() string {
+func (c *ACLTokenUpdateCommand) Help() string {
 	h := `
-Usage: drago acl token create [options]
+Usage: drago acl token update <token_id> [options]
 
-  Create is used to issue a new ACL token. Requires a management token.
+  Update an ACL token.
 
 General Options:
 ` + GlobalOptions() + `
 
-ACL Token Create Options:
+ACL Token Update Options:
 
   --name=<name>
-    Sets the human readable name for the ACL token.
+	Sets the name of the ACL token.
 
   --type=<type>
-    Sets the type of token. Must be one of "client" (default), or "management".
+	Sets the type of the ACL token. Must be either "client" or "management". If not provided, defaults to "client".
 
   --policy=<policy>
-    Specifies a policy to associate with client tokens.
+	Specifies policies to associate with a client token. Can be specified multiple times.
 
   --json
     Enable JSON output.
@@ -114,7 +114,7 @@ ACL Token Create Options:
 	return strings.TrimSpace(h)
 }
 
-func (c *ACLTokenCreateCommand) formatToken(token *structs.ACLToken) string {
+func (c *ACLTokenUpdateCommand) formatToken(token *structs.ACLToken) string {
 
 	var b bytes.Buffer
 

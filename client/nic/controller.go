@@ -167,7 +167,6 @@ func (c *Controller) createLink(name string, alias string) error {
 		}
 
 	} else {
-		fmt.Println("USING KERNELSPACE WIREGUARD")
 		if err := netlink.LinkAdd(&netlink.Wireguard{LinkAttrs: attrs}); err != nil {
 			return fmt.Errorf("can't create network interface : %s", err.Error())
 		}

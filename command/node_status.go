@@ -4,34 +4,36 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"strings"
 
 	table "github.com/rodaine/table"
 	structs "github.com/seashell/drago/drago/structs"
 	cli "github.com/seashell/drago/pkg/cli"
+	"github.com/spf13/pflag"
 )
 
 // NodeStatusCommand :
 type NodeStatusCommand struct {
 	UI cli.UI
+	Command
 
 	// Parsed flags
-	self bool
-	json bool
-
-	Command
+	self   bool
+	status string
+	meta   []string
+	json   bool
 }
 
-func (c *NodeStatusCommand) FlagSet() *flag.FlagSet {
+func (c *NodeStatusCommand) FlagSet() *pflag.FlagSet {
 
 	flags := c.Command.FlagSet(c.Name())
-
 	flags.Usage = func() { c.UI.Output("\n" + c.Help() + "\n") }
 
 	// General options
 	flags.BoolVar(&c.self, "self", false, "")
+	flags.StringVar(&c.status, "status", "*", "")
+	flags.StringSliceVar(&c.meta, "meta", []string{}, "")
 	flags.BoolVar(&c.json, "json", false, "")
 
 	return flags
@@ -59,6 +61,7 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 	args = flags.Args()
 	if len(args) > 1 {
 		c.UI.Error("This command takes either one or no arguments")
+		c.UI.Error(`For additional help, try 'drago node status --help'`)
 		return 1
 	}
 
@@ -72,6 +75,8 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 	if len(args) == 0 && !c.self {
 
 		filters := map[string][]string{}
+		filters["meta"] = c.meta
+		filters["status"] = []string{c.status}
 
 		// Print status of multiple nodes
 		nodes, err := api.Nodes().List(filters)
@@ -114,13 +119,13 @@ func (c *NodeStatusCommand) Run(ctx context.Context, args []string) int {
 // Help :
 func (c *NodeStatusCommand) Help() string {
 	h := `
-Usage: drago node status [options] <node>
+Usage: drago node status <node_id> [options]
 
   Display node status information.
 
   If a node ID is passed, information for that specific node will be displayed.
   If no node ID's are passed, then a short-hand list of all nodes will be displayed.
-  The -self flag is useful to quickly access the status of the local node.
+  The --self flag is useful to quickly access the status of the local node.
 
   If ACLs are enabled, this option requires a token with the 'node:read' capability.
 
@@ -129,13 +134,19 @@ General Options:
 
 Node Status Options:
 
-  -self
+  --self
     Query the status of the local node.
 
-  -json=<bool>
+  --meta=<key:value>
+    Filter nodes by metadata.
+
+  --status=<initializing|ready|down>
+    Filter nodes by status.
+
+  --json
     Enable JSON output.
 
- `
+`
 	return strings.TrimSpace(h)
 }
 
@@ -149,17 +160,19 @@ func (c *NodeStatusCommand) formatNodeList(nodes []*structs.NodeListStub) string
 		enc.SetIndent("", "    ")
 		for _, node := range nodes {
 			fnodes = append(fnodes, map[string]string{
-				"ID":     node.ID,
-				"Status": node.Status,
+				"id":               node.ID,
+				"name":             node.Name,
+				"advertiseAddress": node.AdvertiseAddress,
+				"status":           node.Status,
 			})
 		}
 		if err := enc.Encode(fnodes); err != nil {
 			c.UI.Error(fmt.Sprintf("Error formatting JSON output: %s", err))
 		}
 	} else {
-		tbl := table.New("NODE ID", "STATUS").WithWriter(&b)
+		tbl := table.New("NODE ID", "NAME", "ADVERTISE ADDRESS", "STATUS").WithWriter(&b)
 		for _, node := range nodes {
-			tbl.AddRow(node.ID, node.Status)
+			tbl.AddRow(node.ID, node.Name, node.AdvertiseAddress, node.Status)
 		}
 		tbl.Print()
 	}
@@ -176,8 +189,10 @@ func (c *NodeStatusCommand) formatNode(node *structs.Node) string {
 		enc.SetIndent("", "    ")
 
 		fnode := map[string]string{
-			"ID":     node.ID,
-			"Status": node.Status,
+			"id":               node.ID,
+			"name":             node.Name,
+			"advertiseAddress": node.AdvertiseAddress,
+			"status":           node.Status,
 		}
 
 		if err := enc.Encode(fnode); err != nil {
@@ -185,8 +200,8 @@ func (c *NodeStatusCommand) formatNode(node *structs.Node) string {
 		}
 
 	} else {
-		tbl := table.New("NODE ID", "STATUS").WithWriter(&b)
-		tbl.AddRow(node.ID, node.Status)
+		tbl := table.New("NODE ID", "NAME", "ADVERTISE ADDRESS", "STATUS").WithWriter(&b)
+		tbl.AddRow(node.ID, node.Name, node.AdvertiseAddress, node.Status)
 		tbl.Print()
 	}
 

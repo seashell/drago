@@ -116,7 +116,7 @@ const ConnectionCard = ({
   })
 
   const handleGetConnectionsQueryData = (data) => {
-    const fromInterfaceSettings = data.result.PeerSettings[fromInterfaceId]
+    const fromInterfaceSettings = data.result.PeerSettings.find(el => el.InterfaceID === fromInterfaceId)
     formik.setFieldValue('allowedIPs', fromInterfaceSettings.RoutingRules.AllowedIPs)
     formik.setFieldValue('persistentKeepalive', data.result.PersistentKeepalive)
   }
