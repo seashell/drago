@@ -44,16 +44,14 @@ func (n *Connections) List() ([]*structs.ConnectionListStub, error) {
 	return items, nil
 }
 
-func (n *Connections) Create(connection *structs.Connection) (*structs.Connection, error) {
+func (n *Connections) Create(connection *structs.Connection) error {
 
 	err := n.client.createResource(connectionsPath, connection, nil)
-
-	err := n.client.createResource(networksPath, connection, out)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return out, nil
+	return nil
 }
 
 func (n *Connections) Update(conn *structs.Connection) (*structs.Connection, error) {
