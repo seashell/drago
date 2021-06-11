@@ -140,13 +140,13 @@ func (c *ConnectionCreateCommand) Run(ctx context.Context, args []string) int {
 		}
 	}
 
-	connection, err := api.Connections().Create(conn)
+	err = api.Connections().Create(conn)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Error creating connection: %s", err))
 		return 1
 	}
 
-	c.UI.Output(c.formatConnection(connection))
+	//c.UI.Output(c.formatConnection(connection))
 
 	return 0
 }
