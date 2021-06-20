@@ -101,9 +101,23 @@ func (s *NetworkService) UpsertNetwork(args *structs.NetworkUpsertRequest, out *
 		return structs.NewInvalidInputError(err.Error())
 	}
 
-	if n.ID == "" {
+	isNewNetwork := n.ID == ""
+
+	if isNewNetwork {
 		n.ID = uuid.Generate()
 		n.CreatedAt = time.Now()
+
+		networks, err := s.state.Networks(ctx)
+		if err != nil {
+			return structs.NewInternalError(err.Error())
+		}
+
+		for _, net := range networks {
+			if net.Name == n.Name {
+				return structs.NewInvalidInputError("network name already in use")
+			}
+		}
+
 	} else {
 		old, err := s.state.NetworkByID(ctx, n.ID)
 		if err != nil {

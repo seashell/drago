@@ -178,14 +178,14 @@ const ClientDetails = () => {
   const handleConnectionChange = (id, values) => {
     const connection = {
       id,
-      PeerSettings: {
-        [values.interfaceId]: {
+      PeerSettings: [
+         {
           InterfaceID: values.interfaceId,
           RoutingRules: {
             AllowedIPs: values.allowedIPs,
           },
         },
-      },
+      ],
       persistentKeepalive: values.persistentKeepalive,
     }
 
