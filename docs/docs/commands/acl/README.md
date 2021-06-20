@@ -11,7 +11,7 @@ Run `drago acl <subcommand> [options] -h` for help on a specific subcommand.
 Available subcommands:
 
 - [`acl bootstrap`](/docs/commands/acl/bootstrap): Bootstrap the ACL system
-- [`acl policy upsert`](/docs/commands/acl/policy-upsert): Create or update an ACL policy
+- [`acl policy apply`](/docs/commands/acl/policy-apply): Create or update an ACL policy
 - [`acl policy delete`](/docs/commands/acl/policy-delete): Delete an existing ACL policy
 - [`acl policy info`](/docs/commands/acl/policy-info): Display info on an existing ACL policy
 - [`acl policy list`](/docs/commands/acl/policy-list): List available ACL policies

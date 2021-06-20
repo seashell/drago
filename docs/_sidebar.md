@@ -21,7 +21,7 @@
   * acl
     * [Overview](/docs/commands/acl/)
     * [bootstrap](/docs/commands/acl/bootstrap)
-    * [policy upsert](/docs/commands/acl/policy-upsert)
+    * [policy apply](/docs/commands/acl/policy-apply)
     * [policy delete](/docs/commands/acl/policy-delete)
     * [policy list](/docs/commands/acl/policy-list)
     * [policy info](/docs/commands/acl/policy-info)

@@ -18,10 +18,9 @@
 
 - Single-binary, lightweight
 - Encrypted node-to-node communication
-- Dynamic network configuration
-- Support for userspace WireGuard implementations
-- Extensible via REST API
+- Support for different WireGuard implementations
 - Slick management dashboard
+- Extensible via REST API
 
 [GitHub](https://github.com/seashell/drago/)
 [Get Started](/docs/)

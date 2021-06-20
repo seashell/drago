@@ -4,6 +4,10 @@
     background: var(--background)!important;
 }
 
+li:not(:last-child){
+    margin-bottom: 10px;
+}
+
 /* ----------------- Cover -----------------*/
 section.cover .cover-main>p{
     margin-top: 32px;
