@@ -63,7 +63,7 @@ The Drago server exposes a comprehensive API through which these configurations 
 
 The Drago client, in turn, runs on every node in the network, and is responsible for  retrieving the most up-to-date configurations from the server through the API. Thanks to a simple reconciliation process, the Drago client then guarantees that the WireGuard configurations on each node always match the desired state stored in the database. When running in client mode, Drago also takes care of automatically generating key pairs for WireGuard, and sharing the public key so that nodes can always connect to each other.
 
-The only assumptions made by Drago is (i) that each node running a client has WireGuard available either as a kernel module or userspace application, and (ii) that the Drag server is reachable through the network.
+The only assumptions made by Drago is (i) that each node running a client has WireGuard available either as a kernel module or userspace application, and (ii) that the Drago server is reachable through the network.
 
 Drago does not enforce any specific network topology. Its sole responsibility is to distribute the desired configurations, and guarantee that they are correctly applied to WireGuard on every single client node. This means that it is up to the user to define how nodes are connected to each other and how the network should look like.
 
