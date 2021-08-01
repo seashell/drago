@@ -122,10 +122,7 @@ func (s *ConnectionService) UpsertConnection(args *structs.ConnectionUpsertReque
 
 	c := args.Connection
 
-	err := c.Validate()
-	if err != nil {
-		return structs.NewInvalidInputError(err.Error())
-	}
+	isNewConnection := false
 
 	// If the connection already exists, we simply merge the new values into the existing struct.
 	// Otherwise, we generate a new ID and set the protected attributes in preparation for inserting
@@ -139,16 +136,16 @@ func (s *ConnectionService) UpsertConnection(args *structs.ConnectionUpsertReque
 	} else {
 		c.ID = uuid.Generate()
 		c.CreatedAt = time.Now()
+		isNewConnection = true
+	}
+
+	err := c.Validate()
+	if err != nil {
+		return structs.NewInvalidInputError("Invalid input: " + err.Error())
 	}
 
 	connectedInterfaceIDs := c.ConnectedInterfaceIDs()
 
-	if len(connectedInterfaceIDs) != 2 {
-		return structs.NewInternalError("A connection must specify exactly two interfaces")
-	}
-	if connectedInterfaceIDs[0] == connectedInterfaceIDs[1] {
-		return structs.NewInternalError("Can't connect an interface to itself")
-	}
 	// Make sure interfaces are not already connected
 	if conn, err := s.state.ConnectionByInterfaceIDs(ctx, connectedInterfaceIDs[0], connectedInterfaceIDs[1]); err == nil {
 		if conn.ID != c.ID {
@@ -156,26 +153,9 @@ func (s *ConnectionService) UpsertConnection(args *structs.ConnectionUpsertReque
 		}
 	}
 
-	// Make sure both peer settings are correctly initialized
-	for _, id := range connectedInterfaceIDs {
-
-		// Initialize PeerSettings
-		if c.PeerSettingsByInterfaceID(id) == nil {
-
-			c.PeerSettings = append(c.PeerSettings, &structs.PeerSettings{
-				InterfaceID: id,
-				RoutingRules: &structs.RoutingRules{
-					AllowedIPs: []string{},
-				},
-			})
-
-		}
-
-		// Initialize RoutingRules, if necessary
-		peer := c.PeerSettingsByInterfaceID(id)
-		if peer.RoutingRules == nil {
-			peer.RoutingRules = &structs.RoutingRules{AllowedIPs: []string{}}
-		}
+	// Make sure both peer settings are initialized
+	if err := c.InitializePeerSettings(); err != nil {
+		return structs.NewInternalError("Could not initialize peer settings")
 	}
 
 	// Make sure both peer interfaces exist
@@ -194,6 +174,15 @@ func (s *ConnectionService) UpsertConnection(args *structs.ConnectionUpsertReque
 
 	// Assign network ID in case we're creating a new connection
 	c.NetworkID = ifaces[0].NetworkID
+
+	network, err := s.state.NetworkByID(ctx, c.NetworkID)
+	if err != nil {
+		return structs.NewInternalError("Network not found")
+	}
+
+	if isNewConnection {
+		c.AllowIPBidirectional(network.AddressRange)
+	}
 
 	c.UpdatedAt = time.Now()
 

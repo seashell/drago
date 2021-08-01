@@ -1,8 +1,11 @@
 package structs
 
 import (
+	"errors"
 	"sort"
 	"time"
+
+	"github.com/seashell/drago/pkg/uuid"
 )
 
 // Connection :
@@ -24,8 +27,28 @@ type Connection struct {
 	UpdatedAt time.Time
 }
 
+func NewConnection() *Connection {
+
+	c := &Connection{}
+
+	c.ID = uuid.Generate()
+	c.CreatedAt = time.Now()
+
+	return c
+}
+
 // Validate :
 func (c *Connection) Validate() error {
+
+	connectedInterfaceIDs := c.ConnectedInterfaceIDs()
+
+	if len(connectedInterfaceIDs) != 2 {
+		return errors.New("a connection must specify exactly two interfaces")
+	}
+	if connectedInterfaceIDs[0] == connectedInterfaceIDs[1] {
+		return errors.New("can't connect an interface to itself")
+	}
+
 	return nil
 }
 
@@ -105,14 +128,35 @@ func (c *Connection) ConnectsInterface(s string) bool {
 	return false
 }
 
+func (c *Connection) InitializePeerSettings() error {
+
+	for _, id := range c.ConnectedInterfaceIDs() {
+
+		if c.PeerSettingsByInterfaceID(id) == nil {
+			c.PeerSettings = append(c.PeerSettings, &PeerSettings{
+				InterfaceID: id,
+				RoutingRules: &RoutingRules{
+					AllowedIPs: []string{},
+				},
+			})
+		}
+
+		// Initialize RoutingRules, if necessary
+		peer := c.PeerSettingsByInterfaceID(id)
+		if peer.RoutingRules == nil {
+			peer.RoutingRules = &RoutingRules{AllowedIPs: []string{}}
+		}
+	}
+
+	return nil
+
+}
+
 // Merge :
 func (c *Connection) Merge(in *Connection) *Connection {
 
 	result := *c
 
-	if in.ID != "" {
-		result.ID = in.ID
-	}
 	if in.PeerSettings != nil {
 		if result.PeerSettings == nil {
 			result.PeerSettings = in.PeerSettings
@@ -126,11 +170,19 @@ func (c *Connection) Merge(in *Connection) *Connection {
 			}
 		}
 	}
+
 	if in.PersistentKeepalive != nil {
 		result.PersistentKeepalive = in.PersistentKeepalive
 	}
 
 	return &result
+}
+
+func (c *Connection) AllowIPBidirectional(ip string) error {
+	for _, peer := range c.PeerSettings {
+		peer.RoutingRules.AllowedIPs = append(peer.RoutingRules.AllowedIPs, ip)
+	}
+	return nil
 }
 
 // Stub :
