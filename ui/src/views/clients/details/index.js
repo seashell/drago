@@ -123,17 +123,34 @@ const ClientDetails = () => {
   }
 
   const handleConnectToPeer = (networkId, peerInterfaceId) => {
+
     const nodeInterface = getNodeInterfacesQuery.data.result.find(
       (el) => el.NetworkID === networkId
     )
 
+    // type Connection struct {
+    //   NetworkID string
+    //   PeerSettings []*PeerSettings
+    //   PersistentKeepalive *int
+    // }
+
+    // type PeerSettings struct {
+    //   NodeID       string
+    //   InterfaceID  string
+    //   RoutingRules *RoutingRules
+    // }
+    
     createConnection({
       variables: {
         connection: {
-          peerSettings: {
-            [nodeInterface.ID]: {},
-            [peerInterfaceId]: {},
-          },
+          peerSettings: [
+            {
+              'InterfaceID': nodeInterface.ID,
+            },
+            {
+              'InterfaceID': peerInterfaceId,
+            },
+          ], 
         },
       },
     })
@@ -271,7 +288,7 @@ const ClientDetails = () => {
       />
       <ConnectPeerModal
         isOpen={isConnectPeerModalOpen}
-        onJoin={handleConnectToPeer}
+        onConnect={handleConnectToPeer}
         onClose={() => setConnectPeerModalOpen(false)}
       />
       <BackLink text="Clients" to={`/ui/clients`} mb={3} />
