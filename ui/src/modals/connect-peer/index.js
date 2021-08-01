@@ -38,7 +38,7 @@ const CloseButton = styled(IconButton).attrs({
   right: 0;
 `
 
-const ConnectPeerModal = ({ isOpen, onJoin, onClose }) => {
+const ConnectPeerModal = ({ isOpen, onConnect, onClose }) => {
   const { nodeId } = useParams()
 
   const [networks, setNetworks] = useState([])
@@ -106,8 +106,8 @@ const ConnectPeerModal = ({ isOpen, onJoin, onClose }) => {
     setSelectedPeer(selectedPeer !== id ? id : undefined)
   }
 
-  const handleJoinButtonClick = () => {
-    onJoin(selectedNetwork, selectedPeer)
+  const handleConnectButtonClick = () => {
+    onConnect(selectedNetwork, selectedPeer)
     onClose()
   }
 
@@ -161,7 +161,7 @@ const ConnectPeerModal = ({ isOpen, onJoin, onClose }) => {
           width="auto"
           height="48px"
           mt="auto"
-          onClick={handleJoinButtonClick}
+          onClick={handleConnectButtonClick}
         >
           Connect
         </Button>
@@ -172,13 +172,13 @@ const ConnectPeerModal = ({ isOpen, onJoin, onClose }) => {
 
 ConnectPeerModal.propTypes = {
   isOpen: PropTypes.bool,
-  onJoin: PropTypes.func,
+  onConnect: PropTypes.func,
   onClose: PropTypes.func,
 }
 
 ConnectPeerModal.defaultProps = {
   isOpen: false,
-  onJoin: () => {},
+  onConnect: () => {},
   onClose: () => {},
 }
 
