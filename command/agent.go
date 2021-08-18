@@ -99,18 +99,18 @@ func (c *AgentCommand) Run(ctx context.Context, args []string) int {
 		os.Exit(1)
 	}
 
-	if !c.server && !c.client && !c.dev {
-		c.UI.Output("==> Must specify either client, server or dev mode for the agent.")
-		os.Exit(1)
-	}
-
-	printBanner()
-
 	err := c.parseConfig(args)
 	if err != nil {
 		c.UI.Error(fmt.Sprintf("Invalid input: %s", err.Error()))
 		os.Exit(1)
 	}
+
+	if !c.config.Server.Enabled && !c.config.Client.Enabled && !*c.config.DevMode {
+		c.UI.Output("==> Must specify either client, server or dev mode for the agent.")
+		os.Exit(1)
+	}
+
+	printBanner()
 
 	if err := c.setupLogger(); err != nil {
 		c.UI.Error(err.Error())
@@ -141,10 +141,10 @@ func (c *AgentCommand) Run(ctx context.Context, args []string) int {
 func (c *AgentCommand) Help() string {
 	h := `
 Usage: drago agent [options]
-	
+
   Starts the Drago agent and runs until an interrupt is received.
   The agent may be a client and/or server.
-  
+
   The Drago agent's configuration primarily comes from the config
   files used, but a subset of the options may also be passed directly
   as CLI arguments.
@@ -162,7 +162,7 @@ General Options (clients and servers):
     Overrides the DRAGO_CONFIG_PATH environment variable if set.
 
   --data-dir=<path>
-    The data directory where all state will be persisted. On Drago 
+    The data directory where all state will be persisted. On Drago
     clients this is used to store local network configurations, whereas
     on server nodes, the data dir is also used to keep the desired state
     for all the managed networks. Overrides the DRAGO_DATA_DIRenvironment
@@ -202,7 +202,7 @@ Client Options:
   --state-dir
     The directory used to store state and other persistent data. If not
     specified a subdirectory under the "-data-dir" will be used.
-  
+
   --servers
     A comma-separated list of known server addresses to connect to in
     "host:port" format.
