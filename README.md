@@ -18,7 +18,11 @@ A flexible configuration manager for WireGuard networks
 
 Drago is a flexible configuration manager for WireGuard designed to make it simple to configure secure network overlays spanning heterogeneous nodes distributed across different clouds and physical locations. 
 
-Drago is in active development, and we welcome contributions from the open-source community. Feedback and feature requests are particularly appreciated.
+In the media:
+- [Linux Unplugged: What's up with WireGuard?](https://linuxunplugged.com/418?t=1791)
+- [Reddit thread on `r/selfhosted`](https://www.reddit.com/r/selfhosted/comments/ojp6lc/drago_securely_connect_devices_with_wireguard_and/)
+                                                                                                                                       
+We are in active development and we welcome contributions from the open-source community.
 
 <p align="center"> 
 <img src="../assets/demo.gif"/>
