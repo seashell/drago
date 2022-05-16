@@ -23,7 +23,7 @@
     "graphql-anywhere": "^4.2.7",
     "graphql-tag": "^2.10.1",
     "loglevel": "^1.6.6",
-    "moment": "^2.24.0",
+    "moment": "^2.29.2",
     "optimism": "^0.12.1",
     "pluralize": "^8.0.0",
     "prop-types": "^15.7.2",
