@@ -7,7 +7,6 @@ import (
 	"github.com/seashell/drago/client/nic"
 	"github.com/seashell/drago/drago/structs"
 	"go.etcd.io/bbolt"
-	bolt "go.etcd.io/bbolt"
 )
 
 var (
@@ -17,12 +16,12 @@ var (
 
 // StateRepository ...
 type StateRepository struct {
-	db *bolt.DB
+	db *bbolt.DB
 }
 
 // NewStateRepository creates a new BoltDB state repository
 func NewStateRepository(path string) (*StateRepository, error) {
-	db, err := bolt.Open(path, 0666, nil)
+	db, err := bbolt.Open(path, 0666, nil)
 	if err != nil {
 		return nil, err
 	}
